@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Environment files
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Build / cache
+.pytest_cache/
+.mypy_cache/
+
+# Local uploads or temp files
+uploads/
+tmp/
+temp/
+
+# If you have node stuff later
+node_modules/

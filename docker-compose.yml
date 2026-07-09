@@ -1,0 +1,32 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: distribution_postgres
+    restart: always
+    environment:
+      POSTGRES_DB: distribution_db
+      POSTGRES_USER: distribution_user
+      POSTGRES_PASSWORD: distribution_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: distribution_backend
+    restart: always
+    depends_on:
+      - postgres
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    env_file:
+      - ./backend/.env
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+volumes:
+  postgres_data:

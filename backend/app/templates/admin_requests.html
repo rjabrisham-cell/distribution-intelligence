@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}
+پنل کارشناسان
+{% endblock %}
+
+{% block content %}
+
+<h1>درخواست‌های تحلیل</h1>
+
+<table border="1" cellpadding="8" cellspacing="0">
+
+    <tr>
+        <th>شناسه</th>
+        <th>شرکت</th>
+        <th>وضعیت</th>
+    </tr>
+
+    {% for item in requests %}
+
+    <tr>
+
+        <td>{{ item.id }}</td>
+
+        <td>{{ item.company }}</td>
+
+        <td>{{ item.status }}</td>
+
+    </tr>
+
+    {% endfor %}
+
+</table>
+
+{% endblock %}

@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}
+ثبت درخواست تحلیل
+{% endblock %}
+
+{% block content %}
+<div class="container">
+
+    <h2>فرم ثبت درخواست تحلیل</h2>
+
+    {% if success %}
+    <div class="alert alert-success">
+        درخواست با موفقیت ثبت شد.
+        <br>
+        شماره درخواست: <strong>{{ request_id }}</strong>
+    </div>
+    {% endif %}
+
+    <form action="/request" method="post" enctype="multipart/form-data">
+
+        <h4>اطلاعات درخواست</h4>
+
+        <div class="mb-3">
+            <label class="form-label">نام شرکت</label>
+            <input
+                class="form-control"
+                type="text"
+                name="company_name"
+                required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">نام شخص رابط</label>
+            <input
+                class="form-control"
+                type="text"
+                name="contact_name"
+                required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">شماره موبایل</label>
+            <input
+                class="form-control"
+                type="text"
+                name="mobile"
+                required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">ایمیل</label>
+            <input
+                class="form-control"
+                type="email"
+                name="email">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">حوزه فعالیت</label>
+            <input
+                class="form-control"
+                type="text"
+                name="industry">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">هدف / توضیحات</label>
+            <textarea
+                class="form-control"
+                name="goal"
+                rows="4"></textarea>
+        </div>
+
+        <hr>
+
+        <h4>فایل‌های مورد نیاز</h4>
+
+        <div class="mb-3">
+            <label class="form-label">Orders</label>
+            <input
+                class="form-control"
+                type="file"
+                name="orders_file">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Fleet</label>
+            <input
+                class="form-control"
+                type="file"
+                name="fleet_file">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Drivers</label>
+            <input
+                class="form-control"
+                type="file"
+                name="drivers_file">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">GPS</label>
+            <input
+                class="form-control"
+                type="file"
+                name="gps_file">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">سایر فایل‌ها</label>
+            <input
+                class="form-control"
+                type="file"
+                name="other_files"
+                multiple>
+        </div>
+
+        <button
+            type="submit"
+            class="btn btn-primary">
+            ثبت درخواست
+        </button>
+
+    </form>
+
+</div>
+{% endblock %}

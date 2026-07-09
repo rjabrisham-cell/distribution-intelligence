@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Projects | Distribution Intelligence{% endblock %}
+
+{% block content %}
+<section class="dashboard-page">
+    <section class="hero-card">
+        <div class="hero-content">
+            <div>
+                <span class="hero-badge">Projects</span>
+                <h2>فهرست پروژه‌ها</h2>
+                <p>
+                    این صفحه در Sprint 1 به‌صورت نمایشی آماده شده است.
+                    در Sprint بعدی به داده‌های واقعی پروژه‌ها متصل خواهد شد.
+                </p>
+            </div>
+
+            <div class="hero-actions">
+                <a href="/projects/new" class="btn btn-primary">ایجاد پروژه جدید</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="panel-card">
+        <div class="panel-header">
+            <h3>پروژه‌های موجود</h3>
+        </div>
+
+        <div class="workflow-list">
+            <div class="workflow-item">
+                <span class="workflow-step">1</span>
+                <div>
+                    <strong>پروژه توزیع تهران</strong>
+                    <p>سناریوی نمونه برای نمایش Sprint 1</p>
+                </div>
+            </div>
+
+            <div class="workflow-item">
+                <span class="workflow-step">2</span>
+                <div>
+                    <strong>پروژه توزیع کرج</strong>
+                    <p>نمونه‌ی آماده برای تست رابط کاربری</p>
+                </div>
+            </div>
+        </div>
+    </section>
+</section>
+{% endblock %}

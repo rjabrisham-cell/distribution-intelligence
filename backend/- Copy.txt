@@ -1,0 +1,13 @@
+APP_NAME=Distribution Intelligence Platform
+
+APP_VERSION=0.2.0
+
+DEBUG=True
+
+HOST=127.0.0.1
+
+PORT=8000
+
+SECRET_KEY=change_this_secret_key
+
+DATABASE_URL=postgresql://distribution_user:distribution_pass@localhost:5432/distribution_db

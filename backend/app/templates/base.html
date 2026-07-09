@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Distribution Intelligence{% endblock %}</title>
+
+    <link rel="stylesheet" href="/static/css/app.css" />
+    <link rel="stylesheet" href="/static/css/layout.css" />
+    <link rel="stylesheet" href="/static/css/dashboard.css" />
+</head>
+<body>
+    <div class="app-shell">
+        {% include 'partials/sidebar.html' %}
+
+        <div class="app-main">
+            {% include 'partials/navbar.html' %}
+
+            <main class="page-content">
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <div id="globalToastContainer" class="toast-container"></div>
+
+    <script src="/static/js/dashboard.js"></script>
+</body>
+</html>

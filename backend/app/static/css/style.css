@@ -1,0 +1,29 @@
+body{
+
+    font-family:Tahoma;
+
+    background:#f5f7fa;
+
+    margin:30px;
+
+}
+
+header{
+
+    margin-bottom:30px;
+
+}
+
+nav a{
+
+    text-decoration:none;
+
+    margin-left:10px;
+
+}
+
+.container{
+
+    background:white;
+
+}

@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Results | Distribution Intelligence{% endblock %}
+
+{% block content %}
+<section class="dashboard-page">
+    <section class="hero-card">
+        <div class="hero-content">
+            <div>
+                <span class="hero-badge">Results</span>
+                <h2>نتایج اجرای توزیع</h2>
+                <p>
+                    در این صفحه خروجی اجرای آزمایشی توزیع نمایش داده می‌شود.
+                    در Sprint 1 این داده‌ها به‌صورت Mock هستند.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section class="stats-grid">
+        <article class="stat-card stat-card-primary">
+            <div class="stat-label">سفارش‌های تخصیص‌یافته</div>
+            <div class="stat-value">1480</div>
+            <div class="stat-hint">بر اساس اجرای آزمایشی</div>
+        </article>
+
+        <article class="stat-card">
+            <div class="stat-label">سفارش‌های باقیمانده</div>
+            <div class="stat-value">60</div>
+            <div class="stat-hint">نیازمند بررسی دستی</div>
+        </article>
+
+        <article class="stat-card">
+            <div class="stat-label">ناوگان استفاده‌شده</div>
+            <div class="stat-value">39</div>
+            <div class="stat-hint">از کل 47 ناوگان</div>
+        </article>
+
+        <article class="stat-card">
+            <div class="stat-label">میانگین راندمان</div>
+            <div class="stat-value">91%</div>
+            <div class="stat-hint">شاخص نمونه‌ی Sprint 1</div>
+        </article>
+    </section>
+
+    <section class="panel-card">
+        <div class="panel-header">
+            <h3>خلاصه خروجی</h3>
+        </div>
+
+        <div class="status-list">
+            <div class="status-item">
+                <span class="status-dot status-ok"></span>
+                <span>اجرای سناریوی Mock موفق بود</span>
+            </div>
+            <div class="status-item">
+                <span class="status-dot status-ok"></span>
+                <span>خروجی اولیه برای نمایش در UI آماده است</span>
+            </div>
+            <div class="status-item">
+                <span class="status-dot status-warn"></span>
+                <span>نتایج واقعی در Sprint بعدی از Engine خوانده می‌شود</span>
+            </div>
+        </div>
+
+        <div class="quick-links">
+            <a class="quick-link" href="http://localhost:8082/" target="_blank">باز کردن نقشه</a>
+            <a class="quick-link" href="/dashboard">بازگشت به داشبورد</a>
+        </div>
+    </section>
+</section>
+{% endblock %}
