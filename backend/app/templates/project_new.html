@@ -1,64 +1,223 @@
 {% extends "base.html" %}
 
-{% block title %}New Project | Distribution Intelligence{% endblock %}
+{% block title %}
+Create Project
+{% endblock %}
 
 {% block content %}
-<section class="dashboard-page">
-    <section class="hero-card">
-        <div class="hero-content">
-            <div>
-                <span class="hero-badge">New Project</span>
-                <h2>ایجاد پروژه جدید</h2>
-                <p>
-                    این فرم در Sprint 1 صرفاً برای نمایش جریان کاری آماده شده و
-                    هنوز به ذخیره‌سازی واقعی متصل نیست.
-                </p>
+
+<div class="container-fluid py-4">
+
+    <div class="row justify-content-center">
+
+        <div class="col-xl-10">
+
+            <!-- Header -->
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+
+                <div>
+
+                    <h2 class="fw-bold mb-1">
+                        Create New Project
+                    </h2>
+
+                    <p class="text-muted mb-0">
+                        Create a new Distribution Intelligence project.
+                    </p>
+
+                </div>
+
+                <a
+                    href="/projects"
+                    class="btn btn-outline-secondary">
+
+                    ← Back
+
+                </a>
+
             </div>
+
+
+            <form
+                method="post"
+                action="/projects">
+
+                <!-- ===================== -->
+                <!-- Project Information -->
+                <!-- ===================== -->
+
+                <div class="card shadow-sm border-0">
+
+                    <div class="card-header bg-white">
+
+                        <h5 class="mb-0">
+
+                            Project Information
+
+                        </h5>
+
+                    </div>
+
+                    <div class="card-body">
+
+                        <div class="row">
+
+                            <!-- Project Name -->
+
+                            <div class="col-md-8 mb-4">
+
+                                <label class="form-label">
+
+                                    Project Name
+
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="name"
+                                    maxlength="255"
+                                    class="form-control"
+                                    required>
+
+                            </div>
+
+
+                            <!-- Company ID -->
+
+                            <div class="col-md-4 mb-4">
+
+                                <label class="form-label">
+
+                                    Company ID
+
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="company_id"
+                                    class="form-control"
+                                    placeholder="Example: CMP-0001"
+                                    required>
+
+                                <small class="text-muted">
+
+                                    Temporary field.
+                                    Company selector will be added later.
+
+                                </small>
+
+                            </div>
+
+
+                            <!-- Description -->
+
+                            <div class="col-12">
+
+                                <label class="form-label">
+
+                                    Description
+
+                                </label>
+
+                                <textarea
+                                    class="form-control"
+                                    name="description"
+                                    rows="6"
+                                    placeholder="Project description..."></textarea>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ===================== -->
+                <!-- Workflow -->
+                <!-- ===================== -->
+
+                <div class="card shadow-sm border-0 mt-4">
+
+                    <div class="card-header bg-white">
+
+                        <h5 class="mb-0">
+
+                            Workflow
+
+                        </h5>
+
+                    </div>
+
+                    <div class="card-body">
+
+                        <div class="alert alert-info mb-0">
+
+                            <strong>
+
+                                Next Steps
+
+                            </strong>
+
+                            <hr>
+
+                            <ul class="mb-0">
+
+                                <li>Create Project</li>
+
+                                <li>Upload Orders</li>
+
+                                <li>Upload Fleet</li>
+
+                                <li>Upload Drivers</li>
+
+                                <li>Upload GPS</li>
+
+                                <li>Run Distribution Engine</li>
+
+                                <li>Generate Executive Report</li>
+
+                            </ul>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ===================== -->
+                <!-- Buttons -->
+                <!-- ===================== -->
+
+                <div class="d-flex justify-content-end gap-2 mt-4">
+
+                    <a
+                        href="/projects"
+                        class="btn btn-outline-secondary">
+
+                        Cancel
+
+                    </a>
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary">
+
+                        Create Project
+
+                    </button>
+
+                </div>
+
+            </form>
+
         </div>
-    </section>
 
-    <section class="panel-card">
-        <div class="panel-header">
-            <h3>فرم تعریف پروژه</h3>
-        </div>
+    </div>
 
-        <form class="project-form">
-            <div class="form-grid">
-                <div class="form-group">
-                    <label for="projectName">نام پروژه</label>
-                    <input id="projectName" type="text" placeholder="مثلاً پروژه توزیع منطقه 5" />
-                </div>
+</div>
 
-                <div class="form-group">
-                    <label for="companyName">نام شرکت</label>
-                    <input id="companyName" type="text" placeholder="نام شرکت / مشتری" />
-                </div>
-
-                <div class="form-group">
-                    <label for="scenarioType">نوع سناریو</label>
-                    <select id="scenarioType">
-                        <option>توزیع روزانه</option>
-                        <option>توزیع بین‌شهری</option>
-                        <option>توزیع فوری</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="fleetSize">تعداد ناوگان</label>
-                    <input id="fleetSize" type="number" placeholder="مثلاً 25" />
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label for="projectDescription">توضیحات</label>
-                <textarea id="projectDescription" rows="5" placeholder="توضیح مختصر پروژه..."></textarea>
-            </div>
-
-            <div class="hero-actions">
-                <button type="button" class="btn btn-primary">ثبت نمایشی</button>
-                <a href="/dashboard" class="btn btn-secondary">بازگشت به داشبورد</a>
-            </div>
-        </form>
-    </section>
-</section>
 {% endblock %}

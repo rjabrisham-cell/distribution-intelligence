@@ -1,48 +1,260 @@
 {% extends "base.html" %}
 
-{% block title %}Projects | Distribution Intelligence{% endblock %}
+{% block title %}
+Projects
+{% endblock %}
 
 {% block content %}
-<section class="dashboard-page">
-    <section class="hero-card">
-        <div class="hero-content">
-            <div>
-                <span class="hero-badge">Projects</span>
-                <h2>فهرست پروژه‌ها</h2>
-                <p>
-                    این صفحه در Sprint 1 به‌صورت نمایشی آماده شده است.
-                    در Sprint بعدی به داده‌های واقعی پروژه‌ها متصل خواهد شد.
-                </p>
-            </div>
 
-            <div class="hero-actions">
-                <a href="/projects/new" class="btn btn-primary">ایجاد پروژه جدید</a>
-            </div>
-        </div>
-    </section>
+<div class="container-fluid">
 
-    <section class="panel-card">
-        <div class="panel-header">
-            <h3>پروژه‌های موجود</h3>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+            <h2 class="mb-1">
+                Projects
+            </h2>
+
+            <p class="text-muted mb-0">
+                Distribution Intelligence Projects
+            </p>
         </div>
 
-        <div class="workflow-list">
-            <div class="workflow-item">
-                <span class="workflow-step">1</span>
-                <div>
-                    <strong>پروژه توزیع تهران</strong>
-                    <p>سناریوی نمونه برای نمایش Sprint 1</p>
-                </div>
-            </div>
+        <div>
 
-            <div class="workflow-item">
-                <span class="workflow-step">2</span>
-                <div>
-                    <strong>پروژه توزیع کرج</strong>
-                    <p>نمونه‌ی آماده برای تست رابط کاربری</p>
-                </div>
-            </div>
+            <a href="/projects/new"
+               class="btn btn-primary">
+
+                <i class="bi bi-plus-circle"></i>
+                New Project
+
+            </a>
+
         </div>
-    </section>
-</section>
+
+    </div>
+
+    {% if projects %}
+
+    <div class="card shadow-sm">
+
+        <div class="card-body p-0">
+
+            <table class="table table-hover align-middle mb-0">
+
+                <thead class="table-light">
+
+                <tr>
+
+                    <th width="80">
+                        ID
+                    </th>
+
+                    <th>
+                        Project
+                    </th>
+
+                    <th>
+                        Company
+                    </th>
+
+                    <th width="180">
+                        Status
+                    </th>
+
+                    <th width="180">
+                        Created
+                    </th>
+
+                    <th width="220">
+                        Actions
+                    </th>
+
+                </tr>
+
+                </thead>
+
+                <tbody>
+
+                {% for project in projects %}
+
+                <tr>
+
+                    <td>
+
+                        {{ project.id }}
+
+                    </td>
+
+                    <td>
+
+                        <strong>
+
+                            {{ project.name }}
+
+                        </strong>
+
+                        {% if project.description %}
+
+                        <br>
+
+                        <small class="text-muted">
+
+                            {{ project.description }}
+
+                        </small>
+
+                        {% endif %}
+
+                    </td>
+
+                    <td>
+
+                        {% if project.company %}
+
+                            {{ project.company.name }}
+
+                        {% else %}
+
+                            -
+
+                        {% endif %}
+
+                    </td>
+
+                    <td>
+
+                        {% if project.status.value == "draft" %}
+
+                            <span class="badge bg-secondary">
+                                Draft
+                            </span>
+
+                        {% elif project.status.value == "in_progress" %}
+
+                            <span class="badge bg-warning text-dark">
+                                In Progress
+                            </span>
+
+                        {% elif project.status.value == "completed" %}
+
+                            <span class="badge bg-success">
+                                Completed
+                            </span>
+
+                        {% elif project.status.value == "cancelled" %}
+
+                            <span class="badge bg-danger">
+                                Cancelled
+                            </span>
+
+                        {% else %}
+
+                            <span class="badge bg-light text-dark">
+                                {{ project.status }}
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+                    <td>
+
+                        {{ project.created_at.strftime('%Y-%m-%d %H:%M') }}
+
+                    </td>
+
+                    <td>
+
+                        <a href="/projects/{{ project.id }}"
+                           class="btn btn-sm btn-outline-primary">
+
+                            View
+
+                        </a>
+
+                        <a href="/projects/{{ project.id }}/edit"
+                           class="btn btn-sm btn-outline-secondary">
+
+                            Edit
+
+                        </a>
+
+                        <button
+                                class="btn btn-sm btn-outline-danger"
+                                onclick="deleteProject('{{ project.id }}')">
+
+                            Delete
+
+                        </button>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    {% else %}
+
+    <div class="card">
+
+        <div class="card-body text-center py-5">
+
+            <h4>
+
+                No Projects Found
+
+            </h4>
+
+            <p class="text-muted">
+
+                Create your first Distribution Project.
+
+            </p>
+
+            <a href="/projects/new"
+               class="btn btn-primary">
+
+                Create Project
+
+            </a>
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+<script>
+
+async function deleteProject(projectId){
+
+    if(!confirm("Delete this project?")){
+        return;
+    }
+
+    const response = await fetch("/projects/" + projectId,{
+        method:"DELETE"
+    });
+
+    if(response.ok){
+        location.reload();
+    }else{
+        alert("Delete failed.");
+    }
+
+}
+
+</script>
+
 {% endblock %}

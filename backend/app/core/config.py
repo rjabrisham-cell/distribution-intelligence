@@ -16,6 +16,7 @@ class Settings:
         "DATABASE_URL",
         "postgresql://distribution_user:distribution_pass@postgres:5432/distribution_db",
     )
+    UPLOAD_DIR = os.getenv("UPLOAD_DIR", "uploads")
 
 
 settings = Settings()

@@ -22,6 +22,3 @@ def get_db():
         yield db
     finally:
         db.close()
-
-
-import app.models  # noqa

@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}پروژه: {{ project.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+
+    <!-- ============================================ -->
+    <!-- Project Information                          -->
+    <!-- ============================================ -->
+
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">{{ project.name }}</h4>
+            <span class="badge bg-{% if project.status.value == 'draft' %}secondary{% elif project.status.value == 'in_progress' %}primary{% elif project.status.value == 'completed' %}success{% else %}danger{% endif %}">
+                {{ project.status.value }}
+            </span>
+        </div>
+
+        <div class="card-body">
+            <div class="row mb-2">
+                <div class="col-sm-3 fw-bold">شرکت:</div>
+                <div class="col-sm-9">{{ project.company.name }}</div>
+            </div>
+
+            <div class="row mb-2">
+                <div class="col-sm-3 fw-bold">توضیحات:</div>
+                <div class="col-sm-9">{{ project.description or "—" }}</div>
+            </div>
+
+            <div class="row mb-2">
+                <div class="col-sm-3 fw-bold">تاریخ ایجاد:</div>
+                <div class="col-sm-9">{{ project.created_at.strftime("%Y-%m-%d %H:%M") if project.created_at else "—" }}</div>
+            </div>
+
+            <div class="row mb-2">
+                <div class="col-sm-3 fw-bold">آخرین به‌روزرسانی:</div>
+                <div class="col-sm-9">{{ project.updated_at.strftime("%Y-%m-%d %H:%M") if project.updated_at else "—" }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- Attached Files                              -->
+    <!-- ============================================ -->
+
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">📎 فایل‌های پیوست</h5>
+            <span class="badge bg-secondary">{{ files|length }} فایل</span>
+        </div>
+
+        <div class="card-body">
+            {% if files %}
+                <div class="table-responsive">
+                    <table class="table table-hover table-sm">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>نام فایل</th>
+                                <th>دسته‌بندی</th>
+                                <th>نوع</th>
+                                <th>حجم</th>
+                                <th>تاریخ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for file in files %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ file.original_name }}</td>
+                                <td><span class="badge bg-info">{{ file.category }}</span></td>
+                                <td><small class="text-muted">{{ file.content_type }}</small></td>
+                                <td>{{ file.file_size_human }}</td>
+                                <td><small>{{ file.created_at.strftime("%Y-%m-%d %H:%M") if file.created_at else "—" }}</small></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-4 text-muted">
+                    <p class="mb-0">No files uploaded yet.</p>
+                    <small>فایل‌های پیوست پروژه در این بخش نمایش داده می‌شوند.</small>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

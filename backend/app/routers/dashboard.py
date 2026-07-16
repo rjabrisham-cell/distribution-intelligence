@@ -1,83 +1,123 @@
-from fastapi import APIRouter, Request
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi import (
+    APIRouter,
+    Depends,
+    Request,
+)
+from fastapi.responses import (
+    HTMLResponse,
+    JSONResponse,
+)
+from sqlalchemy.orm import Session
+
+from app.core.database import get_db
 from app.core.templates import templates
+from app.services.project_service import ProjectService
 
-router = APIRouter()
+
+router = APIRouter(
+    tags=["Dashboard"],
+)
 
 
-@router.get("/dashboard", response_class=HTMLResponse)
-async def dashboard_page(request: Request):
+# -------------------------------------------------------
+# Dashboard
+# -------------------------------------------------------
+
+@router.get(
+    "/dashboard",
+    response_class=HTMLResponse,
+)
+async def dashboard_page(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    service = ProjectService(db)
+
     return templates.TemplateResponse(
-        request=request,
-        name="dashboard.html",
-        context={
-            "page_title": "داشبورد"
-        }
+        request,
+        "dashboard.html",
+        {
+            "page_title": "داشبورد",
+            "project_count": service.count(),
+        },
     )
 
 
-@router.get("/projects", response_class=HTMLResponse)
-async def projects_page(request: Request):
+# -------------------------------------------------------
+# Results
+# -------------------------------------------------------
+
+@router.get(
+    "/results",
+    response_class=HTMLResponse,
+)
+async def results_page(
+    request: Request,
+):
     return templates.TemplateResponse(
-        request=request,
-        name="projects.html",
-        context={
-            "page_title": "پروژه‌ها"
-        }
+        request,
+        "results.html",
+        {
+            "page_title": "نتایج تحلیل",
+        },
     )
 
 
-@router.get("/projects/new", response_class=HTMLResponse)
-async def new_project_page(request: Request):
+# -------------------------------------------------------
+# Distribution
+# -------------------------------------------------------
+
+@router.get(
+    "/distribution",
+    response_class=HTMLResponse,
+)
+async def distribution_page(
+    request: Request,
+):
     return templates.TemplateResponse(
-        request=request,
-        name="project_new.html",
-        context={
-            "page_title": "ایجاد پروژه جدید"
-        }
+        request,
+        "distribution.html",
+        {
+            "page_title": "اجرای توزیع",
+        },
     )
 
 
-@router.get("/results", response_class=HTMLResponse)
-async def results_page(request: Request):
-    return templates.TemplateResponse(
-        request=request,
-        name="results.html",
-        context={
-            "page_title": "نتایج تحلیل"
-        }
-    )
+# -------------------------------------------------------
+# Dashboard API
+# -------------------------------------------------------
 
+@router.get(
+    "/api/dashboard",
+)
+async def dashboard_stats(
+    db: Session = Depends(get_db),
+):
+    service = ProjectService(db)
 
-@router.get("/distribution", response_class=HTMLResponse)
-async def distribution_page(request: Request):
-    return templates.TemplateResponse(
-        request=request,
-        name="distribution.html",
-        context={
-            "page_title": "اجرای توزیع"
-        }
-    )
-
-
-@router.get("/api/dashboard")
-async def dashboard_stats():
     return JSONResponse(
         {
-            "projects": 12,
-            "companies": 8,
-            "orders": 1540,
-            "vehicles": 47,
+            "projects": service.count(),
+            "companies": 0,
+            "orders": 0,
+            "vehicles": 0,
         }
     )
 
 
-@router.post("/distribution/run")
+# -------------------------------------------------------
+# Distribution Run (Mock)
+# -------------------------------------------------------
+
+@router.post(
+    "/distribution/run",
+)
 async def run_distribution():
+
     return JSONResponse(
         {
             "status": "success",
-            "message": "اجرای توزیع آزمایشی با موفقیت انجام شد.",
+            "message": "اجرای آزمایشی با موفقیت انجام شد.",
             "run_id": "mock-run-001",
         }
     )
