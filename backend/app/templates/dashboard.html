@@ -1,129 +1,168 @@
 {% extends "base.html" %}
 
-{% block title %}Dashboard | Distribution Intelligence{% endblock %}
+{% block title %}Decision Dashboard | DIP{% endblock %}
 
 {% block content %}
-<section class="dashboard-page">
-    <div id="loadingOverlay" class="loading-overlay hidden">
-        <div class="loading-box">
-            <div class="spinner"></div>
-            <span>در حال اجرای پردازش...</span>
-        </div>
+<section class="page-hero">
+    <div>
+        <span class="dip-eyebrow">Decision Dashboard</span>
+        <h1>داشبورد تصمیم</h1>
+        <p>
+            این داشبورد برای شمارش ساده موجودیت‌ها نیست؛
+            بلکه برای مرور آمادگی تصمیم قبل از اجرای توزیع طراحی شده است:
+            Validation، Audit، Completeness، Geo و Readiness.
+        </p>
     </div>
 
-    <section class="hero-card">
-        <div class="hero-content">
-            <div>
-                <span class="hero-badge">Sprint 1</span>
-                <h2>سامانه هوشمند توزیع</h2>
-                <p>
-                    در این نسخه، جریان اصلی محصول به‌صورت UI-first پیاده‌سازی شده است
-                    تا ایجاد پروژه، آپلود داده، اجرای توزیع آزمایشی و مشاهده نتایج
-                    به‌صورت یکپارچه قابل نمایش باشد.
-                </p>
-            </div>
+    <div class="page-hero-actions">
+        <a href="/projects" class="btn btn-primary dip-btn-lg">ورود به Workspace پروژه‌ها</a>
+    </div>
+</section>
 
-            <div class="hero-actions">
-                <button id="newProject" class="btn btn-primary">ایجاد پروژه جدید</button>
-                <button id="runDistribution" class="btn btn-success">اجرای توزیع</button>
-                <button id="openMap" class="btn btn-secondary">باز کردن نقشه</button>
+<section class="dashboard-kpi-grid">
+    <article class="dip-kpi-card dip-kpi-card-primary">
+        <span>Projects</span>
+        <strong>{{ project_count|default(0, true) }}</strong>
+        <small>پروژه‌های ثبت‌شده در فضای کاری</small>
+    </article>
+
+    <article class="dip-kpi-card">
+        <span>Validation Coverage</span>
+        <strong>68%</strong>
+        <small>برآورد پوشش بررسی داده</small>
+    </article>
+
+    <article class="dip-kpi-card">
+        <span>Audit Health</span>
+        <strong>74%</strong>
+        <small>وضعیت سلامت یافته‌های ممیزی</small>
+    </article>
+
+    <article class="dip-kpi-card">
+        <span>Geo Readiness</span>
+        <strong>61%</strong>
+        <small>آمادگی داده برای تحلیل جغرافیایی</small>
+    </article>
+
+    <article class="dip-kpi-card">
+        <span>Completeness</span>
+        <strong>79%</strong>
+        <small>کفایت داده‌های ضروری</small>
+    </article>
+
+    <article class="dip-kpi-card">
+        <span>Decision Readiness</span>
+        <strong>58%</strong>
+        <small>آمادگی ورود به تصمیم اجرایی</small>
+    </article>
+</section>
+
+<section class="dashboard-grid">
+    <article class="workspace-panel">
+        <div class="dip-section-head">
+            <div>
+                <h2>Workflow Intelligence</h2>
+                <p>زنجیره رسمی DIP</p>
             </div>
         </div>
-    </section>
 
-    <section class="stats-grid">
-        <article class="stat-card stat-card-primary">
-            <div class="stat-label">تعداد پروژه‌ها</div>
-            <div id="kpiProjects" class="stat-value">0</div>
-            <div class="stat-hint">پروژه‌های ثبت‌شده در سیستم</div>
-        </article>
-
-        <article class="stat-card">
-            <div class="stat-label">شرکت‌ها</div>
-            <div id="kpiCompanies" class="stat-value">0</div>
-            <div class="stat-hint">مشتریان و شرکت‌های فعال</div>
-        </article>
-
-        <article class="stat-card">
-            <div class="stat-label">سفارش‌ها</div>
-            <div id="kpiOrders" class="stat-value">0</div>
-            <div class="stat-hint">سفارش‌های آماده تخصیص</div>
-        </article>
-
-        <article class="stat-card">
-            <div class="stat-label">ناوگان</div>
-            <div id="kpiVehicles" class="stat-value">0</div>
-            <div class="stat-hint">وسایل نقلیه تعریف‌شده</div>
-        </article>
-    </section>
-
-    <section class="dashboard-grid">
-        <article class="panel-card">
-            <div class="panel-header">
-                <h3>جریان کاری</h3>
+        <div class="dashboard-workflow">
+            <div class="workflow-step-card is-done">
+                <strong>1. Data Intake</strong>
+                <small>ثبت و دریافت داده‌های پایه</small>
             </div>
-            <div class="workflow-list">
-                <div class="workflow-item">
-                    <span class="workflow-step">1</span>
-                    <div>
-                        <strong>ایجاد پروژه</strong>
-                        <p>تعریف پروژه توزیع و سناریوی اجرایی</p>
-                    </div>
-                </div>
-                <div class="workflow-item">
-                    <span class="workflow-step">2</span>
-                    <div>
-                        <strong>آپلود سفارش‌ها</strong>
-                        <p>بارگذاری فایل سفارش‌ها و داده‌های اولیه</p>
-                    </div>
-                </div>
-                <div class="workflow-item">
-                    <span class="workflow-step">3</span>
-                    <div>
-                        <strong>اجرای توزیع</strong>
-                        <p>اجرای سناریوی تخصیص به‌صورت Mock</p>
-                    </div>
-                </div>
-                <div class="workflow-item">
-                    <span class="workflow-step">4</span>
-                    <div>
-                        <strong>مشاهده نتیجه</strong>
-                        <p>بررسی خروجی‌ها و انتقال به نقشه</p>
-                    </div>
-                </div>
+            <div class="workflow-step-card is-done">
+                <strong>2. Profiling</strong>
+                <small>شناخت ساختار و کیفیت اولیه</small>
             </div>
-        </article>
+            <div class="workflow-step-card is-active">
+                <strong>3. Validation</strong>
+                <small>ساختاری، معنایی، ارتباطی، تکرار و Geo</small>
+            </div>
+            <div class="workflow-step-card">
+                <strong>4. Audit</strong>
+                <small>تفکیک یافته‌ها و severity</small>
+            </div>
+            <div class="workflow-step-card">
+                <strong>5. Scoring</strong>
+                <small>محاسبه امتیاز کیفیت و اعتماد</small>
+            </div>
+            <div class="workflow-step-card">
+                <strong>6. Readiness</strong>
+                <small>آمادگی برای تصمیم و اجرا</small>
+            </div>
+        </div>
+    </article>
 
-        <article class="panel-card">
-            <div class="panel-header">
-                <h3>وضعیت سیستم</h3>
+    <article class="workspace-panel">
+        <div class="dip-section-head">
+            <div>
+                <h2>Next Best Actions</h2>
+                <p>اولویت‌های تصمیمی فعلی</p>
             </div>
+        </div>
 
-            <div class="status-list">
-                <div class="status-item">
-                    <span class="status-dot status-ok"></span>
-                    <span>UI Dashboard آماده است</span>
-                </div>
-                <div class="status-item">
-                    <span class="status-dot status-ok"></span>
-                    <span>Mock Distribution فعال است</span>
-                </div>
-                <div class="status-item">
-                    <span class="status-dot status-warn"></span>
-                    <span>اتصال واقعی به Engine در Sprint بعدی</span>
-                </div>
-                <div class="status-item">
-                    <span class="status-dot status-warn"></span>
-                    <span>اتصال واقعی به Fimap در Sprint بعدی</span>
-                </div>
-            </div>
+        <ul class="dashboard-action-list">
+            <li>مرور پروژه‌های Draft و تکمیل intake اولیه</li>
+            <li>افزایش completeness برای حوزه Orders و Stores</li>
+            <li>تکمیل داده‌های Geo برای بهبود routeability</li>
+            <li>بازبینی یافته‌های duplicate و relational consistency</li>
+            <li>ورود پروژه‌های آماده به مرحله readiness review</li>
+        </ul>
+    </article>
+</section>
 
-            <div class="quick-links">
-                <a class="quick-link" href="/projects">مشاهده پروژه‌ها</a>
-                <a class="quick-link" href="/upload">آپلود داده</a>
-                <a class="quick-link" href="/results">مشاهده نتایج</a>
+<section class="dashboard-grid">
+    <article class="workspace-panel">
+        <div class="dip-section-head">
+            <div>
+                <h2>Validation Signals</h2>
+                <p>مرور سطح بالا از نشانه‌های کیفیت</p>
             </div>
-        </article>
-    </section>
+        </div>
+
+        <div class="signal-grid">
+            <div class="signal-card">
+                <span>Structural</span>
+                <strong>Healthy</strong>
+            </div>
+            <div class="signal-card">
+                <span>Semantic</span>
+                <strong>Review</strong>
+            </div>
+            <div class="signal-card">
+                <span>Relational</span>
+                <strong>Stable</strong>
+            </div>
+            <div class="signal-card">
+                <span>Duplicate</span>
+                <strong>Watch</strong>
+            </div>
+            <div class="signal-card">
+                <span>Geo</span>
+                <strong>Improve</strong>
+            </div>
+            <div class="signal-card">
+                <span>Readiness</span>
+                <strong>Progressing</strong>
+            </div>
+        </div>
+    </article>
+
+    <article class="workspace-panel">
+        <div class="dip-section-head">
+            <div>
+                <h2>Decision Gate</h2>
+                <p>شرط ورود به مرحله توزیع</p>
+            </div>
+        </div>
+
+        <div class="dip-note-box">
+            <strong>قاعده اجرایی:</strong>
+            فقط پروژه‌ای باید به مرحله اجرای Distribution وارد شود که
+            validation، audit، completeness و geo adequacy آن به سطح قابل قبول رسیده
+            و readiness آن برای تصمیم تأیید شده باشد.
+        </div>
+    </article>
 </section>
 {% endblock %}

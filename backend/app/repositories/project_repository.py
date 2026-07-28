@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from sqlalchemy.orm import Session
 
@@ -8,6 +8,10 @@ from app.models.project import Project, ProjectStatus
 class ProjectRepository:
     def __init__(self, db: Session):
         self.db = db
+
+    # --------------------------------------------------
+    # Create
+    # --------------------------------------------------
 
     def create(self, project: Project) -> Project:
         try:
@@ -19,7 +23,11 @@ class ProjectRepository:
             self.db.rollback()
             raise
 
-    def get_by_id(self, project_id: str) -> Optional[Project]:
+    # --------------------------------------------------
+    # Read
+    # --------------------------------------------------
+
+    def get_by_id(self, project_id: int) -> Optional[Project]:
         return (
             self.db.query(Project)
             .filter(Project.id == project_id)
@@ -33,7 +41,7 @@ class ProjectRepository:
             .all()
         )
 
-    def get_by_company(self, company_id: str) -> List[Project]:
+    def get_by_company(self, company_id: int) -> List[Project]:
         return (
             self.db.query(Project)
             .filter(Project.company_id == company_id)
@@ -49,55 +57,9 @@ class ProjectRepository:
             .all()
         )
 
-    def update(self, project: Project) -> Project:
-        try:
-            self.db.commit()
-            self.db.refresh(project)
-            return project
-        except Exception:
-            self.db.rollback()
-            raise
-
-    def delete(self, project: Project) -> None:
-        try:
-            self.db.delete(project)
-            self.db.commit()
-        except Exception:
-            self.db.rollback()
-            raise
-
-    def exists(self, project_id: str) -> bool:
-        return (
-            self.db.query(Project)
-            .filter(Project.id == project_id)
-            .first()
-            is not None
-        )
-
-    def count(self) -> int:
-        return self.db.query(Project).count()
-
-    def count_by_company(self, company_id: int) -> int:
-        return (
-            self.db.query(Project)
-            .filter(Project.company_id == company_id)
-            .count()
-        )
-
-    def update_status(
-        self,
-        project: Project,
-        status: ProjectStatus,
-    ) -> Project:
-        project.status = status
-        return self.update(project)
-
-    def save(self, project: Project) -> Project:
-        return self.update(project)
-
     def get_by_name(
         self,
-        company_id: str,
+        company_id: int,
         name: str,
     ) -> Optional[Project]:
         return (
@@ -107,4 +69,99 @@ class ProjectRepository:
                 Project.name == name,
             )
             .first()
+        )
+
+    def get_by_company_and_name(
+        self,
+        company_id: int,
+        name: str,
+    ) -> Optional[Project]:
+        return self.get_by_name(company_id=company_id, name=name)
+
+    # --------------------------------------------------
+    # Update
+    # --------------------------------------------------
+
+    def update(
+        self,
+        project_or_id: Union[Project, int],
+        **kwargs,
+    ) -> Optional[Project]:
+        if isinstance(project_or_id, Project):
+            project = project_or_id
+        else:
+            project = self.get_by_id(project_or_id)
+            if project is None:
+                return None
+
+            for key, value in kwargs.items():
+                setattr(project, key, value)
+
+        try:
+            self.db.commit()
+            self.db.refresh(project)
+            return project
+        except Exception:
+            self.db.rollback()
+            raise
+
+    def update_status(
+        self,
+        project_or_id: Union[Project, int],
+        status: ProjectStatus,
+    ) -> Optional[Project]:
+        if isinstance(project_or_id, Project):
+            project = project_or_id
+        else:
+            project = self.get_by_id(project_or_id)
+            if project is None:
+                return None
+
+        project.status = status
+        return self.update(project)
+
+    def save(self, project: Project) -> Project:
+        updated = self.update(project)
+        if updated is None:
+            raise ValueError("Project not found.")
+        return updated
+
+    # --------------------------------------------------
+    # Delete
+    # --------------------------------------------------
+
+    def delete(
+        self,
+        project_or_id: Union[Project, int],
+    ) -> bool:
+        if isinstance(project_or_id, Project):
+            project = project_or_id
+        else:
+            project = self.get_by_id(project_or_id)
+            if project is None:
+                return False
+
+        try:
+            self.db.delete(project)
+            self.db.commit()
+            return True
+        except Exception:
+            self.db.rollback()
+            raise
+
+    # --------------------------------------------------
+    # Utility
+    # --------------------------------------------------
+
+    def exists(self, project_id: int) -> bool:
+        return self.get_by_id(project_id) is not None
+
+    def count(self) -> int:
+        return self.db.query(Project).count()
+
+    def count_by_company(self, company_id: int) -> int:
+        return (
+            self.db.query(Project)
+            .filter(Project.company_id == company_id)
+            .count()
         )

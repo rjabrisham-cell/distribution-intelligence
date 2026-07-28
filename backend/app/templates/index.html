@@ -1,33 +1,57 @@
 {% extends "base.html" %}
 
-{% block title %}
-Distribution Intelligence
-{% endblock %}
+{% block title %}DIP | Landing{% endblock %}
 
 {% block content %}
+<section class="landing-hero">
+    <div class="landing-hero-copy">
+        <span class="dip-eyebrow">Validation-Centric + Geo-Aware + Decision-Ready</span>
+        <h1>سامانه هوشمندی توزیع برای تصمیم‌سازی قبل از اجرا</h1>
+        <p>
+            DIP قبل از اجرای توزیع، کیفیت داده، کفایت ساختاری، پوشش معنایی،
+            سازگاری ارتباطی، وضعیت تکرار، آمادگی جغرافیایی و readiness نهایی را
+            بررسی می‌کند تا تصمیم اجرایی بر پایه داده قابل اتکا باشد.
+        </p>
 
-<div class="container">
+        <div class="landing-actions">
+            <a href="/projects" class="btn btn-primary dip-btn-lg">ورود به پروژه‌ها</a>
+            <a href="/dashboard" class="btn btn-outline-secondary dip-btn-lg">مشاهده داشبورد تصمیم</a>
+        </div>
+    </div>
 
-    <h1>سامانه تحلیل هوشمند توزیع</h1>
+    <div class="landing-hero-panel">
+        <div class="landing-panel-card">
+            <span class="dip-kicker">Workflow</span>
+            <ol class="landing-workflow">
+                <li>Data Intake</li>
+                <li>Profiling</li>
+                <li>Validation</li>
+                <li>Audit</li>
+                <li>Scoring</li>
+                <li>Readiness</li>
+                <li>Next Best Action</li>
+            </ol>
+        </div>
+    </div>
+</section>
 
-    <p>
+<section class="landing-grid">
+    <article class="dip-info-card">
+        <span class="dip-kicker">Validation</span>
+        <h3>اعتبارسنجی ساختاری و معنایی</h3>
+        <p>بررسی schema، فیلدهای ضروری، الگوهای مقداری و انسجام معنایی داده‌های ورودی.</p>
+    </article>
 
-        کاهش هزینه‌های توزیع با استفاده از تحلیل داده، GIS و هوش مصنوعی
+    <article class="dip-info-card">
+        <span class="dip-kicker">Geo</span>
+        <h3>هوشمندی جغرافیایی</h3>
+        <p>تحلیل کیفیت آدرس، قابلیت ژئوکد، امکان routeability و کفایت پوشش مکانی.</p>
+    </article>
 
-    </p>
-
-    <br>
-
-    <a href="/request">
-
-        <button>
-
-            ثبت درخواست تحلیل
-
-        </button>
-
-    </a>
-
-</div>
-
+    <article class="dip-info-card">
+        <span class="dip-kicker">Decision</span>
+        <h3>آمادگی برای تصمیم اجرایی</h3>
+        <p>محاسبه readiness و پیشنهاد اقدام بعدی قبل از ورود به موتور توزیع.</p>
+    </article>
+</section>
 {% endblock %}

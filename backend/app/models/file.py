@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from sqlalchemy import BigInteger, Integer, String
 from sqlalchemy.orm import (
     Mapped,
@@ -8,8 +12,16 @@ from sqlalchemy.orm import (
 from app.models.base import BaseModel
 
 
+if TYPE_CHECKING:
+    from app.models.import_batch import ImportBatch
+
+
 class File(BaseModel):
     __tablename__ = "files"
+
+    # ==========================================================
+    # Entity Reference
+    # ==========================================================
 
     entity_type: Mapped[str] = mapped_column(
         String(50),
@@ -23,11 +35,19 @@ class File(BaseModel):
         index=True,
     )
 
+    # ==========================================================
+    # File Classification
+    # ==========================================================
+
     category: Mapped[str] = mapped_column(
         String(100),
         nullable=False,
         index=True,
     )
+
+    # ==========================================================
+    # File Identity
+    # ==========================================================
 
     original_name: Mapped[str] = mapped_column(
         String(500),
@@ -45,6 +65,10 @@ class File(BaseModel):
         nullable=False,
     )
 
+    # ==========================================================
+    # File Metadata
+    # ==========================================================
+
     content_type: Mapped[str] = mapped_column(
         String(100),
         nullable=False,
@@ -55,9 +79,9 @@ class File(BaseModel):
         nullable=False,
     )
 
-    # -------------------------------------------------------
-    # 🆕 Uploaded By
-    # -------------------------------------------------------
+    # ==========================================================
+    # Uploaded By
+    # ==========================================================
 
     uploaded_by: Mapped[int | None] = mapped_column(
         Integer,
@@ -66,9 +90,13 @@ class File(BaseModel):
         doc="Account ID of the user who uploaded this file.",
     )
 
-    # -------------------------------------------------------
+    # ==========================================================
     # Relationships
-    # -------------------------------------------------------
+    # ==========================================================
+
+    # ----------------------------------------------------------
+    # Import Batches
+    # ----------------------------------------------------------
 
     import_batches: Mapped[list["ImportBatch"]] = relationship(
         "ImportBatch",
@@ -76,9 +104,9 @@ class File(BaseModel):
         cascade="all, delete-orphan",
     )
 
-    # -------------------------------------------------------
+    # ==========================================================
     # Helpers
-    # -------------------------------------------------------
+    # ==========================================================
 
     def __repr__(self) -> str:
         return (
@@ -100,6 +128,7 @@ class File(BaseModel):
             if size < 1024:
                 if unit == "B":
                     return f"{int(size)} {unit}"
+
                 return f"{size:.1f} {unit}"
 
             size /= 1024

@@ -1,60 +1,103 @@
 {% extends "base.html" %}
 
-{% block title %}پروژه جدید{% endblock %}
+{% block title %}New Project | DIP{% endblock %}
 
 {% block content %}
-<div class="container">
-    <h1>ایجاد پروژه جدید</h1>
+<section class="page-hero page-hero-compact">
+    <div>
+        <span class="dip-eyebrow">Project Intake Start</span>
+        <h1>ایجاد پروژه جدید</h1>
+        <p>
+            این صفحه نقطه شروع intake است. در این فاز فقط داده‌های پایه پروژه ثبت می‌شوند
+            تا Workspace پروژه ساخته شود و سپس validation، audit، completeness، geo و readiness
+            در مراحل بعدی روی آن اعمال شوند.
+        </p>
+    </div>
+</section>
 
-    <form method="POST" action="/projects">
-        <div class="form-group">
-            <label for="mobile">شماره موبایل</label>
-            <input
-                type="text"
-                id="mobile"
-                name="mobile"
-                class="form-control"
-                required
-                placeholder="مثال: 09123456789"
-            >
+<section class="project-form-layout">
+    <article class="project-form-card">
+        <div class="dip-section-head">
+            <div>
+                <h2>اطلاعات پایه پروژه</h2>
+                <p>فیلدهای این فرم با backend فعلی سازگار نگه داشته شده‌اند.</p>
+            </div>
         </div>
 
-        <div class="form-group">
-            <label for="company_name">نام شرکت</label>
-            <input
-                type="text"
-                id="company_name"
-                name="company_name"
-                class="form-control"
-                required
-                placeholder="نام شرکت خود را وارد کنید"
-            >
-        </div>
+        <form method="POST" action="/projects" class="dip-form-grid">
+            <div class="dip-field">
+                <label for="mobile">شماره موبایل</label>
+                <input
+                    type="text"
+                    id="mobile"
+                    name="mobile"
+                    class="form-control"
+                    required
+                    placeholder="09123456789"
+                >
+            </div>
 
-        <div class="form-group">
-            <label for="project_name">نام پروژه</label>
-            <input
-                type="text"
-                id="project_name"
-                name="project_name"
-                class="form-control"
-                required
-                placeholder="نام پروژه را وارد کنید"
-            >
-        </div>
+            <div class="dip-field">
+                <label for="company_name">نام شرکت</label>
+                <input
+                    type="text"
+                    id="company_name"
+                    name="company_name"
+                    class="form-control"
+                    required
+                    placeholder="نام شرکت"
+                >
+            </div>
 
-        <div class="form-group">
-            <label for="description">توضیحات</label>
-            <textarea
-                id="description"
-                name="description"
-                class="form-control"
-                rows="4"
-                placeholder="توضیحات پروژه (اختیاری)"
-            ></textarea>
-        </div>
+            <div class="dip-field dip-field-full">
+                <label for="project_name">نام پروژه</label>
+                <input
+                    type="text"
+                    id="project_name"
+                    name="project_name"
+                    class="form-control"
+                    required
+                    placeholder="مثلاً ارزیابی آمادگی داده توزیع منطقه غرب"
+                >
+            </div>
 
-        <button type="submit" class="btn btn-primary">ایجاد پروژه</button>
-    </form>
-</div>
+            <div class="dip-field dip-field-full">
+                <label for="description">توضیحات</label>
+                <textarea
+                    id="description"
+                    name="description"
+                    class="form-control"
+                    rows="5"
+                    placeholder="شرح کوتاه از هدف پروژه، دامنه داده و سناریوی موردنظر"
+                ></textarea>
+            </div>
+
+            <div class="dip-form-actions">
+                <button type="submit" class="btn btn-primary dip-btn-lg">ایجاد پروژه</button>
+                <a href="/projects" class="btn btn-outline-secondary dip-btn-lg">بازگشت به پروژه‌ها</a>
+            </div>
+        </form>
+    </article>
+
+    <aside class="project-side-card">
+        <span class="dip-kicker">Next Steps</span>
+        <h3>بعد از ایجاد پروژه چه می‌شود؟</h3>
+
+        <ol class="project-step-list">
+            <li>ساخت Project Workspace</li>
+            <li>آپلود فایل‌های ورودی</li>
+            <li>Profiling و Validation</li>
+            <li>Audit و Completeness Review</li>
+            <li>Geo Assessment</li>
+            <li>Readiness Scoring</li>
+            <li>Decision Dashboard</li>
+        </ol>
+
+        <div class="dip-note-box">
+            <strong>نکته:</strong>
+            در این فاز عمداً فیلدهای backend تغییر نکرده‌اند تا بدون دست‌زدن به service/repository،
+            UX جدید روی قرارداد فعلی سوار شود.
+        </div>
+    </aside>
+</section>
 {% endblock %}

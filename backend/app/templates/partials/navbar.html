@@ -1,16 +1,28 @@
-<header class="topbar">
-    <div class="topbar-right">
-        <h1 class="page-title">داشبورد توزیع</h1>
-        <p class="page-subtitle">نمای کلی وضعیت پروژه، سفارش‌ها و اجرای سناریوهای توزیع</p>
+<header class="dip-topbar">
+    <div class="dip-topbar-left">
+        <div class="dip-context-chip">
+            <span class="dip-context-label">Company</span>
+            <strong>{{ company_name }}</strong>
+        </div>
+
+        <div class="dip-context-chip">
+            <span class="dip-context-label">Project</span>
+            <strong>{{ project_name }}</strong>
+        </div>
+
+        <div class="dip-context-chip">
+            <span class="dip-context-label">Status</span>
+            <strong>{{ project_status }}</strong>
+        </div>
     </div>
 
-    <div class="topbar-left">
-        <div class="topbar-user">
-            <div class="topbar-user-avatar">A</div>
-            <div class="topbar-user-meta">
-                <strong>Admin User</strong>
-                <span>Operations Manager</span>
+    <div class="dip-topbar-right">
+        <div class="dip-userbox">
+            <div class="dip-userbox-meta">
+                <strong>{{ user_name }}</strong>
+                <small>{{ user_role }}</small>
             </div>
+            <div class="dip-avatar">{{ user_initial }}</div>
         </div>
     </div>
 </header>

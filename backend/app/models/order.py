@@ -1,8 +1,40 @@
+"""
+Order Model — Enterprise Data Model v4.0
+
+Represents an order imported from an Excel file
+within a specific ImportBatch and Project.
+
+Architecture
+------------
+
+Company
+    |
+    +---- Project
+            |
+            +---- Order
+                    |
+                    +---- ImportBatch
+
+An Order belongs to exactly one Project.
+
+An Order also belongs to exactly one ImportBatch.
+
+Project owns the operational boundary of Orders.
+
+ImportBatch represents the source/import operation.
+
+Deleting a Project may delete its Orders depending on
+the configured database relationship policy.
+
+Deleting an ImportBatch deletes its imported Orders
+because Order.import_batch_id uses ON DELETE CASCADE.
+"""
+
 from __future__ import annotations
 
 from datetime import datetime
 from decimal import Decimal
-from typing import Optional
+from typing import TYPE_CHECKING
 
 from sqlalchemy import (
     DateTime,
@@ -14,36 +46,90 @@ from sqlalchemy import (
     String,
     UniqueConstraint,
 )
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import (
+    Mapped,
+    mapped_column,
+    relationship,
+)
 
 from app.models.base import BaseModel
 
 
+if TYPE_CHECKING:
+    from app.models.import_batch import ImportBatch
+    from app.models.project import Project
+
+
 class Order(BaseModel):
     """
-    سفارش واردشده از فایل Excel در هر Import Batch.
+    Order imported from an Excel file.
 
-    هر ردیف از فایل Excel به یک رکورد Order تبدیل می‌شود.
+    Each Excel row becomes one Order record.
+
+    An Order belongs to:
+
+        - exactly one Project
+        - exactly one ImportBatch
+
+    The Project defines the business/operational workspace.
+
+    The ImportBatch defines the source import operation.
     """
 
     __tablename__ = "orders"
 
-    # ── ارتباط با Import Batch ──────────────────────────────
-    import_batch_id: Mapped[int] = mapped_column(
+    # ==========================================================
+    # Identity
+    # ==========================================================
+
+    id: Mapped[int] = mapped_column(
         Integer,
-        ForeignKey("import_batches.id", ondelete="CASCADE"),
+        primary_key=True,
+        autoincrement=True,
+        index=True,
+    )
+
+    # ==========================================================
+    # Project Ownership
+    # ==========================================================
+
+    project_id: Mapped[int] = mapped_column(
+        ForeignKey(
+            "projects.id",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+        index=True,
+        comment="Project مالک این Order",
+    )
+
+    # ==========================================================
+    # Import Batch
+    # ==========================================================
+
+    import_batch_id: Mapped[int] = mapped_column(
+        ForeignKey(
+            "import_batches.id",
+            ondelete="CASCADE",
+        ),
         nullable=False,
         index=True,
     )
 
-    # ── کلید تجاری سفارش ────────────────────────────────────
+    # ==========================================================
+    # Business Order Identity
+    # ==========================================================
+
     order_code: Mapped[str] = mapped_column(
         String(200),
         nullable=False,
         index=True,
     )
 
-    # ── اطلاعات فروشگاه (Store) ─────────────────────────────
+    # ==========================================================
+    # Store Information
+    # ==========================================================
+
     store_code: Mapped[str | None] = mapped_column(
         String(100),
         nullable=True,
@@ -55,13 +141,19 @@ class Order(BaseModel):
         nullable=True,
     )
 
-    # ── آدرس مقصد ───────────────────────────────────────────
+    # ==========================================================
+    # Destination Address
+    # ==========================================================
+
     address: Mapped[str | None] = mapped_column(
         String(2000),
         nullable=True,
     )
 
-    # ── مختصات جغرافیایی ────────────────────────────────────
+    # ==========================================================
+    # Geographic Coordinates
+    # ==========================================================
+
     latitude: Mapped[Decimal | None] = mapped_column(
         Numeric(10, 7),
         nullable=True,
@@ -72,7 +164,10 @@ class Order(BaseModel):
         nullable=True,
     )
 
-    # ── وزن و حجم ───────────────────────────────────────────
+    # ==========================================================
+    # Weight and Volume
+    # ==========================================================
+
     weight_kg: Mapped[float | None] = mapped_column(
         Float,
         nullable=True,
@@ -83,7 +178,10 @@ class Order(BaseModel):
         nullable=True,
     )
 
-    # ── اطلاعات زمانی تحویل ─────────────────────────────────
+    # ==========================================================
+    # Delivery Date and Time
+    # ==========================================================
+
     delivery_date: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True),
         nullable=True,
@@ -99,7 +197,10 @@ class Order(BaseModel):
         nullable=True,
     )
 
-    # ── وضعیت پردازش ────────────────────────────────────────
+    # ==========================================================
+    # Processing Status
+    # ==========================================================
+
     status: Mapped[str] = mapped_column(
         String(30),
         nullable=False,
@@ -107,19 +208,28 @@ class Order(BaseModel):
         index=True,
     )
 
-    # ── داده خام ردیف Excel (برای اشکال‌زدایی) ─────────────
+    # ==========================================================
+    # Raw Excel Row Data
+    # ==========================================================
+
     raw_data: Mapped[dict | None] = mapped_column(
         JSON,
         nullable=True,
     )
 
-    # ── یادداشت خطا ─────────────────────────────────────────
+    # ==========================================================
+    # Error Information
+    # ==========================================================
+
     error_note: Mapped[str | None] = mapped_column(
         String(1000),
         nullable=True,
     )
 
-    # ── محدودیت یکتایی ──────────────────────────────────────
+    # ==========================================================
+    # Constraints
+    # ==========================================================
+
     __table_args__ = (
         UniqueConstraint(
             "import_batch_id",
@@ -128,30 +238,73 @@ class Order(BaseModel):
         ),
     )
 
-    # ── Relationships ────────────────────────────────────────
+    # ==========================================================
+    # Relationships
+    # ==========================================================
+
+    # ----------------------------------------------------------
+    # Project
+    # ----------------------------------------------------------
+
+    project: Mapped["Project"] = relationship(
+        "Project",
+        back_populates="orders",
+        lazy="selectin",
+    )
+
+    # ----------------------------------------------------------
+    # Import Batch
+    # ----------------------------------------------------------
+
     import_batch: Mapped["ImportBatch"] = relationship(
         "ImportBatch",
         back_populates="orders",
+        lazy="selectin",
     )
 
-    # ── Properties ──────────────────────────────────────────
+    # ==========================================================
+    # Properties
+    # ==========================================================
 
     @property
     def has_coordinates(self) -> bool:
-        """آیا مختصات دارد (حتی اگر صفر باشد)."""
-        return self.latitude is not None and self.longitude is not None
+        """
+        Returns True when latitude and longitude exist.
 
-    @property
-    def is_geocoded(self) -> bool:
-        """آیا مختصات معتبر دارد (نه صفر مطلق)."""
+        Coordinates may technically be zero.
+        """
+
         return (
             self.latitude is not None
             and self.longitude is not None
-            and not (self.latitude == 0 and self.longitude == 0)
         )
+
+    @property
+    def is_geocoded(self) -> bool:
+        """
+        Returns True when valid non-zero coordinates exist.
+        """
+
+        return (
+            self.latitude is not None
+            and self.longitude is not None
+            and not (
+                self.latitude == 0
+                and self.longitude == 0
+            )
+        )
+
+    # ==========================================================
+    # Representation
+    # ==========================================================
 
     def __repr__(self) -> str:
         return (
-            f"<Order(id={self.id}, code={self.order_code!r}, "
-            f"status={self.status!r})>"
+            f"<Order("
+            f"id={self.id}, "
+            f"project_id={self.project_id}, "
+            f"import_batch_id={self.import_batch_id}, "
+            f"order_code={self.order_code!r}, "
+            f"status={self.status!r}"
+            f")>"
         )

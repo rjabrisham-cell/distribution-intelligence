@@ -1,165 +1,377 @@
 """
-Store model for Data Import Engine.
+Store Model — Enterprise Data Model v3.1
 
-Represents a store (customer/shop) imported from external sources.
-In the future B2B2C architecture, this entity represents the "Store" layer
-between Company and Consumer.
+Store = Canonical Physical Place
+
+Architecture
+------------
+
+Store represents ONE canonical real-world physical location.
+
+Rules
+-----
+
+* Store is Company-independent.
+* Store is the canonical geographic identity.
+* Company-specific business data belongs to CompanyStore.
+* CompanyStore may optionally link to one Store through master_store_id.
+* A Store may be referenced by many CompanyStore records.
+* Store does not belong directly to a Project.
+* Project usage is handled through CompanyStore -> ProjectCompanyStore.
+
+AI Matching
+-----------
+
+AI Matching resolves:
+
+    CompanyStore -> Store
+
+The relationship is:
+
+    Company
+        |
+        | 1:M
+        v
+    CompanyStore
+        |
+        | M:1
+        v
+    Store
+
+Store is the Enterprise Truth Layer for the physical location.
+
+Location History
+----------------
+
+StoreLocation contains historical or validated geographic coordinates.
+
+The Store.latitude and Store.longitude fields represent the
+current canonical coordinates used for fast access and search.
 """
 
 from __future__ import annotations
 
-from decimal import Decimal
-from typing import Optional
+from typing import TYPE_CHECKING
 
 from sqlalchemy import (
-    ForeignKey,
+    Boolean,
     Integer,
-    JSON,
     Numeric,
     String,
-    UniqueConstraint,
+    Text,
 )
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import (
+    Mapped,
+    mapped_column,
+    relationship,
+)
 
 from app.models.base import BaseModel
 
 
+if TYPE_CHECKING:
+    from app.models.address_candidate import AddressCandidate
+    from app.models.company_store import CompanyStore
+    from app.models.store_location import StoreLocation
+
+
 class Store(BaseModel):
     """
-    فروشگاه (Store) واردشده از فایل Excel در هر Import Batch.
+    Canonical physical location.
 
-    در معماری B2B2C آینده، این موجودیت لایهٔ «فروشگاه» بین
-    «شرکت» و «مصرف‌کنندهٔ نهایی» را تشکیل می‌دهد.
+    Store is independent of Company and Project.
+
+    A CompanyStore may be linked to this Store as its
+    canonical/master physical location.
     """
 
     __tablename__ = "stores"
 
-    # ── ارتباط با Import Batch ──────────────────────────────
-    import_batch_id: Mapped[int] = mapped_column(
+    # ==========================================================
+    # Identity
+    # ==========================================================
+
+    id: Mapped[int] = mapped_column(
         Integer,
-        ForeignKey("import_batches.id", ondelete="CASCADE"),
+        primary_key=True,
+        autoincrement=True,
+        index=True,
+    )
+
+    # ==========================================================
+    # Canonical Identity
+    # ==========================================================
+
+    canonical_name: Mapped[str] = mapped_column(
+        String(255),
         nullable=False,
         index=True,
     )
 
-    # ── شناسه فروشگاه ───────────────────────────────────────
-    code: Mapped[str] = mapped_column(
-        String(50),
-        nullable=False,
-        index=True,
-    )
-
-    # ── اطلاعات هویتی ───────────────────────────────────────
-    name: Mapped[str | None] = mapped_column(
-        String(200),
+    canonical_phone: Mapped[str | None] = mapped_column(
+        String(20),
         nullable=True,
     )
 
-    # ── اطلاعات تماس ────────────────────────────────────────
-    phone: Mapped[str | None] = mapped_column(
+    canonical_category: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
+    )
+
+    shop_type: Mapped[str | None] = mapped_column(
         String(50),
         nullable=True,
-        index=True,
     )
+
+    # ==========================================================
+    # Canonical Address
+    # ==========================================================
 
     address: Mapped[str | None] = mapped_column(
-        String(2000),
+        Text,
         nullable=True,
     )
 
-    # ── مختصات جغرافیایی ────────────────────────────────────
-    latitude: Mapped[Decimal | None] = mapped_column(
+    postal_code: Mapped[str | None] = mapped_column(
+        String(10),
+        nullable=True,
+    )
+
+    plaque: Mapped[str | None] = mapped_column(
+        String(20),
+        nullable=True,
+    )
+
+    unit: Mapped[str | None] = mapped_column(
+        String(20),
+        nullable=True,
+    )
+
+    floor: Mapped[str | None] = mapped_column(
+        String(20),
+        nullable=True,
+    )
+
+    # ==========================================================
+    # Administrative Divisions
+    # ==========================================================
+
+    province_id: Mapped[int | None] = mapped_column(
+        Integer,
+        index=True,
+        nullable=True,
+    )
+
+    county_id: Mapped[int | None] = mapped_column(
+        Integer,
+        nullable=True,
+    )
+
+    city_id: Mapped[int | None] = mapped_column(
+        Integer,
+        index=True,
+        nullable=True,
+    )
+
+    district_id: Mapped[int | None] = mapped_column(
+        Integer,
+        nullable=True,
+    )
+
+    neighborhood_id: Mapped[int | None] = mapped_column(
+        Integer,
+        nullable=True,
+    )
+
+    village_id: Mapped[int | None] = mapped_column(
+        Integer,
+        nullable=True,
+    )
+
+    # ==========================================================
+    # Denormalized Administrative Names
+    # ==========================================================
+
+    province_name: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
+    )
+
+    county_name: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
+    )
+
+    city_name: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
+    )
+
+    district_name: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
+    )
+
+    neighborhood_name: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
+    )
+
+    village_name: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
+    )
+
+    # ==========================================================
+    # Current Canonical Coordinates
+    #
+    # Authoritative location history:
+    #     StoreLocation
+    #
+    # These fields store the current canonical coordinates
+    # for fast access and search.
+    # ==========================================================
+
+    latitude: Mapped[float | None] = mapped_column(
         Numeric(10, 7),
         nullable=True,
     )
 
-    longitude: Mapped[Decimal | None] = mapped_column(
+    longitude: Mapped[float | None] = mapped_column(
         Numeric(10, 7),
         nullable=True,
     )
 
-    # ── دسته‌بندی ───────────────────────────────────────────
-    category: Mapped[str | None] = mapped_column(
+    # ==========================================================
+    # AI Matching
+    # ==========================================================
+
+    confidence_score: Mapped[float | None] = mapped_column(
+        Numeric(5, 2),
+        nullable=True,
+    )
+
+    matching_status: Mapped[str | None] = mapped_column(
+        String(20),
+        default="PENDING",
+        nullable=True,
+        index=True,
+    )
+
+    # Possible values:
+    #
+    # PENDING
+    # MATCHED
+    # CONFLICT
+    # REVIEW
+    # VERIFIED
+
+    master_source: Mapped[str | None] = mapped_column(
         String(50),
         nullable=True,
     )
 
-    # ── اولویت ──────────────────────────────────────────────
-    priority: Mapped[int] = mapped_column(
-        Integer,
-        nullable=False,
-        default=0,
-    )
+    # ==========================================================
+    # Fimap Integration
+    # ==========================================================
 
-    # ── وضعیت ───────────────────────────────────────────────
-    status: Mapped[str] = mapped_column(
-        String(30),
-        nullable=False,
-        default="active",
+    fimap_token: Mapped[str | None] = mapped_column(
+        String(255),
+        nullable=True,
         index=True,
     )
 
-    # ── زمان تخمینی سرویس (دقیقه) ──────────────────────────
-    service_time_min: Mapped[int | None] = mapped_column(
-        Integer,
-        nullable=True,
+    # ==========================================================
+    # Status
+    # ==========================================================
+
+    is_active: Mapped[bool] = mapped_column(
+        Boolean,
+        default=True,
+        nullable=False,
+        index=True,
     )
 
-    # ── داده خام ردیف Excel (برای اشکال‌زدایی) ─────────────
-    raw_data: Mapped[dict | None] = mapped_column(
-        JSON,
-        nullable=True,
+    # ==========================================================
+    # Relationships
+    # ==========================================================
+
+    # ----------------------------------------------------------
+    # CompanyStore References
+    #
+    # One Store can be referenced by many CompanyStores.
+    #
+    # IMPORTANT:
+    #
+    # This matches:
+    #
+    # CompanyStore.master_store
+    #
+    # through:
+    #
+    # back_populates="master_store"
+    # ----------------------------------------------------------
+
+    company_stores: Mapped[
+        list["CompanyStore"]
+    ] = relationship(
+        "CompanyStore",
+        back_populates="master_store",
+        foreign_keys="CompanyStore.master_store_id",
+        lazy="selectin",
     )
 
-    # ── یادداشت خطا ─────────────────────────────────────────
-    error_note: Mapped[str | None] = mapped_column(
-        String(1000),
-        nullable=True,
+    # ----------------------------------------------------------
+    # Store Location History
+    # ----------------------------------------------------------
+
+    store_locations: Mapped[
+        list["StoreLocation"]
+    ] = relationship(
+        "StoreLocation",
+        back_populates="store",
+        lazy="selectin",
+        cascade="all, delete-orphan",
     )
 
-    # ── محدودیت یکتایی ──────────────────────────────────────
-    __table_args__ = (
-        UniqueConstraint(
-            "import_batch_id",
-            "code",
-            name="uq_stores_batch_code",
-        ),
+    # ----------------------------------------------------------
+    # Address Candidates
+    # ----------------------------------------------------------
+
+    address_candidates: Mapped[
+        list["AddressCandidate"]
+    ] = relationship(
+        "AddressCandidate",
+        back_populates="store",
+        lazy="selectin",
+        cascade="all, delete-orphan",
     )
 
-    # ── Relationships ────────────────────────────────────────
-    import_batch: Mapped["ImportBatch"] = relationship(
-        "ImportBatch",
-        back_populates="stores",
-    )
-
-    # ── Properties ──────────────────────────────────────────
+    # ==========================================================
+    # Properties
+    # ==========================================================
 
     @property
     def has_coordinates(self) -> bool:
-        """آیا مختصات ثبت شده (حتی اگر صفر باشد)."""
-        return self.latitude is not None and self.longitude is not None
+        """
+        Returns True when both canonical coordinates exist.
+        """
 
-    @property
-    def is_geocoded(self) -> bool:
-        """آیا مختصات معتبر دارد (نه صفر مطلق)."""
         return (
             self.latitude is not None
             and self.longitude is not None
-            and not (self.latitude == 0 and self.longitude == 0)
         )
 
-    @property
-    def is_vip(self) -> bool:
-        """آیا فروشگاه VIP است."""
-        return self.category is not None and self.category.upper() == "VIP"
-
-    @property
-    def is_active(self) -> bool:
-        """آیا فروشگاه فعال است."""
-        return self.status == "active"
+    # ==========================================================
+    # Representation
+    # ==========================================================
 
     def __repr__(self) -> str:
         return (
-            f"<Store(id={self.id}, code={self.code!r}, "
-            f"name={self.name!r})>"
+            f"<Store("
+            f"id={self.id}, "
+            f"name={self.canonical_name!r}, "
+            f"city={self.city_name!r}, "
+            f"active={self.is_active}"
+            f")>"
         )

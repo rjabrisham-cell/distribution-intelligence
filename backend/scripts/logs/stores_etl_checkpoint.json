@@ -1,0 +1,12 @@
+{
+  "job_name": "stores_to_stores",
+  "source_table": "stores",
+  "target_table": "stores",
+  "last_id": 243013,
+  "total_read": 105714,
+  "total_inserted": 105714,
+  "total_failed": 0,
+  "total_batches": 106,
+  "updated_at": "2026-07-25T23:42:35.494489+00:00",
+  "mode": "resume"
+}

@@ -1,260 +1,130 @@
 {% extends "base.html" %}
 
-{% block title %}
-Projects
-{% endblock %}
+{% block title %}Projects | DIP{% endblock %}
 
 {% block content %}
-
-<div class="container-fluid">
-
-    <div class="d-flex justify-content-between align-items-center mb-4">
-
-        <div>
-            <h2 class="mb-1">
-                Projects
-            </h2>
-
-            <p class="text-muted mb-0">
-                Distribution Intelligence Projects
-            </p>
-        </div>
-
-        <div>
-
-            <a href="/projects/new"
-               class="btn btn-primary">
-
-                <i class="bi bi-plus-circle"></i>
-                New Project
-
-            </a>
-
-        </div>
-
+<section class="page-hero page-hero-compact">
+    <div>
+        <span class="dip-eyebrow">Projects Workspace</span>
+        <h1>پروژه‌ها</h1>
+        <p>
+            هر پروژه یک فضای کاری برای intake، validation، audit، geo assessment
+            و readiness review است؛ نه صرفاً یک رکورد CRUD.
+        </p>
     </div>
 
-    {% if projects %}
+    <div class="page-hero-actions">
+        <a href="/projects/new" class="btn btn-primary dip-btn-lg">ایجاد پروژه جدید</a>
+    </div>
+</section>
 
-    <div class="card shadow-sm">
+{% if projects %}
+<section class="dip-section">
+    <div class="dip-section-head">
+        <div>
+            <h2>فهرست پروژه‌ها</h2>
+            <p>پروژه‌ها بر اساس وضعیت آمادگی و گام بعدی مرور می‌شوند.</p>
+        </div>
+    </div>
 
-        <div class="card-body p-0">
-
-            <table class="table table-hover align-middle mb-0">
-
-                <thead class="table-light">
-
-                <tr>
-
-                    <th width="80">
-                        ID
-                    </th>
-
-                    <th>
-                        Project
-                    </th>
-
-                    <th>
-                        Company
-                    </th>
-
-                    <th width="180">
-                        Status
-                    </th>
-
-                    <th width="180">
-                        Created
-                    </th>
-
-                    <th width="220">
-                        Actions
-                    </th>
-
-                </tr>
-
+    <div class="dip-table-card">
+        <div class="table-responsive">
+            <table class="table dip-table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>پروژه</th>
+                        <th>شرکت</th>
+                        <th>وضعیت</th>
+                        <th>جریان</th>
+                        <th>آمادگی</th>
+                        <th>گام بعدی</th>
+                        <th class="text-start">اقدامات</th>
+                    </tr>
                 </thead>
-
                 <tbody>
-
                 {% for project in projects %}
+                    {% set status_value = project.status.value if project.status.value is defined else project.status %}
+                    {% set status_text = status_value|string %}
 
-                <tr>
+                    {% if status_text in ['draft', 'DRAFT'] %}
+                        {% set flow_label = 'شروع Intake' %}
+                        {% set readiness = 10 %}
+                        {% set next_action = 'تکمیل اطلاعات پایه پروژه' %}
+                        {% set badge_class = 'is-neutral' %}
+                    {% elif status_text in ['in_progress', 'IN_PROGRESS', 'running', 'RUNNING'] %}
+                        {% set flow_label = 'Validation فعال' %}
+                        {% set readiness = 55 %}
+                        {% set next_action = 'مرور validation و audit' %}
+                        {% set badge_class = 'is-warning' %}
+                    {% elif status_text in ['completed', 'COMPLETED'] %}
+                        {% set flow_label = 'Ready Review' %}
+                        {% set readiness = 100 %}
+                        {% set next_action = 'ورود به داشبورد تصمیم' %}
+                        {% set badge_class = 'is-success' %}
+                    {% else %}
+                        {% set flow_label = 'نیازمند بررسی' %}
+                        {% set readiness = 25 %}
+                        {% set next_action = 'بازبینی وضعیت پروژه' %}
+                        {% set badge_class = 'is-danger' %}
+                    {% endif %}
 
-                    <td>
+                    <tr>
+                        <td>
+                            <div class="dip-row-primary">
+                                <strong>{{ project.name }}</strong>
+                                <small>{{ project.description or 'بدون توضیح' }}</small>
+                            </div>
+                        </td>
 
-                        {{ project.id }}
+                        <td>
+                            {{ project.company.name if project.company else '—' }}
+                        </td>
 
-                    </td>
+                        <td>
+                            <span class="dip-badge {{ badge_class }}">{{ status_text }}</span>
+                        </td>
 
-                    <td>
+                        <td>
+                            <span class="dip-inline-note">{{ flow_label }}</span>
+                        </td>
 
-                        <strong>
+                        <td style="min-width: 160px;">
+                            <div class="dip-progress-with-value">
+                                <div class="dip-progress">
+                                    <span style="width: {{ readiness }}%;"></span>
+                                </div>
+                                <small>{{ readiness }}%</small>
+                            </div>
+                        </td>
 
-                            {{ project.name }}
+                        <td>
+                            <span class="dip-inline-note">{{ next_action }}</span>
+                        </td>
 
-                        </strong>
-
-                        {% if project.description %}
-
-                        <br>
-
-                        <small class="text-muted">
-
-                            {{ project.description }}
-
-                        </small>
-
-                        {% endif %}
-
-                    </td>
-
-                    <td>
-
-                        {% if project.company %}
-
-                            {{ project.company.name }}
-
-                        {% else %}
-
-                            -
-
-                        {% endif %}
-
-                    </td>
-
-                    <td>
-
-                        {% if project.status.value == "draft" %}
-
-                            <span class="badge bg-secondary">
-                                Draft
-                            </span>
-
-                        {% elif project.status.value == "in_progress" %}
-
-                            <span class="badge bg-warning text-dark">
-                                In Progress
-                            </span>
-
-                        {% elif project.status.value == "completed" %}
-
-                            <span class="badge bg-success">
-                                Completed
-                            </span>
-
-                        {% elif project.status.value == "cancelled" %}
-
-                            <span class="badge bg-danger">
-                                Cancelled
-                            </span>
-
-                        {% else %}
-
-                            <span class="badge bg-light text-dark">
-                                {{ project.status }}
-                            </span>
-
-                        {% endif %}
-
-                    </td>
-
-                    <td>
-
-                        {{ project.created_at.strftime('%Y-%m-%d %H:%M') }}
-
-                    </td>
-
-                    <td>
-
-                        <a href="/projects/{{ project.id }}"
-                           class="btn btn-sm btn-outline-primary">
-
-                            View
-
-                        </a>
-
-                        <a href="/projects/{{ project.id }}/edit"
-                           class="btn btn-sm btn-outline-secondary">
-
-                            Edit
-
-                        </a>
-
-                        <button
-                                class="btn btn-sm btn-outline-danger"
-                                onclick="deleteProject('{{ project.id }}')">
-
-                            Delete
-
-                        </button>
-
-                    </td>
-
-                </tr>
-
+                        <td class="text-start">
+                            <div class="dip-action-group">
+                                <a href="/projects/{{ project.id }}" class="btn btn-sm btn-primary">Workspace</a>
+                                <a href="/dashboard" class="btn btn-sm btn-outline-secondary">Dashboard</a>
+                            </div>
+                        </td>
+                    </tr>
                 {% endfor %}
-
                 </tbody>
-
             </table>
-
         </div>
-
     </div>
-
-    {% else %}
-
-    <div class="card">
-
-        <div class="card-body text-center py-5">
-
-            <h4>
-
-                No Projects Found
-
-            </h4>
-
-            <p class="text-muted">
-
-                Create your first Distribution Project.
-
-            </p>
-
-            <a href="/projects/new"
-               class="btn btn-primary">
-
-                Create Project
-
-            </a>
-
-        </div>
-
+</section>
+{% else %}
+<section class="dip-empty-state">
+    <div class="dip-empty-card">
+        <span class="dip-eyebrow">No Active Project</span>
+        <h2>هنوز پروژه‌ای ایجاد نشده است</h2>
+        <p>
+            برای شروع جریان Validation-first، ابتدا یک پروژه ایجاد کنید تا intake،
+            audit و readiness روی آن شکل بگیرد.
+        </p>
+        <a href="/projects/new" class="btn btn-primary dip-btn-lg">ایجاد اولین پروژه</a>
     </div>
-
-    {% endif %}
-
-</div>
-
-<script>
-
-async function deleteProject(projectId){
-
-    if(!confirm("Delete this project?")){
-        return;
-    }
-
-    const response = await fetch("/projects/" + projectId,{
-        method:"DELETE"
-    });
-
-    if(response.ok){
-        location.reload();
-    }else{
-        alert("Delete failed.");
-    }
-
-}
-
-</script>
-
+</section>
+{% endif %}
 {% endblock %}

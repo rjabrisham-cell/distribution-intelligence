@@ -1,91 +1,254 @@
 {% extends "base.html" %}
 
-{% block title %}پروژه: {{ project.name }}{% endblock %}
+{% block title %}Project Workspace | {{ project.name }}{% endblock %}
 
 {% block content %}
-<div class="container">
+{% set status_value = project.status.value if project.status.value is defined else project.status %}
+{% set status_text = status_value|string %}
 
-    <!-- ============================================ -->
-    <!-- Project Information                          -->
-    <!-- ============================================ -->
+{% if status_text in ['draft', 'DRAFT'] %}
+    {% set readiness = 15 %}
+    {% set readiness_label_local = 'شروع intake و بارگذاری داده' %}
+    {% set badge_class = 'is-neutral' %}
+{% elif status_text in ['in_progress', 'IN_PROGRESS', 'running', 'RUNNING'] %}
+    {% set readiness = 55 %}
+    {% set readiness_label_local = 'validation و audit در حال پیگیری' %}
+    {% set badge_class = 'is-warning' %}
+{% elif status_text in ['completed', 'COMPLETED'] %}
+    {% set readiness = 100 %}
+    {% set readiness_label_local = 'آماده مرور تصمیم' %}
+    {% set badge_class = 'is-success' %}
+{% else %}
+    {% set readiness = 25 %}
+    {% set readiness_label_local = 'نیازمند بررسی وضعیت' %}
+    {% set badge_class = 'is-danger' %}
+{% endif %}
 
-    <div class="card mb-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h4 class="mb-0">{{ project.name }}</h4>
-            <span class="badge bg-{% if project.status.value == 'draft' %}secondary{% elif project.status.value == 'in_progress' %}primary{% elif project.status.value == 'completed' %}success{% else %}danger{% endif %}">
-                {{ project.status.value }}
-            </span>
-        </div>
+{% set ns = namespace(orders=0, stores=0, fleet=0, drivers=0, gps=0, other=0) %}
+{% for file in files %}
+    {% if file.category == 'orders' %}
+        {% set ns.orders = ns.orders + 1 %}
+    {% elif file.category == 'stores' %}
+        {% set ns.stores = ns.stores + 1 %}
+    {% elif file.category == 'fleet' %}
+        {% set ns.fleet = ns.fleet + 1 %}
+    {% elif file.category == 'drivers' %}
+        {% set ns.drivers = ns.drivers + 1 %}
+    {% elif file.category == 'gps' %}
+        {% set ns.gps = ns.gps + 1 %}
+    {% else %}
+        {% set ns.other = ns.other + 1 %}
+    {% endif %}
+{% endfor %}
 
-        <div class="card-body">
-            <div class="row mb-2">
-                <div class="col-sm-3 fw-bold">شرکت:</div>
-                <div class="col-sm-9">{{ project.company.name }}</div>
-            </div>
+<section class="page-hero">
+    <div>
+        <span class="dip-eyebrow">Project Workspace</span>
+        <h1>{{ project.name }}</h1>
+        <p>
+            این صفحه فضای کاری پروژه برای intake، validation، audit، completeness،
+            geo review و readiness است.
+        </p>
 
-            <div class="row mb-2">
-                <div class="col-sm-3 fw-bold">توضیحات:</div>
-                <div class="col-sm-9">{{ project.description or "—" }}</div>
-            </div>
-
-            <div class="row mb-2">
-                <div class="col-sm-3 fw-bold">تاریخ ایجاد:</div>
-                <div class="col-sm-9">{{ project.created_at.strftime("%Y-%m-%d %H:%M") if project.created_at else "—" }}</div>
-            </div>
-
-            <div class="row mb-2">
-                <div class="col-sm-3 fw-bold">آخرین به‌روزرسانی:</div>
-                <div class="col-sm-9">{{ project.updated_at.strftime("%Y-%m-%d %H:%M") if project.updated_at else "—" }}</div>
-            </div>
+        <div class="workspace-meta">
+            <span class="dip-meta-pill">شرکت: {{ project.company.name if project.company else '—' }}</span>
+            <span class="dip-meta-pill">وضعیت: {{ status_text }}</span>
+            <span class="dip-meta-pill">فایل‌ها: {{ files|length }}</span>
         </div>
     </div>
 
-    <!-- ============================================ -->
-    <!-- Attached Files                              -->
-    <!-- ============================================ -->
+    <div class="page-hero-actions">
+        <a href="/projects" class="btn btn-outline-secondary dip-btn-lg">بازگشت به پروژه‌ها</a>
+        <a href="/dashboard" class="btn btn-primary dip-btn-lg">رفتن به داشبورد تصمیم</a>
+    </div>
+</section>
 
-    <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">📎 فایل‌های پیوست</h5>
-            <span class="badge bg-secondary">{{ files|length }} فایل</span>
+<section class="workspace-kpis">
+    <article class="dip-kpi-card">
+        <span>Validation</span>
+        <strong>{{ 'فعال' if files|length > 0 else 'شروع نشده' }}</strong>
+        <small>ورود داده مبنای validation است</small>
+    </article>
+
+    <article class="dip-kpi-card">
+        <span>Audit</span>
+        <strong>{{ 'قابل مرور' if files|length > 0 else 'در انتظار داده' }}</strong>
+        <small>تفکیک یافته‌ها پس از intake</small>
+    </article>
+
+    <article class="dip-kpi-card">
+        <span>Geo</span>
+        <strong>{{ 'GPS موجود' if ns.gps > 0 else 'نیازمند داده مکانی' }}</strong>
+        <small>آمادگی برای geospatial review</small>
+    </article>
+
+    <article class="dip-kpi-card">
+        <span>Readiness</span>
+        <strong>{{ readiness }}%</strong>
+        <small>{{ readiness_label_local }}</small>
+    </article>
+</section>
+
+<section class="workspace-grid">
+    <article class="workspace-panel">
+        <div class="dip-section-head">
+            <div>
+                <h2>نمای کلی پروژه</h2>
+                <p>هویت پروژه و وضعیت فعلی جریان کاری</p>
+            </div>
         </div>
 
-        <div class="card-body">
-            {% if files %}
-                <div class="table-responsive">
-                    <table class="table table-hover table-sm">
-                        <thead class="table-light">
-                            <tr>
-                                <th>#</th>
-                                <th>نام فایل</th>
-                                <th>دسته‌بندی</th>
-                                <th>نوع</th>
-                                <th>حجم</th>
-                                <th>تاریخ</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for file in files %}
-                            <tr>
-                                <td>{{ loop.index }}</td>
-                                <td>{{ file.original_name }}</td>
-                                <td><span class="badge bg-info">{{ file.category }}</span></td>
-                                <td><small class="text-muted">{{ file.content_type }}</small></td>
-                                <td>{{ file.file_size_human }}</td>
-                                <td><small>{{ file.created_at.strftime("%Y-%m-%d %H:%M") if file.created_at else "—" }}</small></td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+        <div class="workspace-overview">
+            <div class="workspace-overview-item">
+                <span>نام پروژه</span>
+                <strong>{{ project.name }}</strong>
+            </div>
+
+            <div class="workspace-overview-item">
+                <span>شرکت</span>
+                <strong>{{ project.company.name if project.company else '—' }}</strong>
+            </div>
+
+            <div class="workspace-overview-item">
+                <span>وضعیت</span>
+                <strong><span class="dip-badge {{ badge_class }}">{{ status_text }}</span></strong>
+            </div>
+
+            <div class="workspace-overview-item">
+                <span>تاریخ ایجاد</span>
+                <strong>{{ project.created_at.strftime("%Y-%m-%d %H:%M") if project.created_at else '—' }}</strong>
+            </div>
+
+            <div class="workspace-overview-item workspace-overview-item-full">
+                <span>توضیحات</span>
+                <strong>{{ project.description or 'بدون توضیح' }}</strong>
+            </div>
+        </div>
+    </article>
+
+    <article class="workspace-panel">
+        <div class="dip-section-head">
+            <div>
+                <h2>Readiness Summary</h2>
+                <p>تخمین UX-level بدون تغییر backend</p>
+            </div>
+        </div>
+
+        <div class="workspace-readiness">
+            <div class="dip-progress dip-progress-lg">
+                <span style="width: {{ readiness }}%;"></span>
+            </div>
+
+            <ul class="workspace-checklist">
+                <li class="{% if files|length > 0 %}is-done{% endif %}">Data Intake</li>
+                <li class="{% if files|length > 0 %}is-done{% endif %}">Profiling Ready</li>
+                <li class="{% if files|length > 0 %}is-done{% endif %}">Validation Eligible</li>
+                <li class="{% if ns.gps > 0 or ns.stores > 0 %}is-done{% endif %}">Geo Signals Available</li>
+                <li class="{% if status_text in ['completed', 'COMPLETED'] %}is-done{% endif %}">Decision Review</li>
+            </ul>
+        </div>
+    </article>
+</section>
+
+<section class="workspace-grid">
+    <article class="workspace-panel">
+        <div class="dip-section-head">
+            <div>
+                <h2>Data Domains</h2>
+                <p>ورود داده بر اساس دامنه‌های اصلی</p>
+            </div>
+        </div>
+
+        <div class="domain-grid">
+            <div class="domain-card">
+                <span>Orders</span>
+                <strong>{{ ns.orders }}</strong>
+            </div>
+            <div class="domain-card">
+                <span>Stores</span>
+                <strong>{{ ns.stores }}</strong>
+            </div>
+            <div class="domain-card">
+                <span>Fleet</span>
+                <strong>{{ ns.fleet }}</strong>
+            </div>
+            <div class="domain-card">
+                <span>Drivers</span>
+                <strong>{{ ns.drivers }}</strong>
+            </div>
+            <div class="domain-card">
+                <span>GPS</span>
+                <strong>{{ ns.gps }}</strong>
+            </div>
+            <div class="domain-card">
+                <span>Other</span>
+                <strong>{{ ns.other }}</strong>
+            </div>
+        </div>
+    </article>
+
+    <article class="workspace-panel">
+        <div class="dip-section-head">
+            <div>
+                <h2>Next Best Action</h2>
+                <p>اقدام بعدی براساس وضعیت فعلی پروژه</p>
+            </div>
+        </div>
+
+        <div class="dip-note-box">
+            {% if files|length == 0 %}
+                <strong>اقدام پیشنهادی:</strong> ابتدا فایل‌های Orders / Stores / Fleet را بارگذاری کنید تا validation و audit معنا پیدا کند.
+            {% elif ns.gps == 0 %}
+                <strong>اقدام پیشنهادی:</strong> داده مکانی یا GPS را تکمیل کنید تا geo readiness و routeability بهتر ارزیابی شود.
+            {% elif status_text in ['completed', 'COMPLETED'] %}
+                <strong>اقدام پیشنهادی:</strong> پروژه آماده مرور تصمیم در Decision Dashboard است.
             {% else %}
-                <div class="text-center py-4 text-muted">
-                    <p class="mb-0">No files uploaded yet.</p>
-                    <small>فایل‌های پیوست پروژه در این بخش نمایش داده می‌شوند.</small>
-                </div>
+                <strong>اقدام پیشنهادی:</strong> یافته‌های validation و audit را مرور کنید و پروژه را به readiness review برسانید.
             {% endif %}
         </div>
+    </article>
+</section>
+
+<section class="workspace-panel">
+    <div class="dip-section-head">
+        <div>
+            <h2>فایل‌های پروژه</h2>
+            <p>لیست فایل‌های بارگذاری‌شده برای این workspace</p>
+        </div>
+        <span class="dip-badge is-neutral">{{ files|length }} فایل</span>
     </div>
 
-</div>
+    {% if files %}
+    <div class="table-responsive">
+        <table class="table dip-table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>نام فایل</th>
+                    <th>دسته‌بندی</th>
+                    <th>نوع</th>
+                    <th>حجم</th>
+                    <th>تاریخ</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for file in files %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ file.original_name }}</td>
+                    <td><span class="dip-badge is-neutral">{{ file.category }}</span></td>
+                    <td>{{ file.content_type or '—' }}</td>
+                    <td>{{ file.file_size_human }}</td>
+                    <td>{{ file.created_at.strftime("%Y-%m-%d %H:%M") if file.created_at else '—' }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="dip-empty-inline">
+        هنوز فایلی برای این پروژه ثبت نشده است.
+    </div>
+    {% endif %}
+</section>
 {% endblock %}

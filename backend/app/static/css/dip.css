@@ -1,0 +1,752 @@
+/* =========================================================
+   DIP — Distribution Intelligence Platform
+   Core Design System
+   ========================================================= */
+
+
+/* =========================================================
+   1. DESIGN TOKENS
+   ========================================================= */
+
+:root {
+
+    /* Brand */
+    --dip-primary: #2563eb;
+    --dip-primary-dark: #1d4ed8;
+    --dip-primary-light: #eff6ff;
+
+    /* Semantic */
+    --dip-success: #16a34a;
+    --dip-success-light: #f0fdf4;
+
+    --dip-warning: #d97706;
+    --dip-warning-light: #fffbeb;
+
+    --dip-danger: #dc2626;
+    --dip-danger-light: #fef2f2;
+
+    --dip-info: #0891b2;
+    --dip-info-light: #ecfeff;
+
+    /* Background */
+    --dip-bg: #f5f7fb;
+    --dip-surface: #ffffff;
+    --dip-surface-soft: #f8fafc;
+
+    /* Text */
+    --dip-text: #172033;
+    --dip-text-secondary: #64748b;
+    --dip-text-muted: #94a3b8;
+
+    /* Border */
+    --dip-border: #e2e8f0;
+    --dip-border-dark: #cbd5e1;
+
+    /* Sidebar */
+    --dip-sidebar-bg: #0f172a;
+    --dip-sidebar-hover: #1e293b;
+    --dip-sidebar-active: #2563eb;
+
+    /* Radius */
+    --dip-radius-sm: 8px;
+    --dip-radius-md: 12px;
+    --dip-radius-lg: 16px;
+
+    /* Shadows */
+    --dip-shadow-sm:
+        0 1px 3px rgba(15, 23, 42, 0.06);
+
+    --dip-shadow-md:
+        0 8px 24px rgba(15, 23, 42, 0.08);
+
+    --dip-shadow-lg:
+        0 16px 40px rgba(15, 23, 42, 0.10);
+
+    /* Layout */
+    --dip-sidebar-width: 250px;
+    --dip-topbar-height: 72px;
+
+}
+
+
+/* =========================================================
+   2. RESET
+   ========================================================= */
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+
+    background: var(--dip-bg);
+
+    color: var(--dip-text);
+
+    font-family:
+        Tahoma,
+        Arial,
+        "Segoe UI",
+        sans-serif;
+
+    font-size: 14px;
+
+    line-height: 1.7;
+}
+
+
+/* =========================================================
+   3. LINKS
+   ========================================================= */
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: none;
+}
+
+
+/* =========================================================
+   4. APPLICATION SHELL
+   ========================================================= */
+
+.dip-app-shell {
+    min-height: 100vh;
+
+    display: flex;
+
+    background: var(--dip-bg);
+}
+
+
+/* =========================================================
+   5. SIDEBAR
+   ========================================================= */
+
+.dip-sidebar {
+    position: fixed;
+
+    top: 0;
+    right: 0;
+
+    width: var(--dip-sidebar-width);
+    height: 100vh;
+
+    display: flex;
+    flex-direction: column;
+
+    background: var(--dip-sidebar-bg);
+
+    color: #ffffff;
+
+    z-index: 1000;
+}
+
+
+/* Brand */
+
+.dip-sidebar-brand {
+    height: var(--dip-topbar-height);
+
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    padding: 0 20px;
+
+    border-bottom:
+        1px solid rgba(255, 255, 255, 0.08);
+}
+
+
+.dip-brand-badge {
+    width: 38px;
+    height: 38px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 10px;
+
+    background: var(--dip-primary);
+
+    color: #ffffff;
+
+    font-weight: 800;
+
+    font-size: 14px;
+}
+
+
+.dip-brand-text {
+    display: flex;
+    flex-direction: column;
+
+    line-height: 1.2;
+}
+
+
+.dip-brand-text strong {
+    font-size: 15px;
+}
+
+
+.dip-brand-text span {
+    margin-top: 3px;
+
+    color: #94a3b8;
+
+    font-size: 11px;
+}
+
+
+/* Navigation */
+
+.dip-sidebar-nav {
+    flex: 1;
+
+    padding: 20px 12px;
+}
+
+
+.dip-nav-section-label {
+    padding: 0 12px;
+
+    margin-bottom: 8px;
+
+    color: #64748b;
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+    letter-spacing: 0.5px;
+}
+
+
+.dip-sidebar-link {
+    display: flex;
+    align-items: center;
+
+    min-height: 44px;
+
+    padding: 0 14px;
+
+    margin-bottom: 5px;
+
+    border-radius: 10px;
+
+    color: #cbd5e1;
+
+    font-size: 13px;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+
+.dip-sidebar-link:hover {
+    background: var(--dip-sidebar-hover);
+
+    color: #ffffff;
+
+    transform: translateX(-2px);
+}
+
+
+.dip-sidebar-link.active {
+    background: var(--dip-sidebar-active);
+
+    color: #ffffff;
+
+    font-weight: 700;
+
+    box-shadow:
+        0 6px 16px rgba(37, 99, 235, 0.25);
+}
+
+
+/* Footer */
+
+.dip-sidebar-footer {
+    padding: 16px 20px;
+
+    border-top:
+        1px solid rgba(255, 255, 255, 0.08);
+
+    color: #64748b;
+
+    font-size: 11px;
+}
+
+
+/* =========================================================
+   6. MAIN
+   ========================================================= */
+
+.dip-main {
+    width: calc(100% - var(--dip-sidebar-width));
+
+    margin-right: var(--dip-sidebar-width);
+
+    min-height: 100vh;
+}
+
+
+/* =========================================================
+   7. TOPBAR
+   ========================================================= */
+
+.dip-topbar {
+    position: sticky;
+
+    top: 0;
+
+    height: var(--dip-topbar-height);
+
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0 28px;
+
+    background:
+        rgba(255, 255, 255, 0.96);
+
+    border-bottom:
+        1px solid var(--dip-border);
+
+    backdrop-filter: blur(10px);
+
+    z-index: 900;
+}
+
+
+.dip-topbar-title {
+    margin: 0;
+
+    font-size: 18px;
+
+    font-weight: 800;
+
+    color: var(--dip-text);
+}
+
+
+.dip-topbar-subtitle {
+    margin: 2px 0 0;
+
+    color: var(--dip-text-secondary);
+
+    font-size: 12px;
+}
+
+
+.dip-topbar-user {
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+}
+
+
+.dip-user-avatar {
+    width: 38px;
+    height: 38px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: var(--dip-primary-light);
+
+    color: var(--dip-primary);
+
+    font-weight: 800;
+}
+
+
+.dip-user-info {
+    display: flex;
+    flex-direction: column;
+
+    line-height: 1.3;
+}
+
+
+.dip-user-info strong {
+    font-size: 12px;
+}
+
+
+.dip-user-info span {
+    color: var(--dip-text-muted);
+
+    font-size: 10px;
+}
+
+
+/* =========================================================
+   8. PAGE CONTENT
+   ========================================================= */
+
+.dip-page-content {
+    width: 100%;
+
+    padding: 28px;
+}
+
+
+/* =========================================================
+   9. COMMON CONTAINER
+   ========================================================= */
+
+.dip-container {
+    width: 100%;
+
+    max-width: 1440px;
+
+    margin: 0 auto;
+}
+
+
+/* =========================================================
+   10. CARDS
+   ========================================================= */
+
+.dip-card {
+    background: var(--dip-surface);
+
+    border:
+        1px solid var(--dip-border);
+
+    border-radius:
+        var(--dip-radius-lg);
+
+    box-shadow:
+        var(--dip-shadow-sm);
+}
+
+
+.dip-card-header {
+    padding: 20px 24px;
+
+    border-bottom:
+        1px solid var(--dip-border);
+}
+
+
+.dip-card-body {
+    padding: 24px;
+}
+
+
+.dip-card-title {
+    margin: 0;
+
+    font-size: 16px;
+
+    font-weight: 800;
+}
+
+
+.dip-card-subtitle {
+    margin: 5px 0 0;
+
+    color: var(--dip-text-secondary);
+
+    font-size: 12px;
+}
+
+
+/* =========================================================
+   11. BUTTONS
+   ========================================================= */
+
+.dip-btn {
+    min-height: 42px;
+
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 8px;
+
+    padding: 0 18px;
+
+    border: 0;
+
+    border-radius:
+        var(--dip-radius-sm);
+
+    font-family: inherit;
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        all 0.2s ease;
+}
+
+
+.dip-btn-primary {
+    background: var(--dip-primary);
+
+    color: #ffffff;
+}
+
+
+.dip-btn-primary:hover {
+    background: var(--dip-primary-dark);
+
+    transform: translateY(-1px);
+
+    box-shadow:
+        0 6px 14px rgba(37, 99, 235, 0.22);
+}
+
+
+.dip-btn-secondary {
+    background: var(--dip-surface-soft);
+
+    color: var(--dip-text);
+
+    border:
+        1px solid var(--dip-border);
+}
+
+
+.dip-btn-success {
+    background: var(--dip-success);
+
+    color: #ffffff;
+}
+
+
+.dip-btn-danger {
+    background: var(--dip-danger);
+
+    color: #ffffff;
+}
+
+
+/* =========================================================
+   12. FORM
+   ========================================================= */
+
+.dip-form-group {
+    margin-bottom: 20px;
+}
+
+
+.dip-form-label {
+    display: block;
+
+    margin-bottom: 7px;
+
+    color: var(--dip-text);
+
+    font-size: 12px;
+
+    font-weight: 700;
+}
+
+
+.dip-form-control {
+    width: 100%;
+
+    min-height: 44px;
+
+    padding: 10px 13px;
+
+    border:
+        1px solid var(--dip-border-dark);
+
+    border-radius:
+        var(--dip-radius-sm);
+
+    background: #ffffff;
+
+    color: var(--dip-text);
+
+    font-family: inherit;
+
+    font-size: 13px;
+
+    outline: none;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+
+.dip-form-control:focus {
+    border-color:
+        var(--dip-primary);
+
+    box-shadow:
+        0 0 0 3px rgba(37, 99, 235, 0.10);
+}
+
+
+textarea.dip-form-control {
+    min-height: 120px;
+
+    resize: vertical;
+}
+
+
+/* =========================================================
+   13. BADGES
+   ========================================================= */
+
+.dip-badge {
+    display: inline-flex;
+
+    align-items: center;
+
+    padding: 4px 10px;
+
+    border-radius: 999px;
+
+    font-size: 10px;
+
+    font-weight: 700;
+}
+
+
+.dip-badge-draft {
+    background: #f1f5f9;
+
+    color: #475569;
+}
+
+
+.dip-badge-running {
+    background: var(--dip-warning-light);
+
+    color: var(--dip-warning);
+}
+
+
+.dip-badge-success {
+    background: var(--dip-success-light);
+
+    color: var(--dip-success);
+}
+
+
+.dip-badge-danger {
+    background: var(--dip-danger-light);
+
+    color: var(--dip-danger);
+}
+
+
+/* =========================================================
+   14. TOAST
+   ========================================================= */
+
+.dip-toast-container {
+    position: fixed;
+
+    left: 24px;
+    bottom: 24px;
+
+    z-index: 2000;
+}
+
+
+/* =========================================================
+   15. RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 992px) {
+
+    :root {
+        --dip-sidebar-width: 220px;
+    }
+
+    .dip-page-content {
+        padding: 20px;
+    }
+
+    .dip-topbar {
+        padding: 0 20px;
+    }
+
+}
+
+
+@media (max-width: 768px) {
+
+    .dip-sidebar {
+        position: fixed;
+
+        right: -100%;
+
+        width: 280px;
+
+        transition:
+            right 0.25s ease;
+    }
+
+    .dip-sidebar.open {
+        right: 0;
+    }
+
+    .dip-main {
+        width: 100%;
+
+        margin-right: 0;
+    }
+
+    .dip-topbar {
+        padding: 0 16px;
+    }
+
+    .dip-page-content {
+        padding: 16px;
+    }
+
+    .dip-topbar-subtitle {
+        display: none;
+    }
+
+}
+
+
+@media (max-width: 480px) {
+
+    .dip-topbar-title {
+        font-size: 15px;
+    }
+
+    .dip-user-info {
+        display: none;
+    }
+
+}

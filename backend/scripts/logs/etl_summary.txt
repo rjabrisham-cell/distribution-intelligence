@@ -1,0 +1,23 @@
+Started at: 2026-07-25T23:11:48.625026+00:00
+Finished at: 2026-07-25T23:42:35.499955+00:00
+Duration: 0:30:46.874929
+Mode: resume
+Last successful source id: 243013
+
+Total read: 105714
+Total inserted_or_updated: 105714
+Total failed: 0
+Total batches: 106
+
+Valid coordinates: 28899
+Invalid coordinates: 76815
+Null coordinates: 76815
+Zero coordinates: 0
+Unparseable coordinates: 0
+Outside/projected coordinates: 0
+
+Fallback names used: 10757
+
+Checkpoint file: /app/scripts/logs/stores_etl_checkpoint.json
+Failed rows CSV: /app/scripts/logs/failed_rows.csv
+Invalid coordinates CSV: /app/scripts/logs/invalid_coordinates.csv

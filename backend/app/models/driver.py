@@ -1,20 +1,42 @@
 """
-Driver model for Data Import Engine.
+Driver Model — Enterprise Data Model v4.0
 
-Represents a driver imported from external sources (ERP, Excel, API, etc.).
-Each driver belongs to an ImportBatch.
+Driver = Company-Owned Human Resource
+
+## Architecture
+
+A Driver belongs to exactly one Company.
+
+A Driver is NOT owned by a Project.
+
+A Driver is NOT permanently owned by a Vehicle.
+
+Driver-to-Vehicle assignment is represented through
+VehicleDriver.
+
+Driver-to-Project assignment is represented through
+ProjectDriver.
+
+This allows:
+
+    Driver -> Vehicle A
+    Driver -> Vehicle B
+    Driver -> Project A
+    Driver -> Project B
+
+over different periods of time.
+
+ImportBatch represents the source/import event only.
 """
 
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date
 from decimal import Decimal
-from typing import Optional
+from typing import TYPE_CHECKING
 
 from sqlalchemy import (
     Date,
-    DateTime,
-    Float,
     ForeignKey,
     Integer,
     JSON,
@@ -22,36 +44,87 @@ from sqlalchemy import (
     String,
     UniqueConstraint,
 )
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import (
+    Mapped,
+    mapped_column,
+    relationship,
+)
 
 from app.models.base import BaseModel
 
 
+if TYPE_CHECKING:
+    from app.models.company import Company
+    from app.models.import_batch import ImportBatch
+    from app.models.project_driver import ProjectDriver
+    from app.models.vehicle_driver import VehicleDriver
+
+
 class Driver(BaseModel):
     """
-    راننده واردشده از فایل Excel در هر Import Batch.
+    Company-owned driver.
 
-    هر ردیف از فایل Excel به یک رکورد Driver تبدیل می‌شود.
+    A Driver belongs to one Company.
+
+    A Driver may operate different Vehicles over time.
+
+    A Driver may participate in different Projects over time.
+
+    Vehicle assignment:
+        VehicleDriver
+
+    Project assignment:
+        ProjectDriver
     """
 
     __tablename__ = "drivers"
 
-    # ── ارتباط با Import Batch ──────────────────────────────
-    import_batch_id: Mapped[int] = mapped_column(
+    # ==========================================================
+    # Company Ownership
+    # ==========================================================
+
+    company_id: Mapped[int] = mapped_column(
         Integer,
-        ForeignKey("import_batches.id", ondelete="CASCADE"),
+        ForeignKey(
+            "companies.id",
+            ondelete="CASCADE",
+        ),
         nullable=False,
         index=True,
+        comment="Company مالک این Driver",
     )
 
-    # ── کد تجاری راننده ─────────────────────────────────────
+    # ==========================================================
+    # Import Source
+    # ==========================================================
+
+    import_batch_id: Mapped[int | None] = mapped_column(
+        Integer,
+        ForeignKey(
+            "import_batches.id",
+            ondelete="SET NULL",
+        ),
+        nullable=True,
+        index=True,
+        comment=(
+            "آخرین ImportBatch که این Driver از آن وارد شده است"
+        ),
+    )
+
+    # ==========================================================
+    # Business Identity
+    # ==========================================================
+
     driver_code: Mapped[str | None] = mapped_column(
         String(50),
         nullable=True,
         index=True,
     )
 
-    # ── اطلاعات هویتی ───────────────────────────────────────
+    # ==========================================================
+    # Personal Information
+    # ==========================================================
+
     first_name: Mapped[str | None] = mapped_column(
         String(100),
         nullable=True,
@@ -68,7 +141,10 @@ class Driver(BaseModel):
         index=True,
     )
 
-    # ── اطلاعات گواهینامه ───────────────────────────────────
+    # ==========================================================
+    # License Information
+    # ==========================================================
+
     license_number: Mapped[str | None] = mapped_column(
         String(50),
         nullable=True,
@@ -84,7 +160,10 @@ class Driver(BaseModel):
         nullable=True,
     )
 
-    # ── مختصات جغرافیایی (آدرس سکونت / محل استقرار) ─────────
+    # ==========================================================
+    # Home / Base Coordinates
+    # ==========================================================
+
     latitude: Mapped[Decimal | None] = mapped_column(
         Numeric(10, 7),
         nullable=True,
@@ -95,7 +174,10 @@ class Driver(BaseModel):
         nullable=True,
     )
 
-    # ── وضعیت ───────────────────────────────────────────────
+    # ==========================================================
+    # Status
+    # ==========================================================
+
     status: Mapped[str] = mapped_column(
         String(30),
         nullable=False,
@@ -103,54 +185,126 @@ class Driver(BaseModel):
         index=True,
     )
 
-    # ── داده خام ردیف Excel (برای اشکال‌زدایی) ─────────────
+    # ==========================================================
+    # Raw Import Data
+    # ==========================================================
+
     raw_data: Mapped[dict | None] = mapped_column(
         JSON,
         nullable=True,
     )
 
-    # ── یادداشت خطا ─────────────────────────────────────────
     error_note: Mapped[str | None] = mapped_column(
         String(1000),
         nullable=True,
     )
 
-    # ── محدودیت یکتایی ──────────────────────────────────────
+    # ==========================================================
+    # Constraints
+    # ==========================================================
+
     __table_args__ = (
         UniqueConstraint(
-            "import_batch_id",
+            "company_id",
             "driver_code",
-            name="uq_drivers_batch_driver",
+            name="uq_drivers_company_driver_code",
         ),
     )
 
-    # ── Relationships ────────────────────────────────────────
-    import_batch: Mapped["ImportBatch"] = relationship(
+    # ==========================================================
+    # Relationships
+    # ==========================================================
+
+    # ----------------------------------------------------------
+    # Company
+    # ----------------------------------------------------------
+
+    company: Mapped["Company"] = relationship(
+        "Company",
+        back_populates="drivers",
+        lazy="selectin",
+    )
+
+    # ----------------------------------------------------------
+    # Import Batch
+    # ----------------------------------------------------------
+
+    import_batch: Mapped["ImportBatch | None"] = relationship(
         "ImportBatch",
         back_populates="drivers",
     )
 
-    # ── Properties ──────────────────────────────────────────
+    # ----------------------------------------------------------
+    # Vehicle Assignments
+    # ----------------------------------------------------------
+
+    vehicle_drivers: Mapped[
+        list["VehicleDriver"]
+    ] = relationship(
+        "VehicleDriver",
+        back_populates="driver",
+        cascade="all, delete-orphan",
+        lazy="selectin",
+    )
+
+    # ----------------------------------------------------------
+    # Project Assignments
+    # ----------------------------------------------------------
+
+    project_drivers: Mapped[
+        list["ProjectDriver"]
+    ] = relationship(
+        "ProjectDriver",
+        back_populates="driver",
+        cascade="all, delete-orphan",
+        lazy="selectin",
+    )
+
+    # ==========================================================
+    # Properties
+    # ==========================================================
 
     @property
     def full_name(self) -> str | None:
-        """نام کامل (ترکیب first_name + last_name)."""
+        """
+        نام کامل راننده.
+        """
+
         if self.first_name and self.last_name:
             return f"{self.first_name} {self.last_name}"
+
         return self.first_name or self.last_name
 
     @property
     def is_active(self) -> bool:
-        """آیا راننده فعال است."""
+        """
+        آیا راننده فعال است؟
+        """
+
         return self.status.lower() == "active"
 
     @property
     def has_start_coordinates(self) -> bool:
-        """آیا مختصات محل استقرار ثبت شده."""
-        return self.latitude is not None and self.longitude is not None
+        """
+        آیا مختصات محل استقرار ثبت شده است؟
+        """
+
+        return (
+            self.latitude is not None
+            and self.longitude is not None
+        )
+
+    # ==========================================================
+    # Representation
+    # ==========================================================
 
     def __repr__(self) -> str:
         return (
-            f"<Driver(id={self.id}, code={self.driver_code!r}, "
-            f"name={self.full_name!r}, status={self.status!r})>"
+            f"<Driver("
+            f"id={self.id}, "
+            f"company_id={self.company_id}, "
+            f"code={self.driver_code!r}, "
+            f"name={self.full_name!r}, "
+            f"status={self.status!r}"
+            f")>"
         )

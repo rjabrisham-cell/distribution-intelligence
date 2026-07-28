@@ -1,8 +1,43 @@
+"""
+Vehicle Model — Enterprise Data Model v4.0
+
+Vehicle = Company-Owned Fleet Asset
+
+## Architecture
+
+A Vehicle belongs to exactly one Company.
+
+A Vehicle is NOT owned by a Project.
+
+A Vehicle may participate in zero, one or many Projects
+over its lifecycle.
+
+Project-specific usage is represented by ProjectVehicle.
+
+ImportBatch represents the source/import event only.
+It does NOT define the ownership of the Vehicle.
+
+## Ownership
+
+Company
+Owns Vehicle.
+
+ImportBatch
+Records how Vehicle data entered the system.
+
+ProjectVehicle
+Records the participation/allocation of a Vehicle
+in a Project.
+
+Project
+Does not directly own Vehicle.
+"""
+
 from __future__ import annotations
 
 from datetime import datetime
 from decimal import Decimal
-from typing import Optional
+from typing import TYPE_CHECKING
 
 from sqlalchemy import (
     DateTime,
@@ -13,49 +48,99 @@ from sqlalchemy import (
     Numeric,
     String,
 )
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import (
+    Mapped,
+    mapped_column,
+    relationship,
+)
 
 from app.models.base import BaseModel
 
 
+if TYPE_CHECKING:
+    from app.models.company import Company
+    from app.models.import_batch import ImportBatch
+    from app.models.project_vehicle import ProjectVehicle
+    from app.models.vehicle_driver import VehicleDriver
+
+
 class Vehicle(BaseModel):
     """
-    خودروی واردشده از فایل Excel در هر Import Batch.
+    Company-owned vehicle / fleet asset.
 
-    هر ردیف از فایل Excel (یا Sheet خودروها) به یک رکورد Vehicle تبدیل می‌شود.
+    A Vehicle belongs to one Company.
+
+    It may be used in multiple Projects over time.
+
+    Project-specific allocation is handled through
+    ProjectVehicle.
+
+    Driver assignment is handled through VehicleDriver.
     """
 
     __tablename__ = "vehicles"
 
-    # ── ارتباط با Import Batch ──────────────────────────────
-    import_batch_id: Mapped[int] = mapped_column(
+    # ==========================================================
+    # Company Ownership
+    # ==========================================================
+
+    company_id: Mapped[int] = mapped_column(
         Integer,
-        ForeignKey("import_batches.id", ondelete="CASCADE"),
+        ForeignKey(
+            "companies.id",
+            ondelete="CASCADE",
+        ),
         nullable=False,
         index=True,
+        comment="Company مالک این Vehicle",
     )
 
-    # ── شناسه خودرو ─────────────────────────────────────────
+    # ==========================================================
+    # Import Source
+    # ==========================================================
+
+    import_batch_id: Mapped[int | None] = mapped_column(
+        Integer,
+        ForeignKey(
+            "import_batches.id",
+            ondelete="SET NULL",
+        ),
+        nullable=True,
+        index=True,
+        comment=(
+            "آخرین ImportBatch که این Vehicle از آن وارد شده است"
+        ),
+    )
+
+    # ==========================================================
+    # Vehicle Identity
+    # ==========================================================
+
     vehicle_code: Mapped[str] = mapped_column(
         String(100),
         nullable=False,
         index=True,
     )
 
-    # ── پلاک ────────────────────────────────────────────────
     plate_number: Mapped[str] = mapped_column(
         String(50),
         nullable=False,
         index=True,
     )
 
-    # ── نوع خودرو ───────────────────────────────────────────
+    # ==========================================================
+    # Vehicle Type
+    # ==========================================================
+
     vehicle_type: Mapped[str | None] = mapped_column(
         String(100),
         nullable=True,
     )
 
-    # ── ظرفیت ───────────────────────────────────────────────
+    # ==========================================================
+    # Capacity
+    # ==========================================================
+
     capacity_kg: Mapped[float | None] = mapped_column(
         Float,
         nullable=True,
@@ -66,7 +151,10 @@ class Vehicle(BaseModel):
         nullable=True,
     )
 
-    # ── هزینه‌ها ────────────────────────────────────────────
+    # ==========================================================
+    # Cost
+    # ==========================================================
+
     cost_per_km: Mapped[Decimal | None] = mapped_column(
         Numeric(12, 2),
         nullable=True,
@@ -77,7 +165,10 @@ class Vehicle(BaseModel):
         nullable=True,
     )
 
-    # ── مختصات پایگاه (Depot) ───────────────────────────────
+    # ==========================================================
+    # Depot / Base Coordinates
+    # ==========================================================
+
     latitude: Mapped[Decimal | None] = mapped_column(
         Numeric(10, 7),
         nullable=True,
@@ -88,7 +179,10 @@ class Vehicle(BaseModel):
         nullable=True,
     )
 
-    # ── وضعیت ───────────────────────────────────────────────
+    # ==========================================================
+    # Status
+    # ==========================================================
+
     status: Mapped[str] = mapped_column(
         String(30),
         nullable=False,
@@ -96,7 +190,10 @@ class Vehicle(BaseModel):
         index=True,
     )
 
-    # ── زمان‌های عملیاتی ────────────────────────────────────
+    # ==========================================================
+    # Operational Availability
+    # ==========================================================
+
     available_from: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True),
         nullable=True,
@@ -107,50 +204,130 @@ class Vehicle(BaseModel):
         nullable=True,
     )
 
-    # ── داده خام ردیف Excel (برای اشکال‌زدایی) ─────────────
+    # ==========================================================
+    # Raw Import Data
+    # ==========================================================
+
     raw_data: Mapped[dict | None] = mapped_column(
         JSON,
         nullable=True,
     )
 
-    # ── یادداشت خطا ─────────────────────────────────────────
     error_note: Mapped[str | None] = mapped_column(
         String(1000),
         nullable=True,
     )
 
-    # ── Relationships ────────────────────────────────────────
-    import_batch: Mapped["ImportBatch"] = relationship(
+    # ==========================================================
+    # Relationships
+    # ==========================================================
+
+    # ----------------------------------------------------------
+    # Company
+    # ----------------------------------------------------------
+
+    company: Mapped["Company"] = relationship(
+        "Company",
+        back_populates="vehicles",
+        lazy="selectin",
+    )
+
+    # ----------------------------------------------------------
+    # Import Batch
+    # ----------------------------------------------------------
+
+    import_batch: Mapped["ImportBatch | None"] = relationship(
         "ImportBatch",
         back_populates="vehicles",
     )
 
-    # ── Properties ──────────────────────────────────────────
+    # ----------------------------------------------------------
+    # Project Allocations
+    # ----------------------------------------------------------
+
+    project_vehicles: Mapped[
+        list["ProjectVehicle"]
+    ] = relationship(
+        "ProjectVehicle",
+        back_populates="vehicle",
+        cascade="all, delete-orphan",
+        lazy="selectin",
+    )
+
+    # ----------------------------------------------------------
+    # Driver Assignments
+    # ----------------------------------------------------------
+
+    vehicle_drivers: Mapped[
+        list["VehicleDriver"]
+    ] = relationship(
+        "VehicleDriver",
+        back_populates="vehicle",
+        cascade="all, delete-orphan",
+        lazy="selectin",
+    )
+
+    # ==========================================================
+    # Properties
+    # ==========================================================
 
     @property
     def has_capacity(self) -> bool:
-        """آیا حداقل یکی از ظرفیت‌ها (کیلوگرم / مترمکعب) ثبت شده."""
-        return self.capacity_kg is not None or self.capacity_m3 is not None
+        """
+        آیا حداقل یکی از ظرفیت‌ها ثبت شده است؟
+        """
+
+        return (
+            self.capacity_kg is not None
+            or self.capacity_m3 is not None
+        )
 
     @property
     def has_coordinates(self) -> bool:
-        """آیا مختصات دپو ثبت شده."""
-        return self.latitude is not None and self.longitude is not None
+        """
+        آیا مختصات دپو ثبت شده است؟
+        """
+
+        return (
+            self.latitude is not None
+            and self.longitude is not None
+        )
 
     @property
     def is_available_now(self) -> bool:
-        """آیا خودرو در بازه زمانی فعلی در دسترس است."""
+        """
+        آیا خودرو در بازه زمانی فعلی در دسترس است؟
+        """
+
         if self.status != "active":
             return False
+
         now = datetime.now().astimezone()
-        if self.available_from and now < self.available_from:
+
+        if (
+            self.available_from
+            and now < self.available_from
+        ):
             return False
-        if self.available_until and now > self.available_until:
+
+        if (
+            self.available_until
+            and now > self.available_until
+        ):
             return False
+
         return True
+
+    # ==========================================================
+    # Representation
+    # ==========================================================
 
     def __repr__(self) -> str:
         return (
-            f"<Vehicle(id={self.id}, code={self.vehicle_code!r}, "
-            f"plate={self.plate_number!r})>"
+            f"<Vehicle("
+            f"id={self.id}, "
+            f"company_id={self.company_id}, "
+            f"code={self.vehicle_code!r}, "
+            f"plate={self.plate_number!r}"
+            f")>"
         )
