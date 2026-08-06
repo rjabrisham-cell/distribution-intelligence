@@ -3,128 +3,237 @@
 {% block title %}Projects | DIP{% endblock %}
 
 {% block content %}
-<section class="page-hero page-hero-compact">
-    <div>
-        <span class="dip-eyebrow">Projects Workspace</span>
-        <h1>پروژه‌ها</h1>
-        <p>
-            هر پروژه یک فضای کاری برای intake، validation، audit، geo assessment
-            و readiness review است؛ نه صرفاً یک رکورد CRUD.
-        </p>
-    </div>
-
-    <div class="page-hero-actions">
-        <a href="/projects/new" class="btn btn-primary dip-btn-lg">ایجاد پروژه جدید</a>
-    </div>
-</section>
-
-{% if projects %}
-<section class="dip-section">
-    <div class="dip-section-head">
-        <div>
-            <h2>فهرست پروژه‌ها</h2>
-            <p>پروژه‌ها بر اساس وضعیت آمادگی و گام بعدی مرور می‌شوند.</p>
+<div class="dip-container">
+    <section class="dip-page-hero">
+        <div class="dip-page-hero__content">
+            <span class="dip-badge dip-badge-running">Projects Workspace</span>
+            <h1 class="dip-page-hero__title">فهرست پروژه‌ها</h1>
+            <p class="dip-page-hero__desc">
+                همه پروژه‌ها در یک نمای یکپارچه برای ورود به جریان Intake، Validation، Profiling، Readiness و Decision.
+            </p>
         </div>
-    </div>
-
-    <div class="dip-table-card">
-        <div class="table-responsive">
-            <table class="table dip-table align-middle mb-0">
-                <thead>
-                    <tr>
-                        <th>پروژه</th>
-                        <th>شرکت</th>
-                        <th>وضعیت</th>
-                        <th>جریان</th>
-                        <th>آمادگی</th>
-                        <th>گام بعدی</th>
-                        <th class="text-start">اقدامات</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% for project in projects %}
-                    {% set status_value = project.status.value if project.status.value is defined else project.status %}
-                    {% set status_text = status_value|string %}
-
-                    {% if status_text in ['draft', 'DRAFT'] %}
-                        {% set flow_label = 'شروع Intake' %}
-                        {% set readiness = 10 %}
-                        {% set next_action = 'تکمیل اطلاعات پایه پروژه' %}
-                        {% set badge_class = 'is-neutral' %}
-                    {% elif status_text in ['in_progress', 'IN_PROGRESS', 'running', 'RUNNING'] %}
-                        {% set flow_label = 'Validation فعال' %}
-                        {% set readiness = 55 %}
-                        {% set next_action = 'مرور validation و audit' %}
-                        {% set badge_class = 'is-warning' %}
-                    {% elif status_text in ['completed', 'COMPLETED'] %}
-                        {% set flow_label = 'Ready Review' %}
-                        {% set readiness = 100 %}
-                        {% set next_action = 'ورود به داشبورد تصمیم' %}
-                        {% set badge_class = 'is-success' %}
-                    {% else %}
-                        {% set flow_label = 'نیازمند بررسی' %}
-                        {% set readiness = 25 %}
-                        {% set next_action = 'بازبینی وضعیت پروژه' %}
-                        {% set badge_class = 'is-danger' %}
-                    {% endif %}
-
-                    <tr>
-                        <td>
-                            <div class="dip-row-primary">
-                                <strong>{{ project.name }}</strong>
-                                <small>{{ project.description or 'بدون توضیح' }}</small>
-                            </div>
-                        </td>
-
-                        <td>
-                            {{ project.company.name if project.company else '—' }}
-                        </td>
-
-                        <td>
-                            <span class="dip-badge {{ badge_class }}">{{ status_text }}</span>
-                        </td>
-
-                        <td>
-                            <span class="dip-inline-note">{{ flow_label }}</span>
-                        </td>
-
-                        <td style="min-width: 160px;">
-                            <div class="dip-progress-with-value">
-                                <div class="dip-progress">
-                                    <span style="width: {{ readiness }}%;"></span>
-                                </div>
-                                <small>{{ readiness }}%</small>
-                            </div>
-                        </td>
-
-                        <td>
-                            <span class="dip-inline-note">{{ next_action }}</span>
-                        </td>
-
-                        <td class="text-start">
-                            <div class="dip-action-group">
-                                <a href="/projects/{{ project.id }}" class="btn btn-sm btn-primary">Workspace</a>
-                                <a href="/dashboard" class="btn btn-sm btn-outline-secondary">Dashboard</a>
-                            </div>
-                        </td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+        <div class="dip-page-hero__actions">
+            <a href="/projects/new" class="dip-btn dip-btn-primary">پروژه جدید</a>
         </div>
-    </div>
-</section>
-{% else %}
-<section class="dip-empty-state">
-    <div class="dip-empty-card">
-        <span class="dip-eyebrow">No Active Project</span>
-        <h2>هنوز پروژه‌ای ایجاد نشده است</h2>
-        <p>
-            برای شروع جریان Validation-first، ابتدا یک پروژه ایجاد کنید تا intake،
-            audit و readiness روی آن شکل بگیرد.
+    </section>
+
+    {% if projects %}
+    <section class="dip-card">
+        <div class="dip-section-head" style="margin-bottom: var(--spacing-md);">
+            <div>
+                <h2>پروژه‌های فعال</h2>
+                <p style="color: var(--color-neutral-muted);">وضعیت، آمادگی و نقطه ورود هر پروژه در این بخش نمایش داده می‌شود.</p>
+            </div>
+        </div>
+
+        <div class="dip-project-list">
+            {% for project in projects %}
+                {% set status_text = project.status|string %}
+
+                {% if status_text in ['draft', 'DRAFT'] %}
+                    {% set readiness = 12 %}
+                    {% set badge_class = 'dip-badge-draft' %}
+                    {% set stage_label = 'شروع Intake' %}
+                {% elif status_text in ['in_progress', 'IN_PROGRESS', 'running', 'RUNNING'] %}
+                    {% set readiness = 58 %}
+                    {% set badge_class = 'dip-badge-running' %}
+                    {% set stage_label = 'Validation / Profiling' %}
+                {% elif status_text in ['completed', 'COMPLETED'] %}
+                    {% set readiness = 100 %}
+                    {% set badge_class = 'dip-badge-completed' %}
+                    {% set stage_label = 'Decision Ready' %}
+                {% else %}
+                    {% set readiness = 25 %}
+                    {% set badge_class = 'dip-badge-draft' %}
+                    {% set stage_label = 'نیازمند بررسی' %}
+                {% endif %}
+
+            <article class="dip-project-row">
+                <div class="dip-project-row__main">
+                    <div class="dip-project-row__title">
+                        <h3>{{ project.name }}</h3>
+                        <span class="dip-badge {{ badge_class }}">{{ status_text }}</span>
+                    </div>
+
+                    <p class="dip-project-row__desc">
+                        {{ project.description or 'بدون توضیح' }}
+                    </p>
+
+                    <div class="dip-project-row__meta">
+                        <span>شرکت: <strong>{{ project.company_name or '—' }}</strong></span>
+                        <span>جریان: <strong>{{ stage_label }}</strong></span>
+                    </div>
+                </div>
+
+                <div class="dip-project-row__side">
+                    <div class="dip-progress-block">
+                        <div class="dip-progress-block__top">
+                            <span>Readiness</span>
+                            <strong>{{ readiness }}%</strong>
+                        </div>
+                        <div class="dip-progress">
+                            <span style="width: {{ readiness }}%;"></span>
+                        </div>
+                    </div>
+
+                    <div class="dip-project-row__actions">
+                        <a href="/projects/{{ project.id }}" class="dip-btn dip-btn-primary">Workspace</a>
+                        <a href="/projects/{{ project.id }}/intake" class="dip-btn dip-btn-secondary">Intake</a>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    </section>
+    {% else %}
+    <section class="dip-card" style="text-align: center;">
+        <span class="dip-badge dip-badge-draft" style="margin-bottom: var(--spacing-sm);">No Project</span>
+        <h2 style="margin-bottom: var(--spacing-sm);">هنوز پروژه‌ای ثبت نشده است</h2>
+        <p style="color: var(--color-neutral-muted); margin-bottom: var(--spacing-md);">
+            برای شروع فضای کاری جدید، ابتدا یک پروژه ثبت کنید.
         </p>
-        <a href="/projects/new" class="btn btn-primary dip-btn-lg">ایجاد اولین پروژه</a>
-    </div>
-</section>
-{% endif %}
+        <a href="/projects/new" class="dip-btn dip-btn-primary">ایجاد پروژه</a>
+    </section>
+    {% endif %}
+</div>
+
+<style>
+.dip-page-hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-lg);
+    padding: 1.5rem 1.75rem;
+    margin-bottom: var(--spacing-lg);
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-soft);
+}
+
+.dip-page-hero__title {
+    margin-top: .65rem;
+    margin-bottom: .5rem;
+    font-size: 1.9rem;
+    font-weight: 800;
+    color: var(--color-neutral-dark);
+}
+
+.dip-page-hero__desc {
+    max-width: 70ch;
+    color: var(--color-neutral-muted);
+    line-height: 1.9;
+}
+
+.dip-project-list {
+    display: grid;
+    gap: 1rem;
+}
+
+.dip-project-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1.9fr) minmax(280px, .95fr);
+    gap: 1rem;
+    padding: 1.15rem 1.2rem;
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    background: #fff;
+    transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+}
+
+.dip-project-row:hover {
+    border-color: rgba(59, 130, 246, .28);
+    box-shadow: 0 14px 34px rgba(15, 23, 42, .08);
+    transform: translateY(-1px);
+}
+
+.dip-project-row__title {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    flex-wrap: wrap;
+    margin-bottom: .6rem;
+}
+
+.dip-project-row__title h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--color-neutral-dark);
+}
+
+.dip-project-row__desc {
+    margin: 0 0 .8rem 0;
+    color: var(--color-neutral-muted);
+    line-height: 1.85;
+}
+
+.dip-project-row__meta {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    color: var(--color-neutral-muted);
+    font-size: .92rem;
+}
+
+.dip-project-row__side {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: .25rem 0;
+}
+
+.dip-progress-block {
+    padding: .9rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background: #f8fafc;
+}
+
+.dip-progress-block__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: .65rem;
+    color: var(--color-neutral-dark);
+    font-size: .92rem;
+}
+
+.dip-progress {
+    height: 10px;
+    background: #e5e7eb;
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.dip-progress span {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #2563eb 0%, #60a5fa 100%);
+}
+
+.dip-project-row__actions {
+    display: flex;
+    gap: .6rem;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 992px) {
+    .dip-page-hero,
+    .dip-project-row {
+        grid-template-columns: 1fr;
+        display: grid;
+    }
+
+    .dip-page-hero__actions {
+        width: 100%;
+    }
+
+    .dip-page-hero__actions .dip-btn {
+        width: 100%;
+    }
+}
+</style>
 {% endblock %}

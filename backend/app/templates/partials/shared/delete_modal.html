@@ -1,0 +1,33 @@
+<div id="delete-modal" class="dip-modal" aria-hidden="true">
+    <div class="dip-modal__backdrop" onclick="closeDeleteModal()"></div>
+
+    <div class="dip-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="delete-modal-title">
+        <div class="dip-modal__header">
+            <h3 id="delete-modal-title" class="dip-modal__title">تایید حذف فایل</h3>
+            <button type="button" class="dip-modal__close" onclick="closeDeleteModal()">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+
+        <div class="dip-modal__body">
+            <p>
+                آیا از حذف فایل
+                <strong id="delete-file-name">-</strong>
+                اطمینان دارید؟
+            </p>
+            <p class="dip-text-muted">این عملیات قابل بازگشت نیست.</p>
+        </div>
+
+        <div class="dip-modal__footer">
+            <button type="button" class="dip-btn dip-btn-secondary" onclick="closeDeleteModal()">
+                انصراف
+            </button>
+
+            <form id="delete-form" method="POST" action="">
+                <button type="submit" class="dip-btn dip-btn-danger">
+                    حذف قطعی
+                </button>
+            </form>
+        </div>
+    </div>
+</div>

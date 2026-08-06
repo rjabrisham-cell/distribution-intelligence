@@ -1,0 +1,14 @@
+{% set current_label = journey_state.current_stage_label if journey_state and journey_state.current_stage_label else 'Data Intake' %}
+{% set current_index = journey_state.current_index if journey_state and journey_state.current_index else 1 %}
+{% set total_steps = journey_state.total_steps if journey_state and journey_state.total_steps else 4 %}
+
+<div class="dip-current-step">
+    <div class="dip-current-step__main">
+        <div class="dip-current-step__eyebrow">مرحله جاری</div>
+        <div class="dip-current-step__title">{{ current_label }}</div>
+    </div>
+
+    <div class="dip-current-step__meta">
+        <span class="dip-current-step__count">{{ current_index }} از {{ total_steps }}</span>
+    </div>
+</div>

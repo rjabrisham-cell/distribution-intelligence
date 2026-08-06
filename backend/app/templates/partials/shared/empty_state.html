@@ -1,0 +1,25 @@
+{#
+============================================================================
+Component: empty_state.html
+Purpose:   Display empty state message.
+============================================================================
+Required template context:
+  (none)
+
+Optional:
+  empty_message : str  — Custom empty state message
+  empty_icon    : str  — Bootstrap Icons class (e.g. "bi-inbox")
+
+Output:
+  <div> with ds-empty-state
+  Null-safe: missing message → default text
+  ARIA: role="status"
+============================================================================
+#}
+{% set message = empty_message | default('No data available.') %}
+{% set icon = empty_icon | default('bi-inbox') %}
+
+<div class="ds-empty-state" role="status">
+  <i class="bi {{ icon }} ds-empty-state__icon" aria-hidden="true"></i>
+  <p class="ds-empty-state__message">{{ message }}</p>
+</div>

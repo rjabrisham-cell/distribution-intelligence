@@ -1,0 +1,111 @@
+/* ===================================================== */
+/* DESIGN TOKENS - Single Source of Truth (v1.0)        */
+/* ===================================================== */
+
+:root {
+    /* Colors - Primary (DIP Brand) */
+    --color-primary: #2563eb;
+    --color-primary-dark: #1d4ed8;
+    --color-primary-light: #dbeafe;
+    
+    /* Colors - Neutral */
+    --color-white: #ffffff;
+    --color-black: #1a1a1a;
+    --color-gray-50: #f8fafc;
+    --color-gray-100: #f1f5f9;
+    --color-gray-200: #e2e8f0;
+    --color-gray-300: #cbd5e1;
+    --color-gray-400: #94a3b8;
+    --color-gray-500: #64748b;
+    --color-gray-600: #475569;
+    --color-gray-700: #334155;
+    --color-gray-800: #1e293b;
+    --color-gray-900: #0f172a;
+    
+    /* Colors - Semantic */
+    --color-success: #16a34a;
+    --color-warning: #d97706;
+    --color-danger: #dc2626;
+    --color-info: #0ea5e9;
+    
+    /* DIP Specific Colors (backward compatibility) */
+    --dip-bg: #f5f7fb;
+    --dip-surface: #ffffff;
+    --dip-surface-soft: #f8fafc;
+    --dip-border: #e5e7eb;
+    --dip-text: #0f172a;
+    --dip-text-soft: #64748b;
+    --dip-primary: #2563eb;
+    --dip-primary-dark: #1d4ed8;
+    --dip-success: #16a34a;
+    --dip-warning: #d97706;
+    --dip-danger: #dc2626;
+    --dip-sidebar: #0f172a;
+    --dip-sidebar-2: #111827;
+    --dip-sidebar-text: #cbd5e1;
+    --dip-sidebar-active: #1e293b;
+    --dip-shadow: 0 10px trace-30px rgba(15, 23, 42, 0.08);
+    
+    /* Spacing */
+    --space-xs: 0.25rem;
+    --space-sm: 0.5rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2rem;
+    --space-2xl: 3rem;
+    --space-3xl: 4rem;
+    
+    /* Border Radius */
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 20px;
+    --radius-circle: 50%;
+    --radius-full: 50%;
+    --dip-radius-xl: 24px;
+    --dip-radius-lg: 18px;
+    --dip-radius-md: 14px;
+    --dip-radius-sm: 10px;
+    
+    /* Shadows */
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+    --shadow-primary: 0 4px 15px rgba(37, 99, 235, 0.2);
+    
+    /* Transitions */
+    --transition-fast: 0.15s ease;
+    --transition-base: 0.3s ease;
+    --transition-slow: 0.5s ease;
+    
+    /* Typography Scale */
+    --text-xs: 0.75rem;
+    --text-sm: 0.875rem;
+    --text-base: 1rem;
+    --text-lg: 1.125rem;
+    --text-xl: 1.25rem;
+    --text-2xl: 1.5rem;
+    --text-3xl: 2rem;
+    --text-4xl: 2.5rem;
+    
+    /* Line Heights */
+    --leading-tight: 1.2;
+    --leading-normal: 1.5;
+    --leading-relaxed: 1.75;
+    
+    /* Font Weights */
+    --font-light: 300;
+    --font-normal: 400;
+    --font-medium: 500;
+    --font-semibold: 600;
+    --font-bold: 700;
+    
+    /* Font Family */
+    --font-family-base: "Vazirmatn", system-ui, sans-serif;
+    --font-family-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    
+    /* Z-index Layers */
+    --z-dropdown: 1000;
+    --z-modal: 1050;
+    --z-tooltip:最具200;
+}

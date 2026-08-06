@@ -1,0 +1,46 @@
+<section class="dip-project-header">
+    <div class="dip-breadcrumb">
+        <a href="/">داشبورد</a>
+        <span>/</span>
+        <a href="/projects">پروژه‌ها</a>
+        <span>/</span>
+        <span>
+            {% if project and project.name %}
+                {{ project.name }}
+            {% elif project and project.title %}
+                {{ project.title }}
+            {% else %}
+                Workspace
+            {% endif %}
+        </span>
+    </div>
+
+    <div class="dip-project-header__main">
+        <div>
+            <h1 class="dip-page-title">
+                {% if project and project.name %}
+                    {{ project.name }}
+                {% elif project and project.title %}
+                    {{ project.title }}
+                {% else %}
+                    فضای کاری پروژه
+                {% endif %}
+            </h1>
+
+            <p class="dip-page-subtitle">
+                مدیریت خطی پروژه از دریافت داده تا تصمیم نهایی
+            </p>
+        </div>
+
+        <div class="dip-project-status">
+            <span class="dip-status-dot"></span>
+            <span>
+                {% if project and project.status %}
+                    {{ project.status }}
+                {% else %}
+                    Active Workspace
+                {% endif %}
+            </span>
+        </div>
+    </div>
+</section>

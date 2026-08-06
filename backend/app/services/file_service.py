@@ -89,7 +89,10 @@ class FileService:
         stored_name = f"{uuid.uuid4().hex}{extension}"
 
         category_dir = (
-            self.upload_root / entity_type.lower() / str(entity_id)
+            self.upload_root
+            / entity_type.upper()
+            / str(entity_id)
+            / category
         )
         category_dir.mkdir(parents=True, exist_ok=True)
 

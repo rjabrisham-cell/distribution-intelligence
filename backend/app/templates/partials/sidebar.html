@@ -1,60 +1,174 @@
-<aside class="dip-sidebar">
-    <div class="dip-sidebar-top">
-        <a href="/" class="dip-brand">
-            <span class="dip-brand-mark">D</span>
-            <div class="dip-brand-copy">
+<aside class="dip-sidebar" aria-label="منوی اصلی سامانه">
+    <div class="dip-sidebar__brand">
+        <a href="/" class="dip-sidebar__brand-link">
+            <span class="dip-sidebar__brand-mark">D</span>
+            <span class="dip-sidebar__brand-copy">
                 <strong>DIP</strong>
-                <small>Distribution Intelligence</small>
-            </div>
+                <small>Distribution Intelligence Platform</small>
+            </span>
         </a>
+    </div>
 
-        <div class="dip-sidebar-company">
-            <span class="dip-kicker">Company</span>
-            <strong>{{ company_name }}</strong>
-            <small>{{ company_code }}</small>
+    <div class="dip-sidebar__section">
+        <div class="dip-sidebar__section-title">Workspace</div>
+        <nav class="dip-sidebar__nav">
+            <a href="/" class="dip-sidebar__link">
+                <i class="bi bi-house-door"></i>
+                <span>لندینگ</span>
+            </a>
+
+            <a href="/dashboard" class="dip-sidebar__link">
+                <i class="bi bi-speedometer2"></i>
+                <span>داشبورد تصمیم</span>
+            </a>
+
+            <a href="/projects" class="dip-sidebar__link">
+                <i class="bi bi-folder2-open"></i>
+                <span>فهرست پروژه‌ها</span>
+            </a>
+
+            <a href="/projects/new" class="dip-sidebar__link">
+                <i class="bi bi-plus-circle"></i>
+                <span>ایجاد پروژه جدید</span>
+            </a>
+        </nav>
+    </div>
+
+    <div class="dip-sidebar__section">
+        <div class="dip-sidebar__section-title">Journey</div>
+
+        <div class="dip-sidebar__group is-open">
+            <button type="button" class="dip-sidebar__group-toggle">
+                <span>
+                    <i class="bi bi-diagram-3"></i>
+                    جریان عملیاتی
+                </span>
+                <i class="bi bi-chevron-down"></i>
+            </button>
+
+            <div class="dip-sidebar__group-menu">
+                <a href="#" class="dip-sidebar__link is-disabled" aria-disabled="true" tabindex="-1">
+                    <i class="bi bi-inbox"></i>
+                    <span>Data Intake</span>
+                </a>
+
+                <a href="#" class="dip-sidebar__link is-disabled" aria-disabled="true" tabindex="-1">
+                    <i class="bi bi-check2-square"></i>
+                    <span>Validation</span>
+                </a>
+
+                <a href="#" class="dip-sidebar__link is-disabled" aria-disabled="true" tabindex="-1">
+                    <i class="bi bi-clipboard-data"></i>
+                    <span>Readiness</span>
+                </a>
+
+                <a href="#" class="dip-sidebar__link is-disabled" aria-disabled="true" tabindex="-1">
+                    <i class="bi bi-bullseye"></i>
+                    <span>Decision</span>
+                </a>
+
+                <a href="#" class="dip-sidebar__link is-disabled" aria-disabled="true" tabindex="-1">
+                    <i class="bi bi-truck"></i>
+                    <span>Distribution</span>
+                </a>
+
+                <a href="#" class="dip-sidebar__link is-disabled" aria-disabled="true" tabindex="-1">
+                    <i class="bi bi-bar-chart"></i>
+                    <span>Results</span>
+                </a>
+
+                <a href="#" class="dip-sidebar__link is-disabled" aria-disabled="true" tabindex="-1">
+                    <i class="bi bi-funnel"></i>
+                    <span>Profiling</span>
+                </a>
+
+                <a href="#" class="dip-sidebar__link is-disabled" aria-disabled="true" tabindex="-1">
+                    <i class="bi bi-columns-gap"></i>
+                    <span>Scenario Compare</span>
+                </a>
+            </div>
         </div>
     </div>
 
-    <nav class="dip-sidebar-nav">
-        <div class="dip-nav-group">
-            <span class="dip-nav-title">Flow</span>
-
-            <a href="/" class="dip-nav-link {% if current_path == '/' %}is-active{% endif %}">
-                <span>Landing</span>
+    <div class="dip-sidebar__section">
+        <div class="dip-sidebar__section-title">Operations</div>
+        <nav class="dip-sidebar__nav">
+            <a href="#" class="dip-sidebar__link is-disabled" aria-disabled="true" tabindex="-1">
+                <i class="bi bi-upload"></i>
+                <span>Upload Center</span>
             </a>
 
-            <a href="/projects" class="dip-nav-link {% if current_path.startswith('/projects') %}is-active{% endif %}">
-                <span>Projects</span>
+            <a href="#" class="dip-sidebar__link is-disabled" aria-disabled="true" tabindex="-1">
+                <i class="bi bi-file-earmark-spreadsheet"></i>
+                <span>Dataset Registry</span>
             </a>
 
-            <a href="/dashboard" class="dip-nav-link {% if current_path == '/dashboard' %}is-active{% endif %}">
-                <span>Decision Dashboard</span>
+            <a href="#" class="dip-sidebar__link is-disabled" aria-disabled="true" tabindex="-1">
+                <i class="bi bi-geo-alt"></i>
+                <span>Geo Readiness</span>
             </a>
-        </div>
 
-        <div class="dip-nav-group">
-            <span class="dip-nav-title">Validation Backbone</span>
+            <a href="#" class="dip-sidebar__link is-disabled" aria-disabled="true" tabindex="-1">
+                <i class="bi bi-signpost-2"></i>
+                <span>Routing Audit</span>
+            </a>
 
-            <div class="dip-nav-static">Company</div>
-            <div class="dip-nav-static">Project</div>
-            <div class="dip-nav-static">Validation</div>
-            <div class="dip-nav-static">Audit</div>
-            <div class="dip-nav-static">Completeness</div>
-            <div class="dip-nav-static">Geo</div>
-            <div class="dip-nav-static">Readiness</div>
-        </div>
-    </nav>
+            <a href="#" class="dip-sidebar__link is-disabled" aria-disabled="true" tabindex="-1">
+                <i class="bi bi-ui-checks-grid"></i>
+                <span>Rule Engine</span>
+            </a>
 
-    <div class="dip-sidebar-bottom">
-        <div class="dip-readiness-mini">
-            <div class="dip-readiness-mini-head">
-                <span>Readiness</span>
-                <strong>{{ readiness_value }}%</strong>
-            </div>
-            <div class="dip-progress">
-                <span style="width: {{ readiness_value }}%;"></span>
-            </div>
-            <small>{{ readiness_label }}</small>
+            <a href="#" class="dip-sidebar__link is-disabled" aria-disabled="true" tabindex="-1">
+                <i class="bi bi-shuffle"></i>
+                <span>Deduplication</span>
+            </a>
+        </nav>
+    </div>
+
+    <div class="dip-sidebar__section">
+        <div class="dip-sidebar__section-title">Admin</div>
+        <nav class="dip-sidebar__nav">
+            <a href="/admin" class="dip-sidebar__link">
+                <i class="bi bi-shield-check"></i>
+                <span>پنل مدیریت</span>
+            </a>
+
+            <a href="#" class="dip-sidebar__link is-disabled" aria-disabled="true" tabindex="-1">
+                <i class="bi bi-people"></i>
+                <span>Users & Roles</span>
+            </a>
+
+            <a href="#" class="dip-sidebar__link is-disabled" aria-disabled="true" tabindex="-1">
+                <i class="bi bi-sliders"></i>
+                <span>System Config</span>
+            </a>
+
+            <a href="#" class="dip-sidebar__link is-disabled" aria-disabled="true" tabindex="-1">
+                <i class="bi bi-journal-code"></i>
+                <span>Audit Log</span>
+            </a>
+        </nav>
+    </div>
+
+    <div class="dip-sidebar__section">
+        <div class="dip-sidebar__section-title">User / Support</div>
+        <nav class="dip-sidebar__nav">
+            <a href="#" class="dip-sidebar__link is-disabled" aria-disabled="true" tabindex="-1">
+                <i class="bi bi-life-preserver"></i>
+                <span>Support Desk</span>
+            </a>
+
+            <a href="#" class="dip-sidebar__link is-disabled" aria-disabled="true" tabindex="-1">
+                <i class="bi bi-book"></i>
+                <span>Documentation</span>
+            </a>
+        </nav>
+    </div>
+
+    <div class="dip-sidebar__footer">
+        <div class="dip-sidebar__footer-card">
+            <div class="dip-sidebar__footer-title">Platform Status</div>
+            <div class="dip-sidebar__footer-text">Frontend Consolidation فعال است</div>
         </div>
     </div>
 </aside>

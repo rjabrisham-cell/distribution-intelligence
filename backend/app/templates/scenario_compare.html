@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}
+  {% if project_context is defined and project_context is mapping %}
+    {{ project_context.get('name', 'پروژه') }}
+  {% else %}
+    پروژه
+  {% endif %}
+  - Scenario Compare
+{% endblock %}
+
+{% block content %}
+<div class="dip-container">
+  {% include "partials/shared/breadcrumb.html" %}
+  {% include "partials/shared/project_header.html" %}
+  {% include "partials/shared/journey_stepper.html" %}
+  {% include "partials/shared/current_step.html" %}
+
+  <section class="dip-card">
+    <div class="dip-section-head" style="margin-bottom: var(--spacing-md);">
+      <div>
+        <h2>مقایسه سناریوها</h2>
+        <p style="color: var(--color-neutral-muted); font-size: 0.9rem;">
+          مقایسه خروجی سناریوهای مختلف توزیع، هزینه، ظرفیت و کیفیت خدمت در این بخش نمایش داده می‌شود.
+        </p>
+      </div>
+    </div>
+
+    <div class="dip-empty-state">
+      <div class="dip-empty-state-icon">
+        <i class="bi bi-sliders"></i>
+      </div>
+      <p class="dip-empty-state-message">
+        این مرحله در حال آماده‌سازی است و نتایج مقایسه سناریوها در این بخش قرار می‌گیرد.
+      </p>
+    </div>
+  </section>
+
+  {% include "partials/shared/recent_activity.html" %}
+  {% include "partials/shared/delete_modal.html" %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  <script src="{{ url_for('static', path='js/components/journey.js') }}"></script>
+{% endblock %}

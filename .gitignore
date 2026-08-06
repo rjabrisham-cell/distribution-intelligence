@@ -12,6 +12,7 @@ env/
 
 # Environment files
 .env
+.env.*
 
 # IDE
 .vscode/
@@ -33,5 +34,14 @@ uploads/
 tmp/
 temp/
 
-# If you have node stuff later
+# Database backups
+backups/
+*.sql
+*.dump
+*.backup
+
+# Docker volumes
+postgres_data/
+
+# Node (future frontend)
 node_modules/

@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+
+{% block title %}
+  {% if project_context is defined and project_context is mapping %}
+    {{ project_context.get('name', 'پروژه') }} - Intake
+  {% else %}
+    DIP - دریافت داده پروژه
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="dip-container">
+  {% include "partials/shared/breadcrumb.html" %}
+  {% include "partials/shared/project_header.html" %}
+  {% include "partials/shared/journey_stepper.html" %}
+  {% include "partials/shared/current_step.html" %}
+
+  <div class="dip-grid dip-grid-2">
+    <section class="dip-card">
+      <div class="dip-section-head" style="margin-bottom: var(--spacing-md);">
+        <div>
+          <h2>بارگذاری فایل جدید</h2>
+          <p style="color: var(--color-neutral-muted); font-size: 0.9rem;">
+            فایل‌های مربوط به سفارشات، فروشگاه‌ها، ناوگان و سایر داده‌های پایه را در این بخش ثبت کنید.
+          </p>
+        </div>
+      </div>
+
+      <form action="/uploads/project/{{ project_context.id }}" method="POST" enctype="multipart/form-data">
+        <div style="margin-bottom: var(--spacing-md);">
+          <label for="category" style="display: block; margin-bottom: var(--spacing-sm); font-weight: 500;">
+            دسته‌بندی فایل
+          </label>
+          <select
+            id="category"
+            name="category"
+            required
+            style="width: 100%; padding: var(--spacing-sm); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); background: #fff;"
+          >
+            <option value="orders">سفارشات مشتریان (Orders)</option>
+            <option value="stores">مشتریان و فروشگاه‌ها (Stores)</option>
+            <option value="fleet">ناوگان حمل و نقل (Fleet)</option>
+            <option value="drivers">رانندگان و توزیع‌کنندگان (Drivers)</option>
+            <option value="routes">مسیرهای پیش‌فرض (Routes)</option>
+            <option value="warehouses">انبارها و نقاط توزیع (Warehouses)</option>
+            <option value="products">کالاها و کاتالوگ (Products)</option>
+          </select>
+        </div>
+
+        <div style="margin-bottom: var(--spacing-md); border: 2px dashed var(--border-color); padding: var(--spacing-lg); border-radius: var(--border-radius-md); text-align: center;">
+          <input
+            type="file"
+            name="files"
+            id="file-input"
+            required
+            multiple
+            style="display: none;"
+            onchange="updateFileNameDisplay(this)"
+          >
+          <label for="file-input" style="cursor: pointer; display: block;">
+            <div style="font-size: 2rem; color: var(--color-neutral-light); margin-bottom: var(--spacing-sm);">
+              <i class="bi bi-folder2-open"></i>
+            </div>
+            <span id="file-label-text" style="color: var(--color-primary); font-weight: 500;">
+              انتخاب فایل یا رها کردن آن در این ناحیه
+            </span>
+            <p style="font-size: 0.8rem; color: var(--color-neutral-light); margin-top: var(--spacing-xs);">
+              فرمت‌های مجاز: Excel, CSV, JSON
+            </p>
+          </label>
+        </div>
+
+        <button type="submit" class="dip-btn dip-btn-primary" style="width: 100%;">
+          ارسال و پردازش فایل
+        </button>
+      </form>
+    </section>
+
+    <section class="dip-card">
+      <div class="dip-section-head" style="margin-bottom: var(--spacing-md);">
+        <div>
+          <h2>فایل‌های بارگذاری‌شده</h2>
+          <p style="color: var(--color-neutral-muted); font-size: 0.9rem;">
+            لیست فایل‌های ثبت‌شده برای این پروژه و عملیات‌های قابل انجام.
+          </p>
+        </div>
+      </div>
+
+      {% if files and files|length > 0 %}
+      <div class="dip-table-responsive">
+        <table class="dip-table">
+          <thead>
+            <tr>
+              <th>نام فایل</th>
+              <th>دسته‌بندی</th>
+              <th>حجم فایل</th>
+              <th>عملیات</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for file in files %}
+            <tr>
+              <td style="max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                {{ file.original_name }}
+              </td>
+              <td>
+                <span class="dip-badge dip-badge-draft">
+                  {% if file.category == 'orders' %}سفارشات
+                  {% elif file.category == 'stores' %}فروشگاه‌ها
+                  {% elif file.category == 'fleet' %}ناوگان
+                  {% elif file.category == 'drivers' %}رانندگان
+                  {% elif file.category == 'routes' %}مسیرها
+                  {% elif file.category == 'warehouses' %}انبارها
+                  {% elif file.category == 'products' %}محصولات
+                  {% else %}{{ file.category }}{% endif %}
+                </span>
+              </td>
+              <td>{{ file.file_size_human }}</td>
+              <td>
+                <div style="display: flex; gap: var(--spacing-sm); flex-wrap: wrap;">
+                  <a
+                    href="/uploads/file/{{ file.id }}/download"
+                    class="dip-btn dip-btn-secondary"
+                    style="padding: 0.35rem 0.6rem; font-size: 0.8rem;"
+                  >
+                    دانلود
+                  </a>
+                  <button
+                    type="button"
+                    class="dip-btn dip-btn-danger"
+                    style="padding: 0.35rem 0.6rem; font-size: 0.8rem;"
+                    onclick="confirmDelete('{{ file.id }}', '{{ file.original_name|e }}')"
+                  >
+                    حذف
+                  </button>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="dip-empty-state">
+        <div class="dip-empty-state-icon">
+          <i class="bi bi-folder2"></i>
+        </div>
+        <p class="dip-empty-state-message">هنوز فایلی برای این پروژه بارگذاری نشده است.</p>
+        <p style="font-size: 0.85rem; margin-top: var(--spacing-sm); color: var(--color-neutral-muted);">
+          برای شروع، یکی از فایل‌های ساختاریافته را از بخش بارگذاری ثبت کنید.
+        </p>
+      </div>
+      {% endif %}
+    </section>
+  </div>
+
+  {% include "partials/shared/recent_activity.html" %}
+
+  <div id="delete-modal" class="dip-modal">
+    <div class="dip-modal-container">
+      <div class="dip-modal-header">
+        <h4 style="font-weight: 600; color: var(--color-danger);">تأیید حذف فایل</h4>
+      </div>
+      <div class="dip-modal-body">
+        <p>
+          آیا از حذف فایل
+          <strong id="delete-file-name" style="color: var(--color-neutral-dark);"></strong>
+          اطمینان دارید؟ این عملیات غیرقابل بازگشت است.
+        </p>
+      </div>
+      <div class="dip-modal-footer">
+        <button type="button" class="dip-btn dip-btn-secondary" onclick="closeDeleteModal()">انصراف</button>
+        <form id="delete-form" method="POST" action="">
+          <button type="submit" class="dip-btn dip-btn-danger">حذف قطعی</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  <script src="{{ url_for('static', path='js/components/journey.js') }}"></script>
+  <script>
+    function updateFileNameDisplay(input) {
+      const textLabel = document.getElementById('file-label-text');
+      if (!textLabel) return;
+
+      if (input.files && input.files.length > 0) {
+        textLabel.textContent = Array.from(input.files).map(function(file) {
+          return file.name;
+        }).join(' ، ');
+      } else {
+        textLabel.textContent = 'انتخاب فایل یا رها کردن آن در این ناحیه';
+      }
+    }
+
+    function confirmDelete(fileId, fileName) {
+      if (!fileId) {
+        return;
+      }
+
+      const modal = document.getElementById('delete-modal');
+      const nameSpan = document.getElementById('delete-file-name');
+      const deleteForm = document.getElementById('delete-form');
+
+      if (!modal || !nameSpan || !deleteForm) {
+        return;
+      }
+
+      nameSpan.textContent = fileName || '';
+      deleteForm.action = '/uploads/file/' + fileId + '/delete';
+      modal.classList.add('is-active');
+    }
+
+    function closeDeleteModal() {
+      const modal = document.getElementById('delete-modal');
+      if (!modal) {
+        return;
+      }
+      modal.classList.remove('is-active');
+    }
+
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape') {
+        closeDeleteModal();
+      }
+    });
+  </script>
+{% endblock %}

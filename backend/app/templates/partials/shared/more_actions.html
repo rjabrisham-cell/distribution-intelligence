@@ -1,0 +1,55 @@
+{#
+============================================================================
+Component: more_actions.html
+Purpose:   Dropdown menu for additional actions. Uses Bootstrap Dropdown JS only.
+============================================================================
+Required template context:
+  (none)
+
+Optional:
+  actions : list[Action]
+    Action.label : str       — Display text
+    Action.url   : str|None  — Link target
+    Action.icon  : str|None  — Bootstrap Icons class
+
+Output:
+  Bootstrap Dropdown (JS behavior only)
+  Null-safe: empty actions → not rendered
+  ARIA: aria-haspopup="true" aria-expanded="false"
+============================================================================
+#}
+{% if actions is defined and actions is not none %}
+  {% set action_list = actions if actions is iterable and actions is not string else [] %}
+  {% if action_list|length > 0 %}
+<div class="ds-more-actions">
+  <button
+    class="ds-more-actions__trigger"
+    type="button"
+    id="moreActionsDropdown"
+    data-toggle="dropdown"
+    aria-haspopup="true"
+    aria-expanded="false"
+    aria-label="More actions"
+  >
+    <i class="bi bi-three-dots-vertical" aria-hidden="true"></i>
+  </button>
+  <ul class="ds-more-actions__menu" aria-labelledby="moreActionsDropdown">
+    {% for action in action_list %}
+      {% if action is mapping %}
+        {% set label = action.get('label', '') | default('') %}
+        {% set url   = action.get('url', None) %}
+        {% set icon  = action.get('icon', None) %}
+        {% if label %}
+          <li>
+            <a href="{{ url | default('#') }}" class="ds-more-actions__item">
+              {% if icon %}<i class="bi {{ icon }}" aria-hidden="true"></i>{% endif %}
+              {{ label }}
+            </a>
+          </li>
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+  </ul>
+</div>
+  {% endif %}
+{% endif %}

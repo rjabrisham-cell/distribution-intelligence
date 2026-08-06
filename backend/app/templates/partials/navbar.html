@@ -1,28 +1,26 @@
-<header class="dip-topbar">
-    <div class="dip-topbar-left">
-        <div class="dip-context-chip">
-            <span class="dip-context-label">Company</span>
-            <strong>{{ company_name }}</strong>
-        </div>
+<header class="dip-navbar">
+    <div class="dip-navbar__start">
+        <button type="button" class="dip-navbar__icon-btn" data-sidebar-toggle aria-label="باز و بسته کردن سایدبار">
+            <i class="bi bi-list"></i>
+        </button>
 
-        <div class="dip-context-chip">
-            <span class="dip-context-label">Project</span>
-            <strong>{{ project_name }}</strong>
-        </div>
-
-        <div class="dip-context-chip">
-            <span class="dip-context-label">Status</span>
-            <strong>{{ project_status }}</strong>
+        <div class="dip-navbar__title-wrap">
+            <div class="dip-navbar__eyebrow">Distribution Intelligence Platform</div>
+            <div class="dip-navbar__title">
+                {% block navbar_title %}Application Shell{% endblock %}
+            </div>
         </div>
     </div>
 
-    <div class="dip-topbar-right">
-        <div class="dip-userbox">
-            <div class="dip-userbox-meta">
-                <strong>{{ user_name }}</strong>
-                <small>{{ user_role }}</small>
-            </div>
-            <div class="dip-avatar">{{ user_initial }}</div>
-        </div>
+    <div class="dip-navbar__end">
+        <a href="/projects/new" class="dip-btn dip-btn-primary dip-btn-sm">
+            <i class="bi bi-plus-lg"></i>
+            <span>پروژه جدید</span>
+        </a>
+
+        <a href="/projects" class="dip-btn dip-btn-secondary dip-btn-sm">
+            <i class="bi bi-folder2-open"></i>
+            <span>پروژه‌ها</span>
+        </a>
     </div>
 </header>

@@ -1,103 +1,265 @@
 {% extends "base.html" %}
 
-{% block title %}New Project | DIP{% endblock %}
+{% block title %}ایجاد پروژه جدید | DIP{% endblock %}
 
 {% block content %}
-<section class="page-hero page-hero-compact">
-    <div>
-        <span class="dip-eyebrow">Project Intake Start</span>
-        <h1>ایجاد پروژه جدید</h1>
-        <p>
-            این صفحه نقطه شروع intake است. در این فاز فقط داده‌های پایه پروژه ثبت می‌شوند
-            تا Workspace پروژه ساخته شود و سپس validation، audit، completeness، geo و readiness
-            در مراحل بعدی روی آن اعمال شوند.
-        </p>
-    </div>
-</section>
+<div class="dip-container">
+    <section class="dip-new-project-hero">
+        <div>
+            <span class="dip-badge dip-badge-running">New Distribution Project</span>
 
-<section class="project-form-layout">
-    <article class="project-form-card">
-        <div class="dip-section-head">
+            <h1>تعریف و ثبت پروژه توزیع جدید</h1>
+
+            <p>
+                اطلاعات پایه پروژه را ثبت کنید تا فضای کاری آن ایجاد شود و مراحل Intake، Validation،
+                Profiling، Readiness و Decision روی آن فعال گردد.
+            </p>
+        </div>
+
+        <div class="dip-new-project-hero__actions">
+            <a href="/projects" class="dip-btn dip-btn-secondary">مشاهده پروژه‌ها</a>
+        </div>
+    </section>
+
+    <section class="dip-form-shell">
+        <div class="dip-form-shell__header">
             <div>
-                <h2>اطلاعات پایه پروژه</h2>
-                <p>فیلدهای این فرم با backend فعلی سازگار نگه داشته شده‌اند.</p>
+                <h2>فرم اطلاعات شناسنامه‌ای پروژه</h2>
+                <p>
+                    نام پروژه الزامی است. کد پروژه و شرح پروژه در صورت نیاز تکمیل شوند.
+                </p>
             </div>
         </div>
 
-        <form method="POST" action="/projects" class="dip-form-grid">
-            <div class="dip-field">
-                <label for="mobile">شماره موبایل</label>
-                <input
-                    type="text"
-                    id="mobile"
-                    name="mobile"
-                    class="form-control"
-                    required
-                    placeholder="09123456789"
-                >
+        <form action="/projects/new" method="post" class="dip-project-form">
+            <div class="dip-form-grid">
+                <div class="dip-field dip-field--full">
+                    <label for="name">نام انحصاری پروژه</label>
+
+                    <input
+                        id="name"
+                        name="name"
+                        type="text"
+                        placeholder="مثال: پروژه توزیع تهران"
+                        required
+                    >
+
+                    <small>
+                        یک نام مشخص و قابل شناسایی برای Workspace پروژه وارد کنید.
+                    </small>
+                </div>
+
+                <div class="dip-field dip-field--full">
+                    <label for="code">کد پروژه</label>
+
+                    <input
+                        id="code"
+                        name="code"
+                        type="text"
+                        placeholder="مثال: PRJ-1405-001"
+                    >
+
+                    <small>
+                        این فیلد اختیاری است.
+                    </small>
+                </div>
+
+                <div class="dip-field dip-field--full">
+                    <label for="description">شرح مختصر پروژه</label>
+
+                    <textarea
+                        id="description"
+                        name="description"
+                        rows="6"
+                        placeholder="مثال: پروژه توزیع محصولات در محدوده تهران"
+                    ></textarea>
+
+                    <small>
+                        هدف، دامنه یا توضیح کوتاه پروژه را در این بخش وارد کنید. این فیلد اختیاری است.
+                    </small>
+                </div>
             </div>
 
-            <div class="dip-field">
-                <label for="company_name">نام شرکت</label>
-                <input
-                    type="text"
-                    id="company_name"
-                    name="company_name"
-                    class="form-control"
-                    required
-                    placeholder="نام شرکت"
-                >
-            </div>
+            <div class="dip-form-note">
+                <div class="dip-form-note__title">نتیجه ثبت</div>
 
-            <div class="dip-field dip-field-full">
-                <label for="project_name">نام پروژه</label>
-                <input
-                    type="text"
-                    id="project_name"
-                    name="project_name"
-                    class="form-control"
-                    required
-                    placeholder="مثلاً ارزیابی آمادگی داده توزیع منطقه غرب"
-                >
-            </div>
-
-            <div class="dip-field dip-field-full">
-                <label for="description">توضیحات</label>
-                <textarea
-                    id="description"
-                    name="description"
-                    class="form-control"
-                    rows="5"
-                    placeholder="شرح کوتاه از هدف پروژه، دامنه داده و سناریوی موردنظر"
-                ></textarea>
+                <p>
+                    بعد از ثبت، پروژه در فهرست پروژه‌ها ساخته می‌شود و صفحه Workspace آن
+                    برای ورود به مرحله Intake در دسترس خواهد بود.
+                </p>
             </div>
 
             <div class="dip-form-actions">
-                <button type="submit" class="btn btn-primary dip-btn-lg">ایجاد پروژه</button>
-                <a href="/projects" class="btn btn-outline-secondary dip-btn-lg">بازگشت به پروژه‌ها</a>
+                <button type="submit" class="dip-btn dip-btn-primary">
+                    ثبت نهایی و ساخت Workspace
+                </button>
+
+                <a href="/projects" class="dip-btn dip-btn-secondary">
+                    انصراف
+                </a>
             </div>
         </form>
-    </article>
+    </section>
+</div>
 
-    <aside class="project-side-card">
-        <span class="dip-kicker">Next Steps</span>
-        <h3>بعد از ایجاد پروژه چه می‌شود؟</h3>
+<style>
+.dip-new-project-hero {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.5rem 1.75rem;
+    margin-bottom: var(--spacing-lg);
+    border: 1px solid var(--border-color);
+    border-radius: 18px;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    box-shadow: var(--shadow-soft);
+}
 
-        <ol class="project-step-list">
-            <li>ساخت Project Workspace</li>
-            <li>آپلود فایل‌های ورودی</li>
-            <li>Profiling و Validation</li>
-            <li>Audit و Completeness Review</li>
-            <li>Geo Assessment</li>
-            <li>Readiness Scoring</li>
-            <li>Decision Dashboard</li>
-        </ol>
+.dip-new-project-hero h1 {
+    margin: .7rem 0 .7rem;
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--color-neutral-dark);
+}
 
-        <div class="dip-note-box">
-            <strong>نکته:</strong>
-            در این فاز عمداً فیلدهای backend تغییر نکرده‌اند تا بدون دست‌زدن به service/repository،
-            UX جدید روی قرارداد فعلی سوار شود.
-        </div>
-    </aside>
-</section>
+.dip-new-project-hero p {
+    margin: 0;
+    max-width: 72ch;
+    line-height: 1.95;
+    color: var(--color-neutral-muted);
+}
+
+.dip-form-shell {
+    border: 1px solid var(--border-color);
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: var(--shadow-soft);
+    overflow: hidden;
+}
+
+.dip-form-shell__header {
+    padding: 1.4rem 1.6rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    background: #fbfcfe;
+}
+
+.dip-form-shell__header h2 {
+    margin: 0 0 .45rem;
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--color-neutral-dark);
+}
+
+.dip-form-shell__header p {
+    margin: 0;
+    color: var(--color-neutral-muted);
+    line-height: 1.85;
+}
+
+.dip-project-form {
+    padding: 1.5rem 1.6rem 1.6rem;
+}
+
+.dip-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.dip-field {
+    display: grid;
+    gap: .45rem;
+}
+
+.dip-field--full {
+    grid-column: 1 / -1;
+}
+
+.dip-field label {
+    font-size: .95rem;
+    font-weight: 700;
+    color: var(--color-neutral-dark);
+}
+
+.dip-field input,
+.dip-field textarea {
+    box-sizing: border-box;
+    width: 100%;
+    padding: .9rem 1rem;
+    border: 1px solid #d7deea;
+    border-radius: 12px;
+    background: #fff;
+    color: var(--color-neutral-dark);
+    font: inherit;
+    line-height: 1.6;
+    transition: border-color .2s ease, box-shadow .2s ease, background-color .2s ease;
+}
+
+.dip-field input::placeholder,
+.dip-field textarea::placeholder {
+    color: #94a3b8;
+}
+
+.dip-field input:focus,
+.dip-field textarea:focus {
+    outline: none;
+    border-color: rgba(37, 99, 235, .55);
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, .10);
+    background: #fcfdff;
+}
+
+.dip-field small {
+    color: var(--color-neutral-muted);
+    font-size: .82rem;
+    line-height: 1.7;
+}
+
+.dip-form-note {
+    margin-bottom: 1.2rem;
+    padding: 1rem 1.05rem;
+    border: 1px solid #dbe7ff;
+    border-radius: 14px;
+    background: #f8fbff;
+}
+
+.dip-form-note__title {
+    margin-bottom: .4rem;
+    color: #1d4ed8;
+    font-weight: 800;
+}
+
+.dip-form-note p {
+    margin: 0;
+    color: var(--color-neutral-muted);
+    line-height: 1.85;
+}
+
+.dip-form-actions {
+    display: flex;
+    gap: .75rem;
+    flex-wrap: wrap;
+    padding-top: .4rem;
+    border-top: 1px solid var(--border-color);
+}
+
+@media (max-width: 900px) {
+    .dip-new-project-hero,
+    .dip-form-grid {
+        grid-template-columns: 1fr;
+        display: grid;
+    }
+
+    .dip-new-project-hero__actions,
+    .dip-new-project-hero__actions .dip-btn {
+        width: 100%;
+    }
+
+    .dip-form-actions .dip-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+</style>
 {% endblock %}

@@ -1,0 +1,27 @@
+<div class="dip-card">
+    <div class="dip-card__header">
+        <h2 class="dip-card__title">فعالیت‌های اخیر</h2>
+    </div>
+
+    <div class="dip-card__body">
+        {% if recent_activity and recent_activity|length > 0 %}
+            <ul class="dip-activity-list">
+                {% for item in recent_activity %}
+                    <li class="dip-activity-list__item">
+                        <div class="dip-activity-list__title">
+                            {{ item.title if item.title else 'رویداد ثبت شد' }}
+                        </div>
+                        <div class="dip-activity-list__meta">
+                            {{ item.timestamp if item.timestamp else '' }}
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <div class="dip-empty-state dip-empty-state--compact">
+                <div class="dip-empty-state__title">فعالیتی ثبت نشده است</div>
+                <div class="dip-empty-state__text">رویدادهای پروژه در این بخش نمایش داده می‌شوند.</div>
+            </div>
+        {% endif %}
+    </div>
+</div>

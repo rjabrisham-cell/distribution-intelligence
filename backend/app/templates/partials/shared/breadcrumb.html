@@ -1,0 +1,15 @@
+{% if breadcrumb_items and breadcrumb_items|length > 0 %}
+<nav class="dip-breadcrumb" aria-label="breadcrumb">
+    <ol class="dip-breadcrumb__list">
+        {% for item in breadcrumb_items %}
+            <li class="dip-breadcrumb__item {% if loop.last %}is-current{% endif %}">
+                {% if item.url and not loop.last %}
+                    <a href="{{ item.url }}" class="dip-breadcrumb__link">{{ item.label }}</a>
+                {% else %}
+                    <span class="dip-breadcrumb__current">{{ item.label }}</span>
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ol>
+</nav>
+{% endif %}

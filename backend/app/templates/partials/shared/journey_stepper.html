@@ -1,0 +1,26 @@
+{% if journey_state and journey_state.stages %}
+<div class="dip-stepper">
+    <div class="dip-stepper__track">
+        {% for stage in journey_state.stages %}
+            <div class="dip-stepper__step
+                {% if stage.state == 'completed' %}is-completed{% elif stage.state == 'current' %}is-current{% else %}is-upcoming{% endif %}">
+                <div class="dip-stepper__marker">
+                    {% if stage.state == 'completed' %}
+                        <i class="bi bi-check2"></i>
+                    {% else %}
+                        {{ loop.index }}
+                    {% endif %}
+                </div>
+
+                <div class="dip-stepper__content">
+                    {% if stage.url %}
+                        <a href="{{ stage.url }}" class="dip-stepper__label">{{ stage.label }}</a>
+                    {% else %}
+                        <span class="dip-stepper__label">{{ stage.label }}</span>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
