@@ -232,3 +232,10 @@ class TestBackoffCalculation:
         assert wait == 2.5
 
     def test_hint_respects_max(self):
+        """Provider hint is clamped to max_backoff_seconds."""
+        executor = RetryExecutor(RetryPolicy(
+            backoff_base_seconds=1.0,
+            max_backoff_seconds=5.0,
+        ))
+        wait = executor._calc_wait(0, hint=30.0)
+        assert wait == 5.0

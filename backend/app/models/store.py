@@ -1,94 +1,57 @@
 """
-Store Model — Enterprise Data Model v3.1
+Store Model (Enterprise v3.1)
+----------------------------
 
-Store = Canonical Physical Place
-
-Architecture
-------------
-
-Store represents ONE canonical real-world physical location.
-
-Rules
------
-
-* Store is Company-independent.
-* Store is the canonical geographic identity.
-* Company-specific business data belongs to CompanyStore.
-* CompanyStore may optionally link to one Store through master_store_id.
-* A Store may be referenced by many CompanyStore records.
-* Store does not belong directly to a Project.
-* Project usage is handled through CompanyStore -> ProjectCompanyStore.
-
-AI Matching
------------
-
-AI Matching resolves:
-
-    CompanyStore -> Store
-
-The relationship is:
-
-    Company
-        |
-        | 1:M
-        v
-    CompanyStore
-        |
-        | M:1
-        v
-    Store
-
-Store is the Enterprise Truth Layer for the physical location.
-
-Location History
-----------------
-
-StoreLocation contains historical or validated geographic coordinates.
-
-The Store.latitude and Store.longitude fields represent the
-current canonical coordinates used for fast access and search.
+Canonical physical location with life-cycle management.
 """
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from sqlalchemy import (
+    BigInteger,
     Boolean,
+    Enum as SQLAlchemyEnum,
+    Index,
     Integer,
     Numeric,
     String,
     Text,
 )
-from sqlalchemy.orm import (
-    Mapped,
-    mapped_column,
-    relationship,
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from app.core.enums import (
+    DataQualityStatus,
+    DuplicateStatus,
+    GeoStatus,
 )
-
 from app.models.base import BaseModel
-
-
-if TYPE_CHECKING:
-    from app.models.address_candidate import AddressCandidate
-    from app.models.company_store import CompanyStore
-    from app.models.store_location import StoreLocation
 
 
 class Store(BaseModel):
     """
-    Canonical physical location.
+    Canonical physical location (store, pharmacy, outlet, etc.).
 
-    Store is independent of Company and Project.
+    Lifecycle:
+        Intake → Validation → Matching → Resolution → Readiness → Complete
 
-    A CompanyStore may be linked to this Store as its
-    canonical/master physical location.
+    Relationships:
+        • One-to-many: Store → CompanyStore (via master_store_id)
+        • One-to-many: Store → StoreLocation (location history)
+        • One-to-many: Store → AddressCandidate (geocoding candidates)
     """
 
     __tablename__ = "stores"
 
+    __table_args__ = (
+        Index(
+            "ux_stores_legacy_mysql_id",
+            "legacy_mysql_id",
+            unique=True,
+        ),
+    )
+
     # ==========================================================
-    # Identity
+    # Primary Key & Audit Fields
     # ==========================================================
 
     id: Mapped[int] = mapped_column(
@@ -96,6 +59,16 @@ class Store(BaseModel):
         primary_key=True,
         autoincrement=True,
         index=True,
+    )
+
+    # ==========================================================
+    # Legacy MySQL Migration Support
+    # ==========================================================
+
+    legacy_mysql_id: Mapped[int | None] = mapped_column(
+        BigInteger,
+        nullable=True,
+        comment="ID from legacy MySQL system for migration tracking",
     )
 
     # ==========================================================
@@ -111,15 +84,20 @@ class Store(BaseModel):
     canonical_phone: Mapped[str | None] = mapped_column(
         String(20),
         nullable=True,
+        index=True,
     )
 
-    canonical_category: Mapped[str | None] = mapped_column(
-        String(100),
+    # ==========================================================
+    # Contact Information
+    # ==========================================================
+
+    manager_name: Mapped[str | None] = mapped_column(
+        String(255),
         nullable=True,
     )
 
-    shop_type: Mapped[str | None] = mapped_column(
-        String(50),
+    mobile: Mapped[str | None] = mapped_column(
+        String(20),
         nullable=True,
     )
 
@@ -154,6 +132,12 @@ class Store(BaseModel):
 
     # ==========================================================
     # Administrative Divisions
+    #
+    # MVP — Base Geography Only:
+    #     province_id / city_id
+    #     + denormalized province_name / city_name
+    #
+    # Deep geography removed from MVP readiness pipeline.
     # ==========================================================
 
     province_id: Mapped[int | None] = mapped_column(
@@ -162,29 +146,9 @@ class Store(BaseModel):
         nullable=True,
     )
 
-    county_id: Mapped[int | None] = mapped_column(
-        Integer,
-        nullable=True,
-    )
-
     city_id: Mapped[int | None] = mapped_column(
         Integer,
         index=True,
-        nullable=True,
-    )
-
-    district_id: Mapped[int | None] = mapped_column(
-        Integer,
-        nullable=True,
-    )
-
-    neighborhood_id: Mapped[int | None] = mapped_column(
-        Integer,
-        nullable=True,
-    )
-
-    village_id: Mapped[int | None] = mapped_column(
-        Integer,
         nullable=True,
     )
 
@@ -197,27 +161,7 @@ class Store(BaseModel):
         nullable=True,
     )
 
-    county_name: Mapped[str | None] = mapped_column(
-        String(100),
-        nullable=True,
-    )
-
     city_name: Mapped[str | None] = mapped_column(
-        String(100),
-        nullable=True,
-    )
-
-    district_name: Mapped[str | None] = mapped_column(
-        String(100),
-        nullable=True,
-    )
-
-    neighborhood_name: Mapped[str | None] = mapped_column(
-        String(100),
-        nullable=True,
-    )
-
-    village_name: Mapped[str | None] = mapped_column(
         String(100),
         nullable=True,
     )
@@ -243,6 +187,49 @@ class Store(BaseModel):
     )
 
     # ==========================================================
+    # Data Readiness MVP
+    # ==========================================================
+
+    data_quality_status: Mapped[DataQualityStatus | None] = mapped_column(
+        SQLAlchemyEnum(
+            DataQualityStatus,
+            native_enum=False,
+            length=50,
+        ),
+        nullable=True,
+        default=DataQualityStatus.PENDING,
+        comment="وضعیت کیفیت داده‌های فروشگاه",
+    )
+
+    geo_status: Mapped[GeoStatus | None] = mapped_column(
+        SQLAlchemyEnum(
+            GeoStatus,
+            native_enum=False,
+            length=50,
+        ),
+        nullable=True,
+        default=GeoStatus.PENDING,
+        comment="وضعیت اعتبارسنجی جغرافیایی",
+    )
+
+    duplicate_status: Mapped[DuplicateStatus | None] = mapped_column(
+        SQLAlchemyEnum(
+            DuplicateStatus,
+            native_enum=False,
+            length=50,
+        ),
+        nullable=True,
+        default=DuplicateStatus.UNKNOWN,
+        comment="وضعیت شناسایی تکراری بودن",
+    )
+
+    readiness_score: Mapped[float | None] = mapped_column(
+        Numeric(5, 2),
+        nullable=True,
+        comment="امتیاز آمادگی داده‌های فروشگاه (مثلاً 95.50)",
+    )
+
+    # ==========================================================
     # AI Matching
     # ==========================================================
 
@@ -259,7 +246,6 @@ class Store(BaseModel):
     )
 
     # Possible values:
-    #
     # PENDING
     # MATCHED
     # CONFLICT
@@ -296,51 +282,21 @@ class Store(BaseModel):
     # Relationships
     # ==========================================================
 
-    # ----------------------------------------------------------
-    # CompanyStore References
-    #
-    # One Store can be referenced by many CompanyStores.
-    #
-    # IMPORTANT:
-    #
-    # This matches:
-    #
-    # CompanyStore.master_store
-    #
-    # through:
-    #
-    # back_populates="master_store"
-    # ----------------------------------------------------------
-
-    company_stores: Mapped[
-        list["CompanyStore"]
-    ] = relationship(
+    company_stores: Mapped[list["CompanyStore"]] = relationship(
         "CompanyStore",
         back_populates="master_store",
         foreign_keys="CompanyStore.master_store_id",
         lazy="selectin",
     )
 
-    # ----------------------------------------------------------
-    # Store Location History
-    # ----------------------------------------------------------
-
-    store_locations: Mapped[
-        list["StoreLocation"]
-    ] = relationship(
+    store_locations: Mapped[list["StoreLocation"]] = relationship(
         "StoreLocation",
         back_populates="store",
         lazy="selectin",
         cascade="all, delete-orphan",
     )
 
-    # ----------------------------------------------------------
-    # Address Candidates
-    # ----------------------------------------------------------
-
-    address_candidates: Mapped[
-        list["AddressCandidate"]
-    ] = relationship(
+    address_candidates: Mapped[list["AddressCandidate"]] = relationship(
         "AddressCandidate",
         back_populates="store",
         lazy="selectin",
@@ -356,10 +312,30 @@ class Store(BaseModel):
         """
         Returns True when both canonical coordinates exist.
         """
-
         return (
             self.latitude is not None
             and self.longitude is not None
+        )
+
+    @property
+    def is_geo_ready(self) -> bool:
+        """
+        Returns True when the Store has valid geographic data.
+        """
+        return (
+            self.geo_status == GeoStatus.VALID
+            and self.latitude is not None
+            and self.longitude is not None
+        )
+
+    @property
+    def is_ready(self) -> bool:
+        """
+        Returns True when the Store readiness score is at least 90.
+        """
+        return (
+            self.readiness_score is not None
+            and self.readiness_score >= 90
         )
 
     # ==========================================================
@@ -367,11 +343,24 @@ class Store(BaseModel):
     # ==========================================================
 
     def __repr__(self) -> str:
+        geo_display = (
+            self.geo_status.value
+            if self.geo_status is not None
+            else "N/A"
+        )
+
+        readiness_display = (
+            f"{self.readiness_score}"
+            if self.readiness_score is not None
+            else "N/A"
+        )
+
         return (
             f"<Store("
-            f"id={self.id}, "
+            f"id={self.id!r}, "
             f"name={self.canonical_name!r}, "
             f"city={self.city_name!r}, "
-            f"active={self.is_active}"
+            f"geo={geo_display!r}, "
+            f"readiness={readiness_display}"
             f")>"
         )

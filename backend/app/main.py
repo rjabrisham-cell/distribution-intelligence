@@ -22,6 +22,7 @@ from app.routers.files import router as files_router
 from app.routers.admin import router as admin_router
 from app.routers.project import router as project_router
 from app.routers.import_router import router as import_router
+from app.routers.geographic_router import router as geographic_router  # ← جدید
 
 # ----------------------------------------------------
 # FastAPI
@@ -61,6 +62,7 @@ app.include_router(files_router)
 app.include_router(admin_router)
 app.include_router(project_router)
 app.include_router(import_router)
+app.include_router(geographic_router)  # ← جدید
 
 # ----------------------------------------------------
 # Health
@@ -68,7 +70,6 @@ app.include_router(import_router)
 
 @app.get("/health")
 async def health():
-
     return {
         "status": "ok",
         "app": settings.APP_NAME,

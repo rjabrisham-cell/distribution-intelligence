@@ -1,0 +1,572 @@
+/* =========================================================
+   DIP - Intake Page
+   File:
+   backend/app/static/css/intake.css
+
+   این فایل فقط استایل‌های اختصاصی صفحه Intake را کنترل می‌کند.
+   استایل‌های عمومی پروژه در dip.css قرار دارند.
+   ========================================================= */
+
+
+/* =========================================================
+   Intake Root
+   ========================================================= */
+
+.dip-intake {
+    width: 100%;
+}
+
+
+/* =========================================================
+   Sample Store File / Template
+   ========================================================= */
+
+.dip-intake__template {
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    margin-bottom: 24px;
+    overflow: hidden;
+}
+
+.dip-intake__template-inner {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 20px;
+    flex-wrap: wrap;
+}
+
+.dip-intake__template-content {
+    min-width: 0;
+    flex: 1 1 500px;
+}
+
+.dip-intake__template-title {
+    margin: 0 0 8px;
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #92400e;
+}
+
+.dip-intake__template-description {
+    margin: 0 0 12px;
+    font-size: .9rem;
+    color: #a16207;
+    line-height: 1.9;
+}
+
+.dip-intake__template-info {
+    display: grid;
+    gap: 4px;
+    font-size: .82rem;
+    color: #78716c;
+    line-height: 1.9;
+}
+
+.dip-intake__template-info strong {
+    color: #57534e;
+}
+
+.dip-intake__template-button {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    align-self: flex-start;
+}
+
+
+/* =========================================================
+   Main Intake Cards
+   ========================================================= */
+
+.dip-intake__upload-card,
+.dip-intake__files-card {
+    min-width: 0;
+}
+
+.dip-intake__section-head {
+    margin-bottom: 20px;
+}
+
+.dip-intake__section-head p {
+    color: var(--dip-text-muted);
+    font-size: .9rem;
+}
+
+
+/* =========================================================
+   Upload Form
+   ========================================================= */
+
+.dip-intake__upload-form {
+    gap: 20px;
+}
+
+
+/* =========================================================
+   Geographic Scope
+   ========================================================= */
+
+.dip-intake__geo {
+    margin-bottom: 4px;
+    border-right: 4px solid var(--dip-primary);
+    background: #eff6ff;
+    padding: 18px;
+    border-radius: 14px;
+}
+
+.dip-intake__geo-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.dip-intake__geo-icon {
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    background: #dbeafe;
+    color: var(--dip-primary-strong);
+    font-size: 1.15rem;
+}
+
+.dip-intake__geo-title {
+    margin: 0 0 4px;
+    color: var(--dip-text);
+    font-size: 1rem;
+    font-weight: 800;
+}
+
+.dip-intake__geo-description {
+    margin: 0;
+    color: var(--dip-text-soft);
+    font-size: .86rem;
+    line-height: 1.8;
+}
+
+.dip-intake__geo-fields {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+}
+
+
+/* =========================================================
+   Intake Labels / Required / Optional
+   ========================================================= */
+
+.dip-intake__required {
+    color: var(--dip-danger);
+    font-weight: 800;
+    margin-right: 2px;
+}
+
+.dip-intake__optional {
+    display: inline-flex;
+    align-items: center;
+    margin-right: 6px;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: #e2e8f0;
+    color: var(--dip-text-muted);
+    font-size: .7rem;
+    font-weight: 700;
+    vertical-align: middle;
+}
+
+.dip-intake__field-help {
+    margin-top: 6px;
+    font-size: .78rem;
+    line-height: 1.7;
+}
+
+
+/* =========================================================
+   Select States
+   ========================================================= */
+
+.dip-intake .dip-select:disabled {
+    color: var(--dip-text-muted);
+    background: #f3f4f6;
+    cursor: not-allowed;
+    opacity: 1;
+}
+
+.dip-intake .dip-select:not(:disabled) {
+    cursor: pointer;
+}
+
+
+/* =========================================================
+   File Upload Dropzone
+   ========================================================= */
+
+.dip-intake__file-dropzone {
+    width: 100%;
+    min-height: 132px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 22px;
+    border: 2px dashed var(--dip-border-strong);
+    border-radius: 16px;
+    background: var(--dip-surface-soft);
+    color: var(--dip-text);
+    cursor: pointer;
+    transition:
+        border-color .18s ease,
+        background-color .18s ease,
+        box-shadow .18s ease,
+        transform .18s ease;
+}
+
+.dip-intake__file-dropzone:hover {
+    border-color: #9dbcf8;
+    background: #f8fbff;
+}
+
+.dip-intake__file-dropzone:focus-within {
+    border-color: var(--dip-primary);
+    background: #f8fbff;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, .10);
+}
+
+.dip-intake__file-icon {
+    width: 54px;
+    height: 54px;
+    flex: 0 0 54px;
+    display: grid;
+    place-items: center;
+    border-radius: 16px;
+    background: var(--dip-primary-soft);
+    border: 1px solid #cfe0ff;
+    color: var(--dip-primary);
+    font-size: 1.45rem;
+}
+
+.dip-intake__file-content {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.dip-intake__file-content strong {
+    color: var(--dip-text);
+    font-size: .92rem;
+    font-weight: 800;
+    overflow-wrap: anywhere;
+}
+
+.dip-intake__file-content small {
+    color: var(--dip-text-muted);
+    font-size: .78rem;
+}
+
+.dip-intake__file-hint {
+    margin-top: 6px;
+    color: var(--dip-text-muted);
+    font-size: .76rem;
+}
+
+
+/* =========================================================
+   Form Actions
+   ========================================================= */
+
+.dip-intake__form-actions {
+    padding-top: 4px;
+}
+
+
+/* =========================================================
+   Uploaded Files
+   ========================================================= */
+
+.dip-intake__file-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.dip-intake__file-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px;
+    border: 1px solid var(--dip-border);
+    border-radius: 14px;
+    background: var(--dip-surface-soft);
+    transition:
+        border-color .18s ease,
+        background-color .18s ease,
+        box-shadow .18s ease;
+}
+
+.dip-intake__file-item:hover {
+    background: #fff;
+    border-color: var(--dip-border-strong);
+    box-shadow: var(--dip-shadow-sm);
+}
+
+.dip-intake__file-item-main {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.dip-intake__file-item-icon {
+    width: 44px;
+    height: 44px;
+    flex: 0 0 44px;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    background: #fff;
+    border: 1px solid var(--dip-border);
+    color: var(--dip-primary);
+    font-size: 1.15rem;
+}
+
+.dip-intake__file-item-info {
+    min-width: 0;
+}
+
+.dip-intake__file-item-name {
+    color: var(--dip-text);
+    font-size: .88rem;
+    font-weight: 800;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+
+.dip-intake__file-item-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 3px;
+    color: var(--dip-text-muted);
+    font-size: .75rem;
+}
+
+.dip-intake__file-item-meta span {
+    display: inline-flex;
+    align-items: center;
+}
+
+.dip-intake__file-item-meta span + span::before {
+    content: "•";
+    margin-left: 8px;
+    color: var(--dip-border-strong);
+}
+
+.dip-intake__file-item-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 0 0 auto;
+}
+
+
+/* =========================================================
+   Empty State
+   ========================================================= */
+
+.dip-intake__empty {
+    margin-top: 4px;
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+
+/* =========================================================
+   Delete Modal
+   ========================================================= */
+
+.dip-intake__delete-modal {
+    direction: rtl;
+}
+
+.dip-intake__delete-modal .dip-modal-header h3 {
+    margin: 0;
+    color: var(--dip-text);
+    font-size: 1.05rem;
+    font-weight: 800;
+}
+
+.dip-intake__delete-modal .dip-modal-body p {
+    margin: 0;
+    color: var(--dip-text-soft);
+    line-height: 1.9;
+}
+
+.dip-intake__delete-modal .dip-modal-body strong {
+    color: var(--dip-text);
+    font-weight: 800;
+    overflow-wrap: anywhere;
+}
+
+.dip-intake__delete-warning {
+    margin-top: 8px !important;
+    color: var(--dip-danger) !important;
+    font-size: .84rem;
+}
+
+.dip-intake__delete-modal .dip-modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+}
+
+.dip-intake__delete-modal .dip-modal-footer form {
+    margin: 0;
+}
+
+
+/* =========================================================
+   Responsive - Tablet
+   ========================================================= */
+
+@media (max-width: 1100px) {
+
+    .dip-intake__geo-fields {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+
+/* =========================================================
+   Responsive - Mobile
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+    .dip-intake__template-inner {
+        flex-direction: column;
+        padding: 18px;
+    }
+
+    .dip-intake__template-content {
+        flex-basis: auto;
+        width: 100%;
+    }
+
+    .dip-intake__template-button {
+        width: 100%;
+    }
+
+    .dip-intake__geo {
+        padding: 15px;
+    }
+
+    .dip-intake__geo-header {
+        margin-bottom: 15px;
+    }
+
+    .dip-intake__file-dropzone {
+        min-height: 120px;
+        padding: 18px;
+    }
+
+    .dip-intake__file-item {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .dip-intake__file-item-main {
+        width: 100%;
+    }
+
+    .dip-intake__file-item-actions {
+        width: 100%;
+    }
+
+    .dip-intake__file-item-actions .dip-btn {
+        flex: 1;
+    }
+
+    .dip-intake__delete-modal .dip-modal-footer {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+
+    .dip-intake__delete-modal .dip-modal-footer > *,
+    .dip-intake__delete-modal .dip-modal-footer form {
+        width: 100%;
+    }
+
+    .dip-intake__delete-modal .dip-modal-footer .dip-btn {
+        width: 100%;
+    }
+
+}
+
+
+/* =========================================================
+   Responsive - Small Mobile
+   ========================================================= */
+
+@media (max-width: 480px) {
+
+    .dip-intake__template-inner {
+        padding: 16px;
+    }
+
+    .dip-intake__template-title {
+        font-size: 1rem;
+    }
+
+    .dip-intake__template-description {
+        font-size: .84rem;
+    }
+
+    .dip-intake__geo {
+        border-right-width: 3px;
+        padding: 14px;
+    }
+
+    .dip-intake__geo-header {
+        gap: 9px;
+    }
+
+    .dip-intake__geo-icon {
+        width: 38px;
+        height: 38px;
+        flex-basis: 38px;
+        border-radius: 10px;
+    }
+
+    .dip-intake__file-dropzone {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .dip-intake__file-content {
+        align-items: center;
+        width: 100%;
+    }
+
+    .dip-intake__file-icon {
+        width: 48px;
+        height: 48px;
+        flex-basis: 48px;
+    }
+
+    .dip-intake__file-item-main {
+        align-items: flex-start;
+    }
+
+}

@@ -1,0 +1,467 @@
+================================================================================
+=== __init__.py ===
+PATH: D:\distribution-intelligence\backend\app\repositories\__init__.py
+================================================================================
+from app.repositories.request_repository import RequestRepository
+
+
+================================================================================
+=== account_repository.py ===
+PATH: D:\distribution-intelligence\backend\app\repositories\account_repository.py
+================================================================================
+from typing import Optional
+
+from sqlalchemy.orm import Session
+
+from app.models.account import Account
+
+
+class AccountRepository:
+
+    def __init__(self, db: Session):
+        self.db = db
+
+    def get_by_mobile(self, mobile: str) -> Optional[Account]:
+        return self.db.query(Account).filter(
+            Account.mobile == mobile
+        ).first()
+
+    def create(self, mobile: str) -> Account:
+        account = Account(mobile=mobile)
+        self.db.add(account)
+        self.db.commit()
+        self.db.refresh(account)
+        return account
+
+================================================================================
+=== company_repository.py ===
+PATH: D:\distribution-intelligence\backend\app\repositories\company_repository.py
+================================================================================
+from typing import Optional
+
+from sqlalchemy.orm import Session
+
+from app.models.company import Company
+
+
+class CompanyRepository:
+
+    def __init__(self, db: Session):
+        self.db = db
+
+    def get_by_account(self, account_id: int) -> Optional[Company]:
+        return self.db.query(Company).filter(
+            Company.account_id == account_id
+        ).first()
+
+    def create(self, account_id: int, name: str) -> Company:
+        company = Company(account_id=account_id, name=name)
+        self.db.add(company)
+        self.db.commit()
+        self.db.refresh(company)
+        return company
+
+================================================================================
+=== file_repository.py ===
+PATH: D:\distribution-intelligence\backend\app\repositories\file_repository.py
+================================================================================
+from __future__ import annotations          # 🆕 اضافه شد
+
+from typing import Optional
+
+from sqlalchemy.orm import Session
+
+from app.models.file import File
+
+
+class FileRepository:
+    """Repository for File model — polymorphic file attachments."""
+
+    def __init__(self, db: Session):
+        self.db = db
+
+    # -------------------------------------------------------
+    # Create
+    # -------------------------------------------------------
+
+    def create(self, file: File) -> File:
+        """Persist a new File record."""
+        self.db.add(file)
+        self.db.commit()
+        self.db.refresh(file)
+        return file
+
+    # -------------------------------------------------------
+    # Get By ID
+    # -------------------------------------------------------
+
+    def get(self, file_id: int) -> Optional[File]:
+        """Retrieve a single File by its primary key."""
+        return self.db.query(File).filter(File.id == file_id).first()
+
+    def get_by_id(self, file_id: int) -> Optional[File]:
+        """Alias for get()."""
+        return self.get(file_id)
+
+    # -------------------------------------------------------
+    # List
+    # -------------------------------------------------------
+
+    def list(
+        self,
+        *,
+        skip: int = 0,
+        limit: int = 100,
+    ) -> list[File]:
+        """Return a paginated list of all files."""
+        return (
+            self.db.query(File)
+            .order_by(File.created_at.desc())
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
+
+    # -------------------------------------------------------
+    # Get Files By Entity  (polymorphic — any entity type)
+    # -------------------------------------------------------
+
+    def get_by_entity(
+        self,
+        entity_type: str,
+        entity_id: int,
+    ) -> list[File]:
+        """Return all files attached to a specific entity."""
+        return (
+            self.db.query(File)
+            .filter(
+                File.entity_type == entity_type,
+                File.entity_id == entity_id,
+            )
+            .order_by(File.created_at.desc())
+            .all()
+        )
+
+    # -------------------------------------------------------
+    # Count By Entity
+    # -------------------------------------------------------
+
+    def count_by_entity(
+        self,
+        entity_type: str,
+        entity_id: int,
+    ) -> int:
+        """Return the number of files attached to an entity."""
+        return (
+            self.db.query(File)
+            .filter(
+                File.entity_type == entity_type,
+                File.entity_id == entity_id,
+            )
+            .count()
+        )
+
+    # -------------------------------------------------------
+    # Get By Project  (convenience — delegates to get_by_entity)
+    # -------------------------------------------------------
+
+    def get_by_project(self, project_id: int) -> list[File]:
+        """Return all files attached to a project."""
+        return self.get_by_entity("PROJECT", project_id)
+
+    # -------------------------------------------------------
+    # Get By Category
+    # -------------------------------------------------------
+
+    def get_by_category(
+        self,
+        project_id: int,
+        category: str,
+    ) -> list[File]:
+        """Return project files filtered by category."""
+        return (
+            self.db.query(File)
+            .filter(
+                File.entity_type == "PROJECT",
+                File.entity_id == project_id,
+                File.category == category,
+            )
+            .order_by(File.created_at.desc())
+            .all()
+        )
+
+    # -------------------------------------------------------
+    # Count By Project
+    # -------------------------------------------------------
+
+    def count_by_project(self, project_id: int) -> int:
+        """Return the number of files attached to a project."""
+        return self.count_by_entity("PROJECT", project_id)
+
+    # -------------------------------------------------------
+    # Delete
+    # -------------------------------------------------------
+
+    def delete(self, file: File) -> None:
+        """Remove a File record from the database."""
+        self.db.delete(file)
+        self.db.commit()
+
+================================================================================
+=== project_repository.py ===
+PATH: D:\distribution-intelligence\backend\app\repositories\project_repository.py
+================================================================================
+from typing import List, Optional, Union
+
+from sqlalchemy.orm import Session
+
+from app.models.project import Project, ProjectStatus
+
+
+class ProjectRepository:
+    def __init__(self, db: Session):
+        self.db = db
+
+    # --------------------------------------------------
+    # Create
+    # --------------------------------------------------
+
+    def create(self, project: Project) -> Project:
+        try:
+            self.db.add(project)
+            self.db.commit()
+            self.db.refresh(project)
+            return project
+        except Exception:
+            self.db.rollback()
+            raise
+
+    # --------------------------------------------------
+    # Read
+    # --------------------------------------------------
+
+    def get_by_id(self, project_id: int) -> Optional[Project]:
+        return (
+            self.db.query(Project)
+            .filter(Project.id == project_id)
+            .first()
+        )
+
+    def get_all(self) -> List[Project]:
+        return (
+            self.db.query(Project)
+            .order_by(Project.created_at.desc())
+            .all()
+        )
+
+    def get_by_company(self, company_id: int) -> List[Project]:
+        return (
+            self.db.query(Project)
+            .filter(Project.company_id == company_id)
+            .order_by(Project.created_at.desc())
+            .all()
+        )
+
+    def get_by_status(self, status: ProjectStatus) -> List[Project]:
+        return (
+            self.db.query(Project)
+            .filter(Project.status == status)
+            .order_by(Project.created_at.desc())
+            .all()
+        )
+
+    def get_by_name(
+        self,
+        company_id: int,
+        name: str,
+    ) -> Optional[Project]:
+        return (
+            self.db.query(Project)
+            .filter(
+                Project.company_id == company_id,
+                Project.name == name,
+            )
+            .first()
+        )
+
+    def get_by_company_and_name(
+        self,
+        company_id: int,
+        name: str,
+    ) -> Optional[Project]:
+        return self.get_by_name(company_id=company_id, name=name)
+
+    # --------------------------------------------------
+    # Update
+    # --------------------------------------------------
+
+    def update(
+        self,
+        project_or_id: Union[Project, int],
+        **kwargs,
+    ) -> Optional[Project]:
+        if isinstance(project_or_id, Project):
+            project = project_or_id
+        else:
+            project = self.get_by_id(project_or_id)
+            if project is None:
+                return None
+
+            for key, value in kwargs.items():
+                setattr(project, key, value)
+
+        try:
+            self.db.commit()
+            self.db.refresh(project)
+            return project
+        except Exception:
+            self.db.rollback()
+            raise
+
+    def update_status(
+        self,
+        project_or_id: Union[Project, int],
+        status: ProjectStatus,
+    ) -> Optional[Project]:
+        if isinstance(project_or_id, Project):
+            project = project_or_id
+        else:
+            project = self.get_by_id(project_or_id)
+            if project is None:
+                return None
+
+        project.status = status
+        return self.update(project)
+
+    def save(self, project: Project) -> Project:
+        updated = self.update(project)
+        if updated is None:
+            raise ValueError("Project not found.")
+        return updated
+
+    # --------------------------------------------------
+    # Delete
+    # --------------------------------------------------
+
+    def delete(
+        self,
+        project_or_id: Union[Project, int],
+    ) -> bool:
+        if isinstance(project_or_id, Project):
+            project = project_or_id
+        else:
+            project = self.get_by_id(project_or_id)
+            if project is None:
+                return False
+
+        try:
+            self.db.delete(project)
+            self.db.commit()
+            return True
+        except Exception:
+            self.db.rollback()
+            raise
+
+    # --------------------------------------------------
+    # Utility
+    # --------------------------------------------------
+
+    def exists(self, project_id: int) -> bool:
+        return self.get_by_id(project_id) is not None
+
+    def count(self) -> int:
+        return self.db.query(Project).count()
+
+    def count_by_company(self, company_id: int) -> int:
+        return (
+            self.db.query(Project)
+            .filter(Project.company_id == company_id)
+            .count()
+        )
+
+================================================================================
+=== request_file_repository.py ===
+PATH: D:\distribution-intelligence\backend\app\repositories\request_file_repository.py
+================================================================================
+from sqlalchemy.orm import Session
+
+from app.models.request_file import RequestFile
+
+
+class RequestFileRepository:
+
+    @staticmethod
+    def create(db: Session, file: RequestFile) -> RequestFile:
+        db.add(file)
+        db.commit()
+        db.refresh(file)
+        return file
+
+================================================================================
+=== request_repository.py ===
+PATH: D:\distribution-intelligence\backend\app\repositories\request_repository.py
+================================================================================
+from sqlalchemy.orm import Session
+from app.models.request import Request
+from app.models.request_file import RequestFile
+import uuid
+
+
+class RequestRepository:
+
+    def __init__(self, db: Session):
+        self.db = db
+
+    # -----------------------
+    # Request
+    # -----------------------
+
+    def create(self, request: Request):
+        self.db.add(request)
+        self.db.commit()
+        self.db.refresh(request)
+        return request
+
+    def get_all(self):
+        return (
+            self.db.query(Request)
+            .order_by(Request.id.desc())
+            .all()
+        )
+
+    def get_by_id(self, request_id: int):
+        return (
+            self.db.query(Request)
+            .filter(Request.id == request_id)
+            .first()
+        )
+
+    # -----------------------
+    # Request Files
+    # -----------------------
+
+    def create_request_file(
+        self,
+        request_id: int,
+        file_name: str,
+        file_path: str,
+        file_type: str,
+        content_type: str | None = None,
+        file_size: int = 0,
+    ):
+        request_file = RequestFile(
+            request_id=request_id,
+            file_type=file_type,
+            original_name=file_name,
+            stored_name=f"{uuid.uuid4()}_{file_name}",
+            file_path=file_path,
+            content_type=content_type,
+            file_size=file_size,
+        )
+
+        self.db.add(request_file)
+        self.db.commit()
+        self.db.refresh(request_file)
+
+        return request_file
+

@@ -52,11 +52,10 @@ audit/source relationship for entities that explicitly
 reference the ImportBatch through a ForeignKey.
 """
 
-
 from __future__ import annotations
 
 from datetime import datetime
-from enum import Enum
+from decimal import Decimal
 from typing import TYPE_CHECKING, Optional
 
 from sqlalchemy import (
@@ -65,6 +64,7 @@ from sqlalchemy import (
     ForeignKey,
     Integer,
     JSON,
+    Numeric,
 )
 from sqlalchemy.orm import (
     Mapped,
@@ -72,9 +72,12 @@ from sqlalchemy.orm import (
     relationship,
 )
 
-from app.core.enums import ImportStatus
+from app.core.enums import (
+    ImportStatus,
+    EntityType,
+    ReadinessStatus,
+)
 from app.models.base import BaseModel
-
 
 if TYPE_CHECKING:
     from app.models.driver import Driver
@@ -82,19 +85,7 @@ if TYPE_CHECKING:
     from app.models.gps_record import GPSRecord
     from app.models.order import Order
     from app.models.row_error import RowError
-
-
-class EntityType(str, Enum):
-    """
-    انواع موجودیت‌هایی که می‌توان از فایل import کرد.
-    """
-
-    ORDER = "order"
-    FLEET = "fleet"
-    DRIVER = "driver"
-    STORE = "store"
-    GPS = "gps"
-
+    from app.models.vehicle import Vehicle
 
 class ImportBatch(BaseModel):
     """
@@ -111,6 +102,7 @@ class ImportBatch(BaseModel):
         - خطاها
         - زمان پردازش
         - ارتباط با فایل ورودی
+        - امتیاز آمادگی داده‌ها (برای Data Readiness MVP)
 
     استفاده می‌شود.
 
@@ -170,7 +162,7 @@ class ImportBatch(BaseModel):
     )
 
     # ==========================================================
-    # Entity Type
+    # Entity Type (using Enum from app.core.enums)
     # ==========================================================
 
     entity_type: Mapped[EntityType] = mapped_column(
@@ -184,7 +176,7 @@ class ImportBatch(BaseModel):
     )
 
     # ==========================================================
-    # Processing Status
+    # Processing Status (using ImportStatus from app.core.enums)
     # ==========================================================
 
     status: Mapped[ImportStatus] = mapped_column(
@@ -246,6 +238,34 @@ class ImportBatch(BaseModel):
     )
 
     # ==========================================================
+    # Data Readiness MVP Fields
+    # ==========================================================
+
+    readiness_score: Mapped[Optional[Decimal]] = mapped_column(
+        Numeric(5, 2),
+        nullable=True,
+        comment="امتیاز آمادگی داده‌ها (مثلاً 92.50)",
+    )
+
+    validation_summary: Mapped[Optional[dict]] = mapped_column(
+        JSON,
+        nullable=True,
+        comment="خلاصه اعتبارسنجی داده‌ها",
+    )
+
+    geo_summary: Mapped[Optional[dict]] = mapped_column(
+        JSON,
+        nullable=True,
+        comment="خلاصه اعتبارسنجی جغرافیایی",
+    )
+
+    duplicate_summary: Mapped[Optional[dict]] = mapped_column(
+        JSON,
+        nullable=True,
+        comment="خلاصه شناسایی داده‌های تکراری",
+    )
+
+    # ==========================================================
     # Processing Timestamps
     # ==========================================================
 
@@ -260,7 +280,7 @@ class ImportBatch(BaseModel):
     )
 
     # ==========================================================
-    # Relationships
+    # Relationships (Keep existing)
     # ==========================================================
 
     # ----------------------------------------------------------
@@ -408,16 +428,44 @@ class ImportBatch(BaseModel):
             ImportStatus.FAILED,
         )
 
+    @property
+    def readiness_status(self) -> ReadinessStatus:
+        """
+        وضعیت آمادگی داده‌ها بر اساس readiness_score.
+
+        منطق:
+            - None → NOT_READY
+            - >= 90 → READY
+            - >= 70 → READY_WITH_WARNING
+            - < 70  → NOT_READY
+        """
+        if self.readiness_score is None:
+            return ReadinessStatus.NOT_READY
+
+        score = float(self.readiness_score)
+        if score >= 90:
+            return ReadinessStatus.READY
+        elif score >= 70:
+            return ReadinessStatus.READY_WITH_WARNING
+        else:
+            return ReadinessStatus.NOT_READY
+
     # ==========================================================
     # Representation
     # ==========================================================
 
     def __repr__(self) -> str:
+        readiness_display = (
+            f"{self.readiness_score}"
+            if self.readiness_score is not None
+            else "N/A"
+        )
         return (
             f"<ImportBatch("
             f"id={self.id}, "
             f"entity={self.entity_type.value!r}, "
             f"status={self.status.value!r}, "
-            f"rows={self.imported_rows}/{self.total_rows}"
+            f"rows={self.imported_rows}/{self.total_rows}, "
+            f"readiness={readiness_display}"
             f")>"
         )

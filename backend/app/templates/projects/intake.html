@@ -8,224 +8,1370 @@
   {% endif %}
 {% endblock %}
 
+
+{% block head %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', path='css/intake.css') }}"
+>
+{% endblock %}
+
+
 {% block content %}
-<div class="dip-container">
+
+<div class="dip-container dip-intake">
+
   {% include "partials/shared/breadcrumb.html" %}
   {% include "partials/shared/project_header.html" %}
   {% include "partials/shared/journey_stepper.html" %}
   {% include "partials/shared/current_step.html" %}
 
-  <div class="dip-grid dip-grid-2">
-    <section class="dip-card">
-      <div class="dip-section-head" style="margin-bottom: var(--spacing-md);">
-        <div>
-          <h2>بارگذاری فایل جدید</h2>
-          <p style="color: var(--color-neutral-muted); font-size: 0.9rem;">
-            فایل‌های مربوط به سفارشات، فروشگاه‌ها، ناوگان و سایر داده‌های پایه را در این بخش ثبت کنید.
-          </p>
-        </div>
-      </div>
 
-      <form action="/uploads/project/{{ project_context.id }}" method="POST" enctype="multipart/form-data">
-        <div style="margin-bottom: var(--spacing-md);">
-          <label for="category" style="display: block; margin-bottom: var(--spacing-sm); font-weight: 500;">
-            دسته‌بندی فایل
-          </label>
-          <select
-            id="category"
-            name="category"
-            required
-            style="width: 100%; padding: var(--spacing-sm); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); background: #fff;"
-          >
-            <option value="orders">سفارشات مشتریان (Orders)</option>
-            <option value="stores">مشتریان و فروشگاه‌ها (Stores)</option>
-            <option value="fleet">ناوگان حمل و نقل (Fleet)</option>
-            <option value="drivers">رانندگان و توزیع‌کنندگان (Drivers)</option>
-            <option value="routes">مسیرهای پیش‌فرض (Routes)</option>
-            <option value="warehouses">انبارها و نقاط توزیع (Warehouses)</option>
-            <option value="products">کالاها و کاتالوگ (Products)</option>
-          </select>
-        </div>
+  <!-- =====================================================
+       Sample Store File
+       ===================================================== -->
 
-        <div style="margin-bottom: var(--spacing-md); border: 2px dashed var(--border-color); padding: var(--spacing-lg); border-radius: var(--border-radius-md); text-align: center;">
-          <input
-            type="file"
-            name="files"
-            id="file-input"
-            required
-            multiple
-            style="display: none;"
-            onchange="updateFileNameDisplay(this)"
-          >
-          <label for="file-input" style="cursor: pointer; display: block;">
-            <div style="font-size: 2rem; color: var(--color-neutral-light); margin-bottom: var(--spacing-sm);">
-              <i class="bi bi-folder2-open"></i>
-            </div>
-            <span id="file-label-text" style="color: var(--color-primary); font-weight: 500;">
-              انتخاب فایل یا رها کردن آن در این ناحیه
-            </span>
-            <p style="font-size: 0.8rem; color: var(--color-neutral-light); margin-top: var(--spacing-xs);">
-              فرمت‌های مجاز: Excel, CSV, JSON
-            </p>
-          </label>
-        </div>
+  <section class="dip-card dip-intake__template">
 
-        <button type="submit" class="dip-btn dip-btn-primary" style="width: 100%;">
-          ارسال و پردازش فایل
-        </button>
-      </form>
-    </section>
+    <div class="dip-intake__template-inner">
 
-    <section class="dip-card">
-      <div class="dip-section-head" style="margin-bottom: var(--spacing-md);">
-        <div>
-          <h2>فایل‌های بارگذاری‌شده</h2>
-          <p style="color: var(--color-neutral-muted); font-size: 0.9rem;">
-            لیست فایل‌های ثبت‌شده برای این پروژه و عملیات‌های قابل انجام.
-          </p>
-        </div>
-      </div>
+      <div class="dip-intake__template-content">
 
-      {% if files and files|length > 0 %}
-      <div class="dip-table-responsive">
-        <table class="dip-table">
-          <thead>
-            <tr>
-              <th>نام فایل</th>
-              <th>دسته‌بندی</th>
-              <th>حجم فایل</th>
-              <th>عملیات</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for file in files %}
-            <tr>
-              <td style="max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                {{ file.original_name }}
-              </td>
-              <td>
-                <span class="dip-badge dip-badge-draft">
-                  {% if file.category == 'orders' %}سفارشات
-                  {% elif file.category == 'stores' %}فروشگاه‌ها
-                  {% elif file.category == 'fleet' %}ناوگان
-                  {% elif file.category == 'drivers' %}رانندگان
-                  {% elif file.category == 'routes' %}مسیرها
-                  {% elif file.category == 'warehouses' %}انبارها
-                  {% elif file.category == 'products' %}محصولات
-                  {% else %}{{ file.category }}{% endif %}
-                </span>
-              </td>
-              <td>{{ file.file_size_human }}</td>
-              <td>
-                <div style="display: flex; gap: var(--spacing-sm); flex-wrap: wrap;">
-                  <a
-                    href="/uploads/file/{{ file.id }}/download"
-                    class="dip-btn dip-btn-secondary"
-                    style="padding: 0.35rem 0.6rem; font-size: 0.8rem;"
-                  >
-                    دانلود
-                  </a>
-                  <button
-                    type="button"
-                    class="dip-btn dip-btn-danger"
-                    style="padding: 0.35rem 0.6rem; font-size: 0.8rem;"
-                    onclick="confirmDelete('{{ file.id }}', '{{ file.original_name|e }}')"
-                  >
-                    حذف
-                  </button>
-                </div>
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-      {% else %}
-      <div class="dip-empty-state">
-        <div class="dip-empty-state-icon">
-          <i class="bi bi-folder2"></i>
-        </div>
-        <p class="dip-empty-state-message">هنوز فایلی برای این پروژه بارگذاری نشده است.</p>
-        <p style="font-size: 0.85rem; margin-top: var(--spacing-sm); color: var(--color-neutral-muted);">
-          برای شروع، یکی از فایل‌های ساختاریافته را از بخش بارگذاری ثبت کنید.
+        <h2 class="dip-intake__template-title">
+          فایل نمونه فروشگاه‌ها
+        </h2>
+
+        <p class="dip-intake__template-description">
+          برای وارد کردن اطلاعات فروشگاه‌ها، ابتدا فایل نمونه را دانلود کنید
+          و داده‌های خود را در آن وارد نمایید.
         </p>
-      </div>
-      {% endif %}
-    </section>
-  </div>
 
-  {% include "partials/shared/recent_activity.html" %}
+        <div class="dip-intake__template-info">
 
-  <div id="delete-modal" class="dip-modal">
-    <div class="dip-modal-container">
-      <div class="dip-modal-header">
-        <h4 style="font-weight: 600; color: var(--color-danger);">تأیید حذف فایل</h4>
+          <div>
+            <strong>اطلاعات اجباری:</strong>
+            نام فروشگاه، آدرس، تلفن، عرض جغرافیایی، طول جغرافیایی
+          </div>
+
+          <div>
+            <strong>اطلاعات اختیاری:</strong>
+            دسته‌بندی کسب‌وکار، نوع فروشگاه، کد پستی، پلاک، واحد،
+            طبقه، نام مدیر فروشگاه، شماره موبایل
+          </div>
+
+        </div>
+
       </div>
-      <div class="dip-modal-body">
-        <p>
-          آیا از حذف فایل
-          <strong id="delete-file-name" style="color: var(--color-neutral-dark);"></strong>
-          اطمینان دارید؟ این عملیات غیرقابل بازگشت است.
-        </p>
-      </div>
-      <div class="dip-modal-footer">
-        <button type="button" class="dip-btn dip-btn-secondary" onclick="closeDeleteModal()">انصراف</button>
-        <form id="delete-form" method="POST" action="">
-          <button type="submit" class="dip-btn dip-btn-danger">حذف قطعی</button>
-        </form>
-      </div>
+
+
+      <a
+        href="/static/templates/stores_template.xlsx"
+        class="dip-btn dip-btn-primary dip-intake__template-button"
+      >
+        <i class="bi bi-download"></i>
+        دانلود فایل نمونه فروشگاه‌ها
+      </a>
+
     </div>
+
+  </section>
+
+
+  <!-- =====================================================
+       Main Intake Grid
+       ===================================================== -->
+
+  <div class="dip-grid dip-grid-2">
+
+
+    <!-- ===================================================
+         Upload New File
+         =================================================== -->
+
+    <section class="dip-card dip-intake__upload-card">
+
+      <div class="dip-section-head dip-intake__section-head">
+
+        <div>
+
+          <h2>بارگذاری فایل جدید</h2>
+
+          <p>
+            فایل فروشگاه‌ها را به همراه محدوده جغرافیایی
+            در این بخش ثبت کنید.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <form
+        id="upload-form"
+        class="dip-form dip-intake__upload-form"
+        action="/uploads/project/{{ project_context.id }}"
+        method="POST"
+        enctype="multipart/form-data"
+      >
+
+        <input
+          type="hidden"
+          name="category"
+          value="stores"
+        >
+
+
+        <!-- ===============================================
+             Geographic Scope
+             =============================================== -->
+
+        <div class="dip-intake__geo">
+
+          <div class="dip-intake__geo-header">
+
+            <div class="dip-intake__geo-icon">
+              <i class="bi bi-geo-alt"></i>
+            </div>
+
+            <div>
+
+              <h3 class="dip-intake__geo-title">
+                محدوده جغرافیایی پروژه
+              </h3>
+
+              <p class="dip-intake__geo-description">
+                محدوده جغرافیایی فروشگاه‌های این فایل را مشخص کنید.
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div class="dip-intake__geo-fields">
+
+
+            <!-- =========================================
+                 Province
+                 ========================================= -->
+
+            <div class="dip-form__group">
+
+              <label
+                for="province-select"
+                class="dip-label"
+              >
+                استان
+                <span class="dip-intake__required">*</span>
+              </label>
+
+              <select
+                id="province-select"
+                name="province_id"
+                class="dip-select"
+                required
+              >
+
+                <option value="">
+                  در حال بارگذاری استان‌ها...
+                </option>
+
+              </select>
+
+              <div
+                id="province-help"
+                class="dip-intake__field-help"
+                style="display:none;"
+              ></div>
+
+            </div>
+
+
+            <!-- =========================================
+                 City
+                 ========================================= -->
+
+            <div class="dip-form__group">
+
+              <label
+                for="city-select"
+                class="dip-label"
+              >
+                شهر
+                <span class="dip-intake__required">*</span>
+              </label>
+
+              <select
+                id="city-select"
+                name="city_id"
+                class="dip-select"
+                disabled
+                required
+              >
+
+                <option value="">
+                  ابتدا استان را انتخاب کنید
+                </option>
+
+              </select>
+
+              <div
+                id="city-help"
+                class="dip-intake__field-help"
+                style="display:none;"
+              ></div>
+
+            </div>
+
+
+            <!-- =========================================
+                 Region
+                 
+                 Intentionally hidden.
+                 Region is not selected on Intake page.
+                 ========================================= -->
+
+            <div
+              id="region-field"
+              class="dip-form__group"
+              hidden
+              aria-hidden="true"
+            >
+
+              <label
+                for="region-select"
+                class="dip-label"
+              >
+                منطقه
+              </label>
+
+              <select
+                id="region-select"
+                name="region_id"
+                class="dip-select"
+                disabled
+              >
+
+                <option value="">
+                  انتخاب منطقه...
+                </option>
+
+              </select>
+
+            </div>
+
+
+          </div>
+
+        </div>
+
+
+        <!-- ===============================================
+             File Upload
+             =============================================== -->
+
+        <div class="dip-form__group">
+
+          <label
+            for="file-input"
+            class="dip-label"
+          >
+            فایل فروشگاه‌ها
+            <span class="dip-intake__required">*</span>
+          </label>
+
+
+          <label
+            for="file-input"
+            class="dip-intake__file-dropzone"
+          >
+
+            <input
+              id="file-input"
+              name="files"
+              type="file"
+              accept=".xlsx,.xls,.csv"
+              multiple
+              hidden
+            >
+
+
+            <span class="dip-intake__file-icon">
+              <i class="bi bi-cloud-arrow-up"></i>
+            </span>
+
+
+            <span class="dip-intake__file-content">
+
+              <strong id="file-label-text">
+                انتخاب فایل یا رها کردن آن در این ناحیه
+              </strong>
+
+              <small>
+                فرمت‌های مجاز:
+                XLSX، XLS، CSV
+              </small>
+
+            </span>
+
+          </label>
+
+
+          <div class="dip-intake__file-hint">
+            می‌توانید یک یا چند فایل فروشگاه را انتخاب کنید.
+          </div>
+
+        </div>
+
+
+        <!-- ===============================================
+             Form Actions
+             =============================================== -->
+
+        <div class="dip-form__actions dip-intake__form-actions">
+
+          <button
+            id="submit-btn"
+            type="submit"
+            class="dip-btn dip-btn-primary dip-btn-lg"
+          >
+
+            <i class="bi bi-upload"></i>
+
+            بارگذاری فایل
+
+          </button>
+
+        </div>
+
+      </form>
+
+    </section>
+
+
+    <!-- ===================================================
+         Uploaded Files
+         =================================================== -->
+
+    <section class="dip-card dip-intake__files-card">
+
+      <div class="dip-section-head dip-intake__section-head">
+
+        <div>
+
+          <h2>فایل‌های بارگذاری‌شده</h2>
+
+          <p>
+            فایل‌هایی که تاکنون برای این پروژه ثبت شده‌اند.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      {% set project_files = files if files is defined and files else [] %}
+
+
+      {% if project_files %}
+
+        <div class="dip-intake__file-list">
+
+          {% for file in project_files %}
+
+            <div class="dip-intake__file-item">
+
+              <div class="dip-intake__file-item-main">
+
+                <div class="dip-intake__file-item-icon">
+
+                  {% if file.original_name and file.original_name.lower().endswith('.csv') %}
+
+                    <i class="bi bi-filetype-csv"></i>
+
+                  {% elif file.original_name and file.original_name.lower().endswith('.xls') %}
+
+                    <i class="bi bi-file-earmark-spreadsheet"></i>
+
+                  {% else %}
+
+                    <i class="bi bi-file-earmark-excel"></i>
+
+                  {% endif %}
+
+                </div>
+
+
+                <div class="dip-intake__file-item-info">
+
+                  <div class="dip-intake__file-item-name">
+                    {{ file.original_name }}
+                  </div>
+
+
+                  <div class="dip-intake__file-item-meta">
+
+                    <span>
+                      {{ file.category or 'stores' }}
+                    </span>
+
+
+                    {% if file.file_size %}
+
+                      <span>
+                        {{ file.file_size }}
+                      </span>
+
+                    {% endif %}
+
+                  </div>
+
+                </div>
+
+              </div>
+
+
+              <div class="dip-intake__file-item-actions">
+
+                <a
+                  href="/uploads/file/{{ file.id }}/download"
+                  class="dip-btn dip-btn-sm dip-btn-secondary"
+                  title="دانلود فایل"
+                >
+
+                  <i class="bi bi-download"></i>
+
+                  دانلود
+
+                </a>
+
+
+                <button
+                  type="button"
+                  class="dip-btn dip-btn-sm dip-btn-danger"
+                  onclick='confirmDelete({{ file.id }}, {{ file.original_name|tojson }})'
+                  title="حذف فایل"
+                >
+
+                  <i class="bi bi-trash"></i>
+
+                  حذف
+
+                </button>
+
+              </div>
+
+            </div>
+
+          {% endfor %}
+
+        </div>
+
+
+      {% else %}
+
+        <div class="dip-empty-state dip-intake__empty">
+
+          <div class="dip-empty-state-icon">
+            <i class="bi bi-file-earmark-arrow-up"></i>
+          </div>
+
+          <div class="dip-empty-state__title">
+            هنوز فایلی بارگذاری نشده است
+          </div>
+
+          <div class="dip-empty-state__text">
+            اولین فایل فروشگاه‌های پروژه را از بخش بارگذاری فایل ثبت کنید.
+          </div>
+
+        </div>
+
+      {% endif %}
+
+    </section>
+
   </div>
+
+
+  <!-- =====================================================
+       Delete Modal
+       ===================================================== -->
+
+  <div
+    id="delete-modal"
+    class="dip-modal dip-intake__delete-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="delete-modal-title"
+  >
+
+    <div class="dip-modal-container">
+
+
+      <div class="dip-modal-header">
+
+        <h3 id="delete-modal-title">
+          حذف فایل
+        </h3>
+
+      </div>
+
+
+      <div class="dip-modal-body">
+
+        <p>
+
+          آیا از حذف فایل
+
+          <strong id="delete-file-name"></strong>
+
+          اطمینان دارید؟
+
+        </p>
+
+
+        <p class="dip-intake__delete-warning">
+          این عملیات قابل بازگشت نیست.
+        </p>
+
+      </div>
+
+
+      <div class="dip-modal-footer">
+
+
+        <button
+          type="button"
+          class="dip-btn dip-btn-secondary"
+          onclick="closeDeleteModal()"
+        >
+
+          انصراف
+
+        </button>
+
+
+        <form
+          id="delete-form"
+          method="POST"
+          action=""
+        >
+
+          <button
+            type="submit"
+            class="dip-btn dip-btn-danger"
+          >
+
+            <i class="bi bi-trash"></i>
+
+            حذف فایل
+
+          </button>
+
+        </form>
+
+      </div>
+
+    </div>
+
+  </div>
+
 </div>
+
 {% endblock %}
 
+
 {% block scripts %}
-  {{ super() }}
-  <script src="{{ url_for('static', path='js/components/journey.js') }}"></script>
-  <script>
-    function updateFileNameDisplay(input) {
-      const textLabel = document.getElementById('file-label-text');
-      if (!textLabel) return;
 
-      if (input.files && input.files.length > 0) {
-        textLabel.textContent = Array.from(input.files).map(function(file) {
-          return file.name;
-        }).join(' ، ');
-      } else {
-        textLabel.textContent = 'انتخاب فایل یا رها کردن آن در این ناحیه';
-      }
+<script src="{{ url_for('static', path='js/components/journey.js') }}"></script>
+
+
+<script>
+
+  /* =====================================================
+     Configuration
+     ===================================================== */
+
+  const GEO_API = '/geography';
+
+  const ALLOWED_EXTENSIONS = [
+    '.xlsx',
+    '.xls',
+    '.csv'
+  ];
+
+
+  /* =====================================================
+     DOM Elements
+     ===================================================== */
+
+  const provinceSelect =
+    document.getElementById('province-select');
+
+  const citySelect =
+    document.getElementById('city-select');
+
+  const regionSelect =
+    document.getElementById('region-select');
+
+  const provinceHelp =
+    document.getElementById('province-help');
+
+  const cityHelp =
+    document.getElementById('city-help');
+
+  const uploadForm =
+    document.getElementById('upload-form');
+
+  const submitBtn =
+    document.getElementById('submit-btn');
+
+  const fileInput =
+    document.getElementById('file-input');
+
+
+  /* =====================================================
+     Help Messages
+     ===================================================== */
+
+  function showHelp(el, text, color) {
+
+    if (!el) {
+      return;
     }
 
-    function confirmDelete(fileId, fileName) {
-      if (!fileId) {
+    el.textContent = text || '';
+
+    el.style.display =
+      text ? 'block' : 'none';
+
+    if (color) {
+      el.style.color = color;
+    }
+  }
+
+
+  function clearHelp(el) {
+
+    if (!el) {
+      return;
+    }
+
+    el.textContent = '';
+
+    el.style.display = 'none';
+
+  }
+
+
+  /* =====================================================
+     Select Helpers
+     ===================================================== */
+
+  function setLoading(selectEl, text) {
+
+    if (!selectEl) {
+      return;
+    }
+
+    selectEl.innerHTML =
+      '<option value="">' +
+      text +
+      '</option>';
+
+    selectEl.disabled = true;
+  }
+
+
+  function setReady(selectEl) {
+
+    if (!selectEl) {
+      return;
+    }
+
+    selectEl.disabled = false;
+  }
+
+
+  function resetSelect(selectEl, placeholder) {
+
+    if (!selectEl) {
+      return;
+    }
+
+    selectEl.innerHTML =
+      '<option value="">' +
+      placeholder +
+      '</option>';
+
+    selectEl.disabled = true;
+  }
+
+
+  function populateSelect(
+    selectEl,
+    items,
+    placeholder
+  ) {
+
+    if (!selectEl) {
+      return;
+    }
+
+    selectEl.innerHTML =
+      '<option value="">' +
+      placeholder +
+      '</option>';
+
+
+    if (!Array.isArray(items)) {
+      selectEl.disabled = true;
+      return;
+    }
+
+
+    items.forEach(function (item) {
+
+      if (!item || item.id === undefined) {
         return;
       }
 
-      const modal = document.getElementById('delete-modal');
-      const nameSpan = document.getElementById('delete-file-name');
-      const deleteForm = document.getElementById('delete-form');
+      const option =
+        document.createElement('option');
 
-      if (!modal || !nameSpan || !deleteForm) {
-        return;
-      }
+      option.value = item.id;
 
-      nameSpan.textContent = fileName || '';
-      deleteForm.action = '/uploads/file/' + fileId + '/delete';
-      modal.classList.add('is-active');
-    }
+      option.textContent =
+        item.name ?? '';
 
-    function closeDeleteModal() {
-      const modal = document.getElementById('delete-modal');
-      if (!modal) {
-        return;
-      }
-      modal.classList.remove('is-active');
-    }
+      selectEl.appendChild(option);
 
-    document.addEventListener('keydown', function(event) {
-      if (event.key === 'Escape') {
-        closeDeleteModal();
-      }
     });
-  </script>
+
+
+    setReady(selectEl);
+
+  }
+
+
+  /* =====================================================
+     API Helper
+     ===================================================== */
+
+  async function fetchJson(url) {
+
+    const response =
+      await fetch(url, {
+        headers: {
+          'X-Requested-With':
+            'XMLHttpRequest'
+        }
+      });
+
+
+    if (!response.ok) {
+
+      throw new Error(
+        'HTTP ' + response.status
+      );
+
+    }
+
+
+    return response.json();
+
+  }
+
+
+  /* =====================================================
+     Provinces
+     ===================================================== */
+
+  async function loadProvinces() {
+
+    if (!provinceSelect) {
+      return;
+    }
+
+
+    setLoading(
+      provinceSelect,
+      'در حال بارگذاری استان‌ها...'
+    );
+
+
+    clearHelp(provinceHelp);
+    clearHelp(cityHelp);
+
+
+    resetSelect(
+      citySelect,
+      'ابتدا استان را انتخاب کنید'
+    );
+
+
+    /*
+     * Region intentionally remains hidden.
+     * No region API call is performed.
+     */
+
+    if (regionSelect) {
+
+      regionSelect.value = '';
+
+      regionSelect.disabled = true;
+
+    }
+
+
+    try {
+
+      const provinces =
+        await fetchJson(
+          GEO_API + '/provinces'
+        );
+
+
+      if (
+        !Array.isArray(provinces) ||
+        provinces.length === 0
+      ) {
+
+        provinceSelect.innerHTML =
+          '<option value="">' +
+          'استان فعالی برای انتخاب وجود ندارد' +
+          '</option>';
+
+        provinceSelect.disabled = true;
+
+
+        showHelp(
+          provinceHelp,
+          'داده‌ای برای استان‌ها ثبت نشده است.',
+          'var(--dip-danger)'
+        );
+
+        return;
+
+      }
+
+
+      populateSelect(
+        provinceSelect,
+        provinces,
+        'انتخاب استان...'
+      );
+
+
+    } catch (error) {
+
+      provinceSelect.innerHTML =
+        '<option value="">' +
+        'خطا در بارگذاری استان‌ها' +
+        '</option>';
+
+      provinceSelect.disabled = true;
+
+
+      showHelp(
+        provinceHelp,
+        'خطا در دریافت اطلاعات استان‌ها. ' +
+        'لطفاً صفحه را مجدداً بارگذاری کنید.',
+        'var(--dip-danger)'
+      );
+
+
+      console.error(
+        'Province load failed:',
+        error
+      );
+
+    }
+
+  }
+
+
+  /* =====================================================
+     Province Change
+     ===================================================== */
+
+  async function onProvinceChange() {
+
+    if (!provinceSelect || !citySelect) {
+      return;
+    }
+
+
+    const provinceId =
+      provinceSelect.value;
+
+
+    resetSelect(
+      citySelect,
+      'ابتدا استان را انتخاب کنید'
+    );
+
+
+    clearHelp(cityHelp);
+
+
+    /*
+     * Region is intentionally not processed.
+     */
+
+    if (regionSelect) {
+
+      regionSelect.value = '';
+
+      regionSelect.disabled = true;
+
+    }
+
+
+    if (!provinceId) {
+      return;
+    }
+
+
+    setLoading(
+      citySelect,
+      'در حال بارگذاری شهرها...'
+    );
+
+
+    try {
+
+      const cities =
+        await fetchJson(
+          GEO_API +
+          '/cities/' +
+          encodeURIComponent(provinceId)
+        );
+
+
+      if (
+        !Array.isArray(cities) ||
+        cities.length === 0
+      ) {
+
+        citySelect.innerHTML =
+          '<option value="">' +
+          'شهری برای این استان ثبت نشده است' +
+          '</option>';
+
+        citySelect.disabled = true;
+
+
+        showHelp(
+          cityHelp,
+          'برای این استان، شهری در داده‌های فعال وجود ندارد.',
+          'var(--dip-text-muted)'
+        );
+
+        return;
+
+      }
+
+
+      populateSelect(
+        citySelect,
+        cities,
+        'انتخاب شهر...'
+      );
+
+
+    } catch (error) {
+
+      citySelect.innerHTML =
+        '<option value="">' +
+        'خطا در بارگذاری شهرها' +
+        '</option>';
+
+      citySelect.disabled = true;
+
+
+      showHelp(
+        cityHelp,
+        'خطا در دریافت اطلاعات شهرها.',
+        'var(--dip-danger)'
+      );
+
+
+      console.error(
+        'City load failed:',
+        error
+      );
+
+    }
+
+  }
+
+
+  /* =====================================================
+     File Validation
+     ===================================================== */
+
+  function validateFiles() {
+
+    if (!fileInput) {
+      return false;
+    }
+
+
+    if (
+      !fileInput.files ||
+      fileInput.files.length === 0
+    ) {
+
+      alert(
+        'لطفاً یک فایل انتخاب کنید.'
+      );
+
+      fileInput.focus();
+
+      return false;
+
+    }
+
+
+    for (
+      let i = 0;
+      i < fileInput.files.length;
+      i++
+    ) {
+
+      const file =
+        fileInput.files[i];
+
+
+      const fileName =
+        (file.name || '').toLowerCase();
+
+
+      const isAllowed =
+        ALLOWED_EXTENSIONS.some(
+          function (extension) {
+
+            return fileName.endsWith(
+              extension
+            );
+
+          }
+        );
+
+
+      if (!isAllowed) {
+
+        alert(
+          'فرمت فایل معتبر نیست. ' +
+          'لطفاً فایل با پسوند XLSX، XLS یا CSV انتخاب کنید.'
+        );
+
+
+        fileInput.focus();
+
+        return false;
+
+      }
+
+    }
+
+
+    return true;
+
+  }
+
+
+  /* =====================================================
+     Form Validation
+     ===================================================== */
+
+  function validateForm() {
+
+    if (
+      !provinceSelect ||
+      !provinceSelect.value
+    ) {
+
+      alert(
+        'لطفاً استان را انتخاب کنید.'
+      );
+
+      if (provinceSelect) {
+        provinceSelect.focus();
+      }
+
+      return false;
+
+    }
+
+
+    if (
+      !citySelect ||
+      !citySelect.value
+    ) {
+
+      alert(
+        'لطفاً شهر را انتخاب کنید.'
+      );
+
+      if (citySelect) {
+        citySelect.focus();
+      }
+
+      return false;
+
+    }
+
+
+    /*
+     * Region validation intentionally removed.
+     *
+     * Region is not part of Intake UI/flow.
+     */
+
+
+    if (!validateFiles()) {
+      return false;
+    }
+
+
+    return true;
+
+  }
+
+
+  /* =====================================================
+     File Name Display
+     ===================================================== */
+
+  function updateFileNameDisplay(input) {
+
+    const textLabel =
+      document.getElementById(
+        'file-label-text'
+      );
+
+
+    if (!textLabel) {
+      return;
+    }
+
+
+    if (
+      input &&
+      input.files &&
+      input.files.length > 0
+    ) {
+
+      textLabel.textContent =
+        Array.from(input.files)
+          .map(function (file) {
+            return file.name;
+          })
+          .join(' ، ');
+
+
+    } else {
+
+      textLabel.textContent =
+        'انتخاب فایل یا رها کردن آن در این ناحیه';
+
+    }
+
+  }
+
+
+  /* =====================================================
+     Delete Modal
+     ===================================================== */
+
+  function confirmDelete(
+    fileId,
+    fileName
+  ) {
+
+    if (!fileId) {
+      return;
+    }
+
+
+    const modal =
+      document.getElementById(
+        'delete-modal'
+      );
+
+
+    const nameSpan =
+      document.getElementById(
+        'delete-file-name'
+      );
+
+
+    const deleteForm =
+      document.getElementById(
+        'delete-form'
+      );
+
+
+    if (
+      !modal ||
+      !nameSpan ||
+      !deleteForm
+    ) {
+
+      return;
+
+    }
+
+
+    nameSpan.textContent =
+      fileName || '';
+
+
+    deleteForm.action =
+      '/uploads/file/' +
+      encodeURIComponent(fileId) +
+      '/delete';
+
+
+    modal.classList.add(
+      'is-active'
+    );
+
+  }
+
+
+  function closeDeleteModal() {
+
+    const modal =
+      document.getElementById(
+        'delete-modal'
+      );
+
+
+    if (!modal) {
+      return;
+    }
+
+
+    modal.classList.remove(
+      'is-active'
+    );
+
+  }
+
+
+  /* =====================================================
+     Events
+     ===================================================== */
+
+  if (provinceSelect) {
+
+    provinceSelect.addEventListener(
+      'change',
+      onProvinceChange
+    );
+
+  }
+
+
+  if (citySelect) {
+
+    citySelect.addEventListener(
+      'change',
+      function () {
+
+        /*
+         * No region loading here.
+         * City selection is the final
+         * geographic selection on Intake.
+         */
+
+      }
+    );
+
+  }
+
+
+  if (fileInput) {
+
+    fileInput.addEventListener(
+      'change',
+      function () {
+
+        updateFileNameDisplay(
+          fileInput
+        );
+
+      }
+    );
+
+  }
+
+
+  if (uploadForm) {
+
+    uploadForm.addEventListener(
+      'submit',
+      function (event) {
+
+        if (!validateForm()) {
+
+          event.preventDefault();
+
+          return false;
+
+        }
+
+
+        if (submitBtn) {
+
+          submitBtn.disabled = true;
+
+          submitBtn.innerHTML =
+            '<i class="bi bi-hourglass-split"></i> ' +
+            'در حال پردازش...';
+
+        }
+
+      }
+    );
+
+  }
+
+
+  /* =====================================================
+     Keyboard / Modal Events
+     ===================================================== */
+
+  document.addEventListener(
+    'keydown',
+    function (event) {
+
+      if (event.key === 'Escape') {
+
+        closeDeleteModal();
+
+      }
+
+    }
+  );
+
+
+  /* =====================================================
+     Initialization
+     ===================================================== */
+
+  document.addEventListener(
+    'DOMContentLoaded',
+    function () {
+
+      loadProvinces();
+
+    }
+  );
+
+</script>
+
 {% endblock %}

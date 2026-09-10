@@ -1,7 +1,7 @@
 """
-Order Model — Enterprise Data Model v4.0
+Order Model — Enterprise Data Model v4.1
 
-Represents an order imported from an Excel file
+Represents an order imported from an Excel/CSV file
 within a specific ImportBatch and Project.
 
 Architecture
@@ -9,32 +9,26 @@ Architecture
 
 Company
     |
-    +---- Project
+    +---- Project (مالک واقعی)
             |
             +---- Order
-                    |
-                    +---- ImportBatch
 
-An Order belongs to exactly one Project.
+ImportBatch (Audit Record)
+    |
+    +---- Order (مرجع ضعیف)
 
-An Order also belongs to exactly one ImportBatch.
+Deleting Project deletes its Orders (ON DELETE CASCADE).
 
-Project owns the operational boundary of Orders.
-
-ImportBatch represents the source/import operation.
-
-Deleting a Project may delete its Orders depending on
-the configured database relationship policy.
-
-Deleting an ImportBatch deletes its imported Orders
-because Order.import_batch_id uses ON DELETE CASCADE.
+Deleting ImportBatch keeps Orders alive
+(ON DELETE SET NULL on import_batch_id).
 """
 
 from __future__ import annotations
 
-from datetime import datetime
+import enum
+from datetime import datetime, time
 from decimal import Decimal
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import (
     DateTime,
@@ -44,8 +38,10 @@ from sqlalchemy import (
     JSON,
     Numeric,
     String,
+    Time,
     UniqueConstraint,
 )
+from sqlalchemy import Enum as SQLAlchemyEnum
 from sqlalchemy.orm import (
     Mapped,
     mapped_column,
@@ -60,20 +56,48 @@ if TYPE_CHECKING:
     from app.models.project import Project
 
 
+# ==========================================================
+# Order Status
+# ==========================================================
+
+class OrderStatus(str, enum.Enum):
+    """
+    Lifecycle status of an Order.
+
+    This enum is intentionally local to the Order model because
+    OrderStatus is not currently defined in app.core.enums.
+    """
+
+    NEW = "new"
+    PROCESSING = "processing"
+    COMPLETED = "completed"
+    CANCELLED = "cancelled"
+    FAILED = "failed"
+
+
+# ==========================================================
+# Order Model
+# ==========================================================
+
 class Order(BaseModel):
     """
-    Order imported from an Excel file.
+    Order imported from Excel/CSV.
 
-    Each Excel row becomes one Order record.
+    Each source row becomes one Order record.
 
-    An Order belongs to:
+    Ownership:
 
-        - exactly one Project
-        - exactly one ImportBatch
+        Project
+            |
+            +---- Order
 
-    The Project defines the business/operational workspace.
+        ImportBatch
+            |
+            +---- Order
 
-    The ImportBatch defines the source import operation.
+    Project is the real owner of the Order.
+
+    ImportBatch is an audit/source reference only.
     """
 
     __tablename__ = "orders"
@@ -93,27 +117,28 @@ class Order(BaseModel):
     # Project Ownership
     # ==========================================================
 
-    project_id: Mapped[int] = mapped_column(
+    project_id: Mapped[int | None] = mapped_column(
         ForeignKey(
             "projects.id",
             ondelete="CASCADE",
         ),
-        nullable=False,
+        nullable=True,
         index=True,
-        comment="Project مالک این Order",
+        comment="Project مالک واقعی این Order",
     )
 
     # ==========================================================
-    # Import Batch
+    # Import Batch Ownership / Audit Reference
     # ==========================================================
 
-    import_batch_id: Mapped[int] = mapped_column(
+    import_batch_id: Mapped[int | None] = mapped_column(
         ForeignKey(
             "import_batches.id",
-            ondelete="CASCADE",
+            ondelete="SET NULL",
         ),
-        nullable=False,
+        nullable=True,
         index=True,
+        comment="مرجع ضعیف به ImportBatch (Audit)",
     )
 
     # ==========================================================
@@ -128,6 +153,11 @@ class Order(BaseModel):
 
     # ==========================================================
     # Store Information
+    #
+    # Temporary source information from Excel.
+    #
+    # Future:
+    # Order -> Store matching
     # ==========================================================
 
     store_code: Mapped[str | None] = mapped_column(
@@ -139,6 +169,7 @@ class Order(BaseModel):
     store_name: Mapped[str | None] = mapped_column(
         String(500),
         nullable=True,
+        index=True,
     )
 
     # ==========================================================
@@ -187,13 +218,13 @@ class Order(BaseModel):
         nullable=True,
     )
 
-    delivery_time_from: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True),
+    delivery_time_from: Mapped[time | None] = mapped_column(
+        Time(timezone=True),
         nullable=True,
     )
 
-    delivery_time_to: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True),
+    delivery_time_to: Mapped[time | None] = mapped_column(
+        Time(timezone=True),
         nullable=True,
     )
 
@@ -201,18 +232,22 @@ class Order(BaseModel):
     # Processing Status
     # ==========================================================
 
-    status: Mapped[str] = mapped_column(
-        String(30),
+    status: Mapped[OrderStatus] = mapped_column(
+        SQLAlchemyEnum(
+            OrderStatus,
+            native_enum=False,
+            length=30,
+        ),
         nullable=False,
-        default="NEW",
+        default=OrderStatus.NEW,
         index=True,
     )
 
     # ==========================================================
-    # Raw Excel Row Data
+    # Raw Excel / Source Data
     # ==========================================================
 
-    raw_data: Mapped[dict | None] = mapped_column(
+    raw_data: Mapped[dict[str, Any] | None] = mapped_column(
         JSON,
         nullable=True,
     )
@@ -232,9 +267,9 @@ class Order(BaseModel):
 
     __table_args__ = (
         UniqueConstraint(
-            "import_batch_id",
+            "project_id",
             "order_code",
-            name="uq_orders_batch_order",
+            name="uq_orders_project_order",
         ),
     )
 
@@ -242,21 +277,13 @@ class Order(BaseModel):
     # Relationships
     # ==========================================================
 
-    # ----------------------------------------------------------
-    # Project
-    # ----------------------------------------------------------
-
-    project: Mapped["Project"] = relationship(
+    project: Mapped["Project | None"] = relationship(
         "Project",
         back_populates="orders",
         lazy="selectin",
     )
 
-    # ----------------------------------------------------------
-    # Import Batch
-    # ----------------------------------------------------------
-
-    import_batch: Mapped["ImportBatch"] = relationship(
+    import_batch: Mapped["ImportBatch | None"] = relationship(
         "ImportBatch",
         back_populates="orders",
         lazy="selectin",
@@ -269,11 +296,8 @@ class Order(BaseModel):
     @property
     def has_coordinates(self) -> bool:
         """
-        Returns True when latitude and longitude exist.
-
-        Coordinates may technically be zero.
+        Return True when latitude and longitude are present.
         """
-
         return (
             self.latitude is not None
             and self.longitude is not None
@@ -282,9 +306,8 @@ class Order(BaseModel):
     @property
     def is_geocoded(self) -> bool:
         """
-        Returns True when valid non-zero coordinates exist.
+        Return True when valid non-zero coordinates exist.
         """
-
         return (
             self.latitude is not None
             and self.longitude is not None

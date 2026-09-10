@@ -5,13 +5,22 @@ Validated Geographic Truth
 
 This table stores the validated geographic location of a Store.
 
-Rules
------
+## Rules
+
 • One Store may have multiple validation attempts.
 • Only ONE record should have is_current=True.
 • Company data NEVER lives here.
 • Raw uploaded coordinates NEVER live here.
 • This table is the authoritative geographic truth used by AI.
+
+## Region
+
+region_id represents the municipal region of Tehran.
+
+• Region is currently defined for Tehran's 22 municipal regions.
+• It is NOT a universal geographic layer for all cities in Iran.
+• For Tehran stores, region_id may reference regions.id.
+• For stores outside Tehran, region_id may be NULL.
 """
 
 from sqlalchemy import (
@@ -22,7 +31,6 @@ from sqlalchemy import (
     Numeric,
     String,
     Text,
-    func,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -32,6 +40,13 @@ from app.models.base import BaseModel
 
 
 class StoreLocation(BaseModel):
+    """
+    Validated geographic location of a Store.
+
+    StoreLocation keeps the validated/current geographic truth
+    and historical validation attempts for a Store.
+    """
+
     __tablename__ = "store_locations"
 
     # ==========================================================
@@ -102,6 +117,26 @@ class StoreLocation(BaseModel):
     )
 
     # ==========================================================
+    # Tehran Municipal Region
+    #
+    # Region is currently specific to Tehran's
+    # 22 municipal regions.
+    #
+    # For Tehran:
+    #     region_id -> regions.id
+    #
+    # For other cities:
+    #     region_id = NULL
+    # ==========================================================
+
+    region_id: Mapped[int | None] = mapped_column(
+        Integer,
+        ForeignKey("regions.id"),
+        nullable=True,
+        index=True,
+    )
+
+    # ==========================================================
     # Coordinates
     # ==========================================================
 
@@ -150,6 +185,8 @@ class StoreLocation(BaseModel):
         String(50),
         nullable=False,
     )
+
+    # Possible values:
     # fimap
     # google
     # neshan
@@ -193,6 +230,14 @@ class StoreLocation(BaseModel):
         lazy="selectin",
     )
 
+    # NOTE:
+    # We intentionally do NOT add a Region relationship here yet.
+    #
+    # region_id is retained as a nullable FK because Region currently
+    # represents Tehran's 22 municipal regions. The existing database
+    # architecture does not require a SQLAlchemy Region relationship
+    # on StoreLocation at this stage.
+
     # ==========================================================
     # Representation
     # ==========================================================
@@ -202,6 +247,7 @@ class StoreLocation(BaseModel):
             f"<StoreLocation("
             f"id={self.id}, "
             f"store_id={self.store_id}, "
+            f"region_id={self.region_id}, "
             f"source='{self.validation_source}', "
             f"current={self.is_current}"
             f")>"

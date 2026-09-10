@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from decimal import Decimal
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 from sqlalchemy import (
     DateTime,
@@ -24,6 +24,8 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import BaseModel
 
+if TYPE_CHECKING:
+    from app.models.import_batch import ImportBatch
 
 class GPSRecord(BaseModel):
     """
@@ -35,10 +37,10 @@ class GPSRecord(BaseModel):
     __tablename__ = "gps_records"
 
     # ── ارتباط با Import Batch ──────────────────────────────
-    import_batch_id: Mapped[int] = mapped_column(
+    import_batch_id: Mapped[int | None] = mapped_column(
         Integer,
-        ForeignKey("import_batches.id", ondelete="CASCADE"),
-        nullable=False,
+        ForeignKey("import_batches.id", ondelete="SET NULL"),
+        nullable=True,
         index=True,
     )
 
@@ -97,9 +99,10 @@ class GPSRecord(BaseModel):
     )
 
     # ── Relationships ────────────────────────────────────────
-    import_batch: Mapped["ImportBatch"] = relationship(
+    import_batch: Mapped["ImportBatch | None"] = relationship(
         "ImportBatch",
         back_populates="gps_records",
+        lazy="selectin",
     )
 
     # ── Properties ──────────────────────────────────────────

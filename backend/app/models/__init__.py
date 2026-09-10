@@ -62,12 +62,11 @@ Base
 8. ProjectDriver does NOT own Driver.
 
 9. Deleting a Project deletes its association records:
+ProjectVehicle
 
-   ```
-   ProjectVehicle
-   ProjectDriver
-   ProjectCompanyStore
-   ```
+ProjectDriver
+
+ProjectCompanyStore
 
 10. Deleting a Project MUST NOT delete:
 
@@ -92,283 +91,244 @@ The import order below ensures that all model classes
 participating in string-based relationships are imported
 before configure_mappers() is executed.
 """
-
 # ==========================================================
 
-# Base
+# ==========================================================
+# Geographic Master Data
+# ==========================================================
+from app.models.province import Province
+from app.models.city import City
+from app.models.region import Region
+# ==========================================================
 
+# ==========================================================
+# Base
 # ==========================================================
 
 from app.models.base import (
-Base,
-BaseModel,
+    Base,
+    BaseModel,
 )
 
 # ==========================================================
-
 # Security / Account
-
 # ==========================================================
 
 from app.models.account import (
-Account,
+    Account,
 )
 
 # ==========================================================
-
 # Enterprise Identity
-
 # ==========================================================
 
 from app.models.company import (
-Company,
+    Company,
 )
 
 from app.models.project import (
-Project,
-ProjectStatus,
+    Project,
+    ProjectStatus,
 )
 
 # ==========================================================
-
 # Enterprise Truth Layer
-
 # ==========================================================
 
 from app.models.store import (
-Store,
+    Store,
 )
 
 from app.models.store_location import (
-StoreLocation,
+    StoreLocation,
 )
 
 from app.models.address_candidate import (
-AddressCandidate,
+    AddressCandidate,
 )
 
 # ==========================================================
-
 # Company-Owned Store Layer
-
 # ==========================================================
 
 from app.models.company_store import (
-CompanyStore,
+    CompanyStore,
 )
 
 # ==========================================================
-
 # Project ↔ CompanyStore Association
-
 # ==========================================================
 
 from app.models.project_company_store import (
-ProjectCompanyStore,
+    ProjectCompanyStore,
 )
 
 # ==========================================================
-
 # File Management
-
 # ==========================================================
 
 from app.models.file import (
-File,
+    File,
 )
 
 # ==========================================================
-
 # Request System
-
 # ==========================================================
 
 from app.models.request import (
-Request,
+    Request,
 )
 
 from app.models.request_file import (
-RequestFile,
+    RequestFile,
 )
 
 # ==========================================================
-
 # Import Engine
-
 # ==========================================================
 
 from app.models.import_batch import (
-ImportBatch,
+    ImportBatch,
 )
 
 from app.models.row_error import (
-RowError,
+    RowError,
 )
 
 # ==========================================================
-
 # Operational Resources
-
 # ==========================================================
 
 # ----------------------------------------------------------
-
 # Driver
-
 # ----------------------------------------------------------
 
 from app.models.driver import (
-Driver,
+    Driver,
 )
 
 # ----------------------------------------------------------
-
 # Vehicle
-
 # ----------------------------------------------------------
 
 from app.models.vehicle import (
-Vehicle,
+    Vehicle,
 )
 
 # ----------------------------------------------------------
-
 # Vehicle ↔ Driver Assignment
-
 # ----------------------------------------------------------
 
 from app.models.vehicle_driver import (
-VehicleDriver,
+    VehicleDriver,
 )
 
 # ----------------------------------------------------------
-
 # Project ↔ Vehicle Association
-
 # ----------------------------------------------------------
 
 from app.models.project_vehicle import (
-ProjectVehicle,
+    ProjectVehicle,
 )
 
 # ----------------------------------------------------------
-
 # Project ↔ Driver Association
-
 # ----------------------------------------------------------
 
 from app.models.project_driver import (
-ProjectDriver,
+    ProjectDriver,
 )
 
 # ----------------------------------------------------------
-
 # Orders
-
 # ----------------------------------------------------------
 
 from app.models.order import (
-Order,
+    Order,
 )
 
 # ----------------------------------------------------------
-
 # GPS Records
-
 # ----------------------------------------------------------
 
 from app.models.gps_record import (
-GPSRecord,
+    GPSRecord,
 )
 
 # ==========================================================
-
 # Public API
-
 # ==========================================================
 
 __all__ = [
 
-# ------------------------------------------------------
-# Base
-# ------------------------------------------------------
+    # ------------------------------------------------------
+    # Geographic Master Data
+    # ------------------------------------------------------
+    "Province",
+    "City",
+    "Region",
 
-"Base",
-"BaseModel",
+    # ------------------------------------------------------
+    # Base
+    # ------------------------------------------------------
+    "Base",
+    "BaseModel",
 
+    # ------------------------------------------------------
+    # Security
+    # ------------------------------------------------------
+    "Account",
 
-# ------------------------------------------------------
-# Security
-# ------------------------------------------------------
+    # ------------------------------------------------------
+    # Enterprise Identity
+    # ------------------------------------------------------
+    "Company",
+    "Project",
+    "ProjectStatus",
 
-"Account",
+    # ------------------------------------------------------
+    # Enterprise Truth Layer
+    # ------------------------------------------------------
+    "Store",
+    "StoreLocation",
+    "AddressCandidate",
 
+    # ------------------------------------------------------
+    # Company-Owned Store Layer
+    # ------------------------------------------------------
+    "CompanyStore",
 
-# ------------------------------------------------------
-# Enterprise Identity
-# ------------------------------------------------------
+    # ------------------------------------------------------
+    # Project ↔ CompanyStore
+    # ------------------------------------------------------
+    "ProjectCompanyStore",
 
-"Company",
-"Project",
-"ProjectStatus",
+    # ------------------------------------------------------
+    # File Management
+    # ------------------------------------------------------
+    "File",
 
+    # ------------------------------------------------------
+    # Request System
+    # ------------------------------------------------------
+    "Request",
+    "RequestFile",
 
-# ------------------------------------------------------
-# Enterprise Truth Layer
-# ------------------------------------------------------
+    # ------------------------------------------------------
+    # Import Engine
+    # ------------------------------------------------------
+    "ImportBatch",
+    "RowError",
 
-"Store",
-"StoreLocation",
-"AddressCandidate",
-
-
-# ------------------------------------------------------
-# Company-Owned Store Layer
-# ------------------------------------------------------
-
-"CompanyStore",
-
-
-# ------------------------------------------------------
-# Project ↔ CompanyStore
-# ------------------------------------------------------
-
-"ProjectCompanyStore",
-
-
-# ------------------------------------------------------
-# File Management
-# ------------------------------------------------------
-
-"File",
-
-
-# ------------------------------------------------------
-# Request System
-# ------------------------------------------------------
-
-"Request",
-"RequestFile",
-
-
-# ------------------------------------------------------
-# Import Engine
-# ------------------------------------------------------
-
-"ImportBatch",
-"RowError",
-
-
-# ------------------------------------------------------
-# Operational Resources
-# ------------------------------------------------------
-
-"Driver",
-"Vehicle",
-"VehicleDriver",
-"ProjectVehicle",
-"ProjectDriver",
-"Order",
-"GPSRecord",
+    # ------------------------------------------------------
+    # Operational Resources
+    # ------------------------------------------------------
+    "Driver",
+    "Vehicle",
+    "VehicleDriver",
+    "ProjectVehicle",
+    "ProjectDriver",
+    "Order",
+    "GPSRecord",
 
 ]

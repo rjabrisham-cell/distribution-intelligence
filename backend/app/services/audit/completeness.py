@@ -1,7 +1,7 @@
 # ============================================================================
 # Distribution Intelligence Platform (DIP)
 # Sprint 2 — Data Quality Audit Engine
-# Contract v1.2 (Frozen)
+# Contract v2.0 (Frozen)
 #
 # Completeness Audit — PURE, Stateless, No DB, No Business Decisions
 # ============================================================================
@@ -47,7 +47,7 @@ class FieldResult:
 @dataclass(frozen=True, slots=True)
 class CompletenessResult:
     store_id:          int
-    shop_name:         str
+    canonical_name:    str
     raw_score:         int
     total_weight:      int
     percentage:        float
@@ -250,7 +250,7 @@ class CompletenessService:
 
         return CompletenessResult(
             store_id          = store.id,
-            shop_name         = store.shop_name,
+            canonical_name    = store.canonical_name,
             raw_score         = raw_score,
             total_weight      = _TOTAL_WEIGHT,
             percentage        = percentage,

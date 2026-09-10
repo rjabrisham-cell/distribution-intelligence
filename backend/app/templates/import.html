@@ -1,3 +1,7 @@
+{# ================================================================ #}
+{#  مسیر فایل:  app/templates/import.html                            #}
+{#  اقدام:      جایگزینی کامل                                       #}
+{# ================================================================ #}
 {% extends "base.html" %}
 
 {% block title %}وارد کردن داده‌ها | Data Import{% endblock %}
@@ -26,8 +30,29 @@
   </div>
   {% endif %}
 
+  <!-- Template Download Section -->
+  <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+      <div>
+        <h3 class="font-bold text-yellow-800 mb-1">📋 فایل نمونه فروشگاه‌ها</h3>
+        <p class="text-sm text-yellow-700">
+          برای وارد کردن اطلاعات فروشگاه‌ها، ابتدا فایل نمونه را دانلود کنید و داده‌های خود را در آن وارد نمایید.
+        </p>
+      </div>
+      <a href="/import/template/store"
+         class="bg-yellow-500 hover:bg-yellow-600 text-white font-medium py-2 px-4 rounded-lg shadow transition-colors duration-150 inline-flex items-center gap-2 whitespace-nowrap">
+        📥 دانلود فایل نمونه فروشگاه‌ها
+      </a>
+    </div>
+    <div class="mt-3 text-xs text-gray-600 space-y-1">
+      <p><strong>اطلاعات اجباری:</strong> نام فروشگاه، آدرس، تلفن، عرض جغرافیایی (Latitude)، طول جغرافیایی (Longitude)</p>
+      <p><strong>اطلاعات اختیاری:</strong> دسته‌بندی کسب‌وکار، نوع فروشگاه، کد پستی، پلاک، واحد، طبقه</p>
+    </div>
+  </div>
+
   <!-- Upload Form -->
-  <form action="/import/upload"
+  <form id="upload-form"
+        action="/import/upload"
         method="post"
         enctype="multipart/form-data"
         class="bg-white p-8 rounded-xl shadow-md border border-gray-100">
@@ -45,8 +70,8 @@
                        focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
                 required>
           <option value="" disabled selected>-- انتخاب کنید --</option>
-          <option value="order">سفارش (Order)</option>
           <option value="store">فروشگاه (Store)</option>
+          <option value="order">سفارش (Order)</option>
           <option value="vehicle">خودرو (Vehicle)</option>
           <option value="driver">راننده (Driver)</option>
           <option value="gps_record">رد GPS</option>
@@ -79,6 +104,68 @@
       </div>
     </div>
 
+    <!-- Geographic Scope Section (shown only for Store) -->
+    <div id="geographic-scope-section" class="mb-6 hidden">
+      <div class="border-l-4 border-blue-500 bg-blue-50 p-4 mb-4">
+        <h4 class="text-lg font-semibold text-blue-800 mb-2">🌍 محدوده جغرافیایی</h4>
+        <p class="text-sm text-blue-700 mb-3">
+          برای وارد کردن اطلاعات فروشگاه‌ها، محدوده جغرافیایی مربوطه را انتخاب کنید.
+          این اطلاعات از Master Data سیستم خوانده می‌شود و نیازی به وارد کردن آن در فایل Excel نیست.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+          <!-- استان -->
+          <div>
+            <label for="province-select" class="block text-gray-700 mb-1 text-sm font-medium">
+              استان <span class="text-red-500">*</span>
+            </label>
+            <select id="province-select"
+                    name="province_id"
+                    class="w-full p-2.5 border rounded-lg text-gray-700
+                           focus:outline-none focus:ring-2 focus:ring-blue-400
+                           disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    required>
+              <option value="">در حال بارگذاری...</option>
+            </select>
+          </div>
+
+          <!-- شهر -->
+          <div>
+            <label for="city-select" class="block text-gray-700 mb-1 text-sm font-medium">
+              شهر <span class="text-red-500">*</span>
+            </label>
+            <select id="city-select"
+                    name="city_id"
+                    class="w-full p-2.5 border rounded-lg text-gray-700
+                           focus:outline-none focus:ring-2 focus:ring-blue-400
+                           disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    required disabled>
+              <option value="">ابتدا استان را انتخاب کنید</option>
+            </select>
+            <span id="city-spinner" class="hidden text-xs text-blue-500 mt-1 inline-block">⏳ در حال بارگذاری...</span>
+          </div>
+
+          <!-- منطقه -->
+          <div>
+            <label for="region-select" class="block text-gray-700 mb-1 text-sm font-medium">
+              منطقه
+            </label>
+            <select id="region-select"
+                    name="region_id"
+                    class="w-full p-2.5 border rounded-lg text-gray-700
+                           focus:outline-none focus:ring-2 focus:ring-blue-400
+                           disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    disabled>
+              <option value="">ابتدا شهر را انتخاب کنید</option>
+            </select>
+            <span id="region-spinner" class="hidden text-xs text-blue-500 mt-1 inline-block">⏳ در حال بارگذاری...</span>
+            <span id="no-region-msg" class="hidden text-xs text-gray-500 mt-1 inline-block">این شهر منطقه ثبت‌شده‌ای ندارد</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Description -->
     <div class="mb-8">
       <label for="description" class="block text-gray-700 text-sm font-bold mb-2">
@@ -96,8 +183,9 @@
     <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8">
       <h3 class="font-bold text-blue-800 mb-2">💡 نکات مهم</h3>
       <ul class="list-disc list-inside text-sm text-blue-700 space-y-1">
-        <li>ستون‌های فایل باید دقیقاً مطابق با نام فیلدهای تعریف‌شده باشند.</li>
+        <li>ستون‌های فایل باید دقیقاً مطابق با نام فیلدهای تعریف‌شده در فایل نمونه باشند.</li>
         <li>ردیف اول فایل به‌عنوان هدر (سرستون) در نظر گرفته می‌شود.</li>
+        <li>اطلاعات جغرافیایی (استان، شهر، منطقه) را در Excel وارد نکنید؛ این مقادیر از فرم بالا دریافت می‌شوند.</li>
         <li>در صورت وجود خطا در برخی ردیف‌ها، ردیف‌های معتبر همچنان ذخیره می‌شوند.</li>
       </ul>
     </div>
@@ -109,10 +197,12 @@
         مشاهده تاریخچه
       </a>
       <button type="submit"
+              id="submit-btn"
               class="bg-blue-600 hover:bg-blue-700 text-white font-bold
                      py-2.5 px-6 rounded-lg shadow
                      focus:outline-none focus:ring-2 focus:ring-blue-400
-                     transition-colors duration-150">
+                     transition-colors duration-150
+                     disabled:opacity-50 disabled:cursor-not-allowed">
         🚀 شروع پردازش
       </button>
     </div>
@@ -131,19 +221,253 @@
 
 {% block extra_scripts %}
 <script>
-  // Quick AJAX snippet to show last 5 batches without page reload
+  // ──────────────────────────────────────────────
+  //  Geographic Data Loader (Real API — No Mock)
+  // ──────────────────────────────────────────────
+
+  const GEO_API = '/geography';
+
+  async function fetchProvinces() {
+    const res = await fetch(`${GEO_API}/provinces`);
+    if (!res.ok) throw new Error('Failed to load provinces');
+    return res.json();
+  }
+
+  async function fetchCities(provinceId) {
+    const res = await fetch(`${GEO_API}/cities/${provinceId}`);
+    if (!res.ok) throw new Error('Failed to load cities');
+    return res.json();
+  }
+
+  async function fetchRegions(cityId) {
+    const res = await fetch(`${GEO_API}/regions/${cityId}`);
+    if (!res.ok) throw new Error('Failed to load regions');
+    return res.json();
+  }
+
+  // ──────────────────────────────────────────────
+  //  DOM References
+  // ──────────────────────────────────────────────
+
+  const entityTypeSelect = document.getElementById('entity_type');
+  const geographicSection = document.getElementById('geographic-scope-section');
+  const provinceSelect = document.getElementById('province-select');
+  const citySelect = document.getElementById('city-select');
+  const regionSelect = document.getElementById('region-select');
+  const citySpinner = document.getElementById('city-spinner');
+  const regionSpinner = document.getElementById('region-spinner');
+  const noRegionMsg = document.getElementById('no-region-msg');
+
+  // ──────────────────────────────────────────────
+  //  UI Helpers
+  // ──────────────────────────────────────────────
+
+  function showSpinner(el) {
+    if (el) el.classList.remove('hidden');
+  }
+
+  function hideSpinner(el) {
+    if (el) el.classList.add('hidden');
+  }
+
+  function setLoading(selectEl, text = 'در حال بارگذاری...') {
+    selectEl.innerHTML = `<option value="">${text}</option>`;
+    selectEl.disabled = true;
+  }
+
+  function populateSelect(selectEl, items, placeholder = 'انتخاب کنید...') {
+    selectEl.innerHTML = `<option value="">${placeholder}</option>`;
+    items.forEach(item => {
+      const opt = document.createElement('option');
+      opt.value = item.id;
+      opt.textContent = item.name;
+      selectEl.appendChild(opt);
+    });
+    selectEl.disabled = false;
+  }
+
+  function showNoRegionMessage() {
+    noRegionMsg.classList.remove('hidden');
+  }
+
+  function hideNoRegionMessage() {
+    noRegionMsg.classList.add('hidden');
+  }
+
+  // ──────────────────────────────────────────────
+  //  Cascading Logic
+  // ──────────────────────────────────────────────
+
+  async function loadProvinces() {
+    setLoading(provinceSelect, 'در حال بارگذاری استان‌ها...');
+    try {
+      const provinces = await fetchProvinces();
+      populateSelect(provinceSelect, provinces, 'انتخاب استان...');
+    } catch (err) {
+      provinceSelect.innerHTML = '<option value="">خطا در بارگذاری استان‌ها</option>';
+      console.error(err);
+    }
+  }
+
+  async function onProvinceChange() {
+    const provinceId = provinceSelect.value;
+
+    citySelect.innerHTML = '<option value="">ابتدا استان را انتخاب کنید</option>';
+    citySelect.disabled = true;
+    regionSelect.innerHTML = '<option value="">ابتدا شهر را انتخاب کنید</option>';
+    regionSelect.disabled = true;
+    hideNoRegionMessage();
+
+    if (!provinceId) return;
+
+    setLoading(citySelect, 'در حال بارگذاری شهرها...');
+    showSpinner(citySpinner);
+
+    try {
+      const cities = await fetchCities(provinceId);
+      populateSelect(citySelect, cities, 'انتخاب شهر...');
+    } catch (err) {
+      citySelect.innerHTML = '<option value="">خطا در بارگذاری شهرها</option>';
+      console.error(err);
+    } finally {
+      hideSpinner(citySpinner);
+    }
+  }
+
+  async function onCityChange() {
+    const cityId = citySelect.value;
+
+    regionSelect.innerHTML = '<option value="">ابتدا شهر را انتخاب کنید</option>';
+    regionSelect.disabled = true;
+    hideNoRegionMessage();
+
+    if (!cityId) return;
+
+    setLoading(regionSelect, 'در حال بارگذاری مناطق...');
+    showSpinner(regionSpinner);
+
+    try {
+      const regions = await fetchRegions(cityId);
+      if (regions.length === 0) {
+        regionSelect.innerHTML = '<option value="">منطقه‌ای ثبت نشده است</option>';
+        regionSelect.disabled = true;
+        showNoRegionMessage();
+        regionSelect.removeAttribute('required');
+      } else {
+        populateSelect(regionSelect, regions, 'انتخاب منطقه...');
+        regionSelect.setAttribute('required', 'required');
+      }
+    } catch (err) {
+      regionSelect.innerHTML = '<option value="">خطا در بارگذاری مناطق</option>';
+      console.error(err);
+    } finally {
+      hideSpinner(regionSpinner);
+    }
+  }
+
+  // ──────────────────────────────────────────────
+  //  Entity Type Toggle
+  // ──────────────────────────────────────────────
+
+  function toggleGeographicSection() {
+    if (entityTypeSelect.value === 'store') {
+      geographicSection.classList.remove('hidden');
+      provinceSelect.required = true;
+      citySelect.required = true;
+      if (provinceSelect.options.length <= 1) {
+        loadProvinces();
+      }
+    } else {
+      geographicSection.classList.add('hidden');
+      provinceSelect.required = false;
+      citySelect.required = false;
+      regionSelect.required = false;
+      provinceSelect.innerHTML = '<option value="">انتخاب استان...</option>';
+      citySelect.innerHTML = '<option value="">ابتدا استان را انتخاب کنید</option>';
+      citySelect.disabled = true;
+      regionSelect.innerHTML = '<option value="">ابتدا شهر را انتخاب کنید</option>';
+      regionSelect.disabled = true;
+      hideNoRegionMessage();
+    }
+  }
+
+  // ──────────────────────────────────────────────
+  //  Form Validation & Submit
+  // ──────────────────────────────────────────────
+
+  const uploadForm = document.getElementById('upload-form');
+  const submitBtn = document.getElementById('submit-btn');
+  const fileInput = document.getElementById('file');
+  const ALLOWED_EXTENSIONS = ['.xlsx', '.xls', '.csv'];
+
+  function validateForm() {
+    if (!entityTypeSelect.value) {
+      alert('لطفاً نوع موجودیت را انتخاب کنید.');
+      entityTypeSelect.focus();
+      return false;
+    }
+    if (entityTypeSelect.value === 'store') {
+      if (!provinceSelect.value) {
+        alert('لطفاً استان را انتخاب کنید.');
+        provinceSelect.focus();
+        return false;
+      }
+      if (!citySelect.value) {
+        alert('لطفاً شهر را انتخاب کنید.');
+        citySelect.focus();
+        return false;
+      }
+      if (regionSelect.required && !regionSelect.value) {
+        alert('لطفاً منطقه را انتخاب کنید.');
+        regionSelect.focus();
+        return false;
+      }
+    }
+    if (!fileInput.files || fileInput.files.length === 0) {
+      alert('لطفاً یک فایل انتخاب کنید.');
+      fileInput.focus();
+      return false;
+    }
+    const fileName = fileInput.files[0].name.toLowerCase();
+    if (!ALLOWED_EXTENSIONS.some(ext => fileName.endsWith(ext))) {
+      alert('فرمت فایل معتبر نیست. لطفاً فایل با پسوند XLSX، XLS یا CSV انتخاب کنید.');
+      fileInput.focus();
+      return false;
+    }
+    return true;
+  }
+
+  uploadForm.addEventListener('submit', function (e) {
+    if (!validateForm()) {
+      e.preventDefault();
+      return false;
+    }
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '⏳ در حال پردازش...';
+  });
+
+  // ──────────────────────────────────────────────
+  //  Event Listeners
+  // ──────────────────────────────────────────────
+
+  entityTypeSelect.addEventListener('change', toggleGeographicSection);
+  provinceSelect.addEventListener('change', onProvinceChange);
+  citySelect.addEventListener('change', onCityChange);
+
+  // ──────────────────────────────────────────────
+  //  Recent Batches
+  // ──────────────────────────────────────────────
+
   (async function loadRecentBatches() {
     try {
       const res = await fetch('/import/api/batches/recent');
       if (!res.ok) throw new Error('Failed');
       const batches = await res.json();
       const container = document.getElementById('recentBatches');
-
       if (!batches.length) {
         container.innerHTML = '<p class="text-gray-400">هنوز هیچ بارگذاری‌ای انجام نشده است.</p>';
         return;
       }
-
       const rows = batches.map(b => `
         <div class="flex items-center justify-between border-b py-2 px-2 hover:bg-gray-50 rounded">
           <div>
@@ -160,12 +484,12 @@
           </span>
         </div>
       `).join('');
-
       container.innerHTML = rows;
     } catch {
       document.getElementById('recentBatches').innerHTML =
         '<p class="text-red-400">خطا در بارگذاری تاریخچه.</p>';
     }
   })();
+
 </script>
 {% endblock %}

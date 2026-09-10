@@ -56,13 +56,11 @@ from sqlalchemy.orm import (
 
 from app.models.base import BaseModel
 
-
 if TYPE_CHECKING:
     from app.models.company import Company
     from app.models.import_batch import ImportBatch
     from app.models.project_vehicle import ProjectVehicle
     from app.models.vehicle_driver import VehicleDriver
-
 
 class Vehicle(BaseModel):
     """
@@ -239,6 +237,7 @@ class Vehicle(BaseModel):
     import_batch: Mapped["ImportBatch | None"] = relationship(
         "ImportBatch",
         back_populates="vehicles",
+        lazy="selectin",
     )
 
     # ----------------------------------------------------------

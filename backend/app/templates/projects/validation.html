@@ -2,46 +2,674 @@
 
 {% block title %}
   {% if project_context is defined and project_context is mapping %}
-    {{ project_context.get('name', 'پروژه') }}
+    {{ project_context.get('name', 'پروژه') }} - صحت‌سنجی اطلاعات
   {% else %}
-    پروژه
+    پروژه - صحت‌سنجی اطلاعات
   {% endif %}
-  - Validation
 {% endblock %}
 
+
 {% block content %}
-<div class="dip-container">
+
+<div class="dip-container dip-validation">
+
   {% include "partials/shared/breadcrumb.html" %}
   {% include "partials/shared/project_header.html" %}
   {% include "partials/shared/journey_stepper.html" %}
   {% include "partials/shared/current_step.html" %}
 
-  <section class="dip-card">
-    <div class="dip-section-head" style="margin-bottom: var(--spacing-md);">
+
+  <!-- =====================================================
+       Validation Executive Dashboard
+       ===================================================== -->
+
+  <section class="dip-card dip-validation__main-card">
+
+    <div class="dip-section-head dip-validation__section-head">
+
       <div>
-        <h2>صحت‌سنجی اطلاعات</h2>
-        <p style="color: var(--color-neutral-muted); font-size: 0.9rem;">
-          بررسی ساختار داده‌ها، مقادیر گم‌شده و ناسازگاری‌های موجود در فایل‌های بارگذاری‌شده.
+
+        <h2 class="dip-validation__title">
+          گزارش تجمیعی صحت‌سنجی و کیفیت داده
+        </h2>
+
+        <p class="dip-validation__description">
+          داده‌های بارگذاری‌شده از نظر ساختار و کیفیت اولیه بررسی
+          و در پروژه ثبت شده‌اند. کسری اطلاعات تکمیلی به‌تنهایی
+          باعث حذف رکورد نشده و در مراحل تطبیق و ارزیابی کیفیت
+          مورد بررسی قرار خواهد گرفت.
         </p>
+
       </div>
+
+
+      {% if batch is not none %}
+
+        <div
+          style="
+            padding: 6px 14px;
+            border-radius: 8px;
+            background: #eff6ff;
+            color: #1d4ed8;
+            font-weight: 700;
+            white-space: nowrap;
+          "
+        >
+          Batch #{{ batch.id }}
+        </div>
+
+      {% endif %}
+
     </div>
 
-    <div class="dip-empty-state">
-      <div class="dip-empty-state-icon">
-        <i class="bi bi-shield-check"></i>
+
+    {% if batch is not none %}
+
+
+      <!-- =================================================
+           Validation State
+           ================================================= -->
+
+      <div
+        style="
+          margin-top: 20px;
+          padding: 16px 18px;
+          border: 1px solid #bbf7d0;
+          background: #f0fdf4;
+          border-radius: 10px;
+        "
+      >
+
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            gap: 10px;
+          "
+        >
+
+          <i
+            class="bi bi-check-circle-fill"
+            style="color: #16a34a; font-size: 1.2rem;"
+            aria-hidden="true"
+          ></i>
+
+          <strong style="color: #166534;">
+            صحت‌سنجی اولیه تکمیل شد
+          </strong>
+
+        </div>
+
+        <p
+          style="
+            margin: 8px 0 0 0;
+            color: #475569;
+            font-size: 0.875rem;
+          "
+        >
+          {{ summary.imported_rows or 0 }}
+          رکورد فروشگاه با موفقیت وارد لایه داده پروژه شده است.
+          هشدارهای کیفیتی مانع پذیرش رکوردها نشده‌اند.
+        </p>
+
       </div>
-      <p class="dip-empty-state-message">
-        فرآیند صحت‌سنجی و ارزیابی قوانین کسب‌وکار برای این پروژه در این بخش نمایش داده خواهد شد.
-      </p>
-    </div>
+
+
+      <!-- =================================================
+           KPI Cards
+           ================================================= -->
+
+      <div
+        style="
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+          gap: 16px;
+          margin-top: 24px;
+        "
+      >
+
+
+        <!-- Imported -->
+
+        <div
+          class="dip-card"
+          style="
+            padding: 18px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+          "
+        >
+
+          <span
+            style="
+              display: block;
+              font-size: 0.82rem;
+              color: #64748b;
+              margin-bottom: 8px;
+            "
+          >
+            فروشگاه‌های ثبت‌شده
+          </span>
+
+          <strong
+            style="
+              display: block;
+              font-size: 1.9rem;
+              color: #0f172a;
+            "
+          >
+            {{ evidence_summary.imported_stores if evidence_summary else summary.imported_rows }}
+          </strong>
+
+          <small
+            style="
+              display: block;
+              margin-top: 6px;
+              color: #16a34a;
+            "
+          >
+            پذیرفته‌شده در پروژه
+          </small>
+
+        </div>
+
+
+        <!-- Evidence -->
+
+        <div
+          class="dip-card"
+          style="
+            padding: 18px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+          "
+        >
+
+          <span
+            style="
+              display: block;
+              font-size: 0.82rem;
+              color: #64748b;
+              margin-bottom: 8px;
+            "
+          >
+            شواهد آدرس
+          </span>
+
+          <strong
+            style="
+              display: block;
+              font-size: 1.9rem;
+              color: #2563eb;
+            "
+          >
+            {{ evidence_summary.address_evidence if evidence_summary else "—" }}
+          </strong>
+
+          <small
+            style="
+              display: block;
+              margin-top: 6px;
+              color: #64748b;
+            "
+          >
+            Evidence آماده Matching
+          </small>
+
+        </div>
+
+
+        <!-- Coordinates Available -->
+
+        <div
+          class="dip-card"
+          style="
+            padding: 18px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+          "
+        >
+
+          <span
+            style="
+              display: block;
+              font-size: 0.82rem;
+              color: #64748b;
+              margin-bottom: 8px;
+            "
+          >
+            دارای مختصات
+          </span>
+
+          <strong
+            style="
+              display: block;
+              font-size: 1.9rem;
+              color: #059669;
+            "
+          >
+            {{ evidence_summary.coordinates_available if evidence_summary else "—" }}
+          </strong>
+
+          <small
+            style="
+              display: block;
+              margin-top: 6px;
+              color: #059669;
+            "
+          >
+            Lat / Long موجود
+          </small>
+
+        </div>
+
+
+        <!-- Coordinates Missing -->
+
+        <div
+          class="dip-card"
+          style="
+            padding: 18px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+          "
+        >
+
+          <span
+            style="
+              display: block;
+              font-size: 0.82rem;
+              color: #64748b;
+              margin-bottom: 8px;
+            "
+          >
+            نیازمند تکمیل مختصات
+          </span>
+
+          <strong
+            style="
+              display: block;
+              font-size: 1.9rem;
+              color: #d97706;
+            "
+          >
+            {{ evidence_summary.coordinates_missing if evidence_summary else "—" }}
+          </strong>
+
+          <small
+            style="
+              display: block;
+              margin-top: 6px;
+              color: #d97706;
+            "
+          >
+            پذیرفته‌شده، بدون Reject
+          </small>
+
+        </div>
+
+
+        <!-- Missing Address -->
+
+        <div
+          class="dip-card"
+          style="
+            padding: 18px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+          "
+        >
+
+          <span
+            style="
+              display: block;
+              font-size: 0.82rem;
+              color: #64748b;
+              margin-bottom: 8px;
+            "
+          >
+            فاقد آدرس
+          </span>
+
+          <strong
+            style="
+              display: block;
+              font-size: 1.9rem;
+              color: #d97706;
+            "
+          >
+            {{ evidence_summary.missing_address if evidence_summary else "—" }}
+          </strong>
+
+          <small
+            style="
+              display: block;
+              margin-top: 6px;
+              color: #64748b;
+            "
+          >
+            نیازمند تکمیل اطلاعات
+          </small>
+
+        </div>
+
+
+        <!-- Ready for Matching -->
+
+        <div
+          class="dip-card"
+          style="
+            padding: 18px;
+            text-align: center;
+            border: 1px solid #bfdbfe;
+            background: #f8fbff;
+            border-radius: 10px;
+          "
+        >
+
+          <span
+            style="
+              display: block;
+              font-size: 0.82rem;
+              color: #64748b;
+              margin-bottom: 8px;
+            "
+          >
+            قابل ارسال به Matching
+          </span>
+
+          <strong
+            style="
+              display: block;
+              font-size: 1.9rem;
+              color: #1d4ed8;
+            "
+          >
+            {{ evidence_summary.ready_for_matching if evidence_summary else summary.imported_rows }}
+          </strong>
+
+          <small
+            style="
+              display: block;
+              margin-top: 6px;
+              color: #2563eb;
+            "
+          >
+            آماده ورود به Matching Gate
+          </small>
+
+        </div>
+
+      </div>
+
+
+      <!-- =================================================
+           Compact Quality Summary
+           ================================================= -->
+
+      <div
+        style="
+          display: flex;
+          flex-wrap: wrap;
+          gap: 18px;
+          align-items: center;
+          margin-top: 20px;
+          padding: 14px 18px;
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
+          border-radius: 10px;
+          font-size: 0.875rem;
+          color: #475569;
+        "
+      >
+
+        <span>
+          کل ردیف‌ها:
+          <strong>{{ summary.total_rows }}</strong>
+        </span>
+
+        <span>
+          معتبر:
+          <strong>{{ summary.valid_rows }}</strong>
+        </span>
+
+        <span>
+          خطای بازدارنده:
+          <strong>{{ summary.error_rows }}</strong>
+        </span>
+
+        <span>
+          نرخ پذیرش:
+          <strong>{{ summary.success_rate }}%</strong>
+        </span>
+
+        <span>
+          وضعیت Batch:
+          <strong>{{ summary.status or "—" }}</strong>
+        </span>
+
+      </div>
+
+
+      <!-- =================================================
+           Matching / Readiness Status
+           ================================================= -->
+
+      <div
+        style="
+          margin-top: 24px;
+          padding: 20px;
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
+          border-radius: 10px;
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: space-between;
+          align-items: center;
+          gap: 20px;
+        "
+      >
+
+        <div>
+
+          <h3
+            style="
+              margin: 0 0 6px 0;
+              font-size: 1rem;
+              color: #1e293b;
+            "
+          >
+            مرحله بعد: تطبیق و آمادگی
+          </h3>
+
+
+          {% if evidence_summary and evidence_summary.matching_status == "PENDING" %}
+
+            <p
+              style="
+                margin: 0;
+                color: #64748b;
+                font-size: 0.875rem;
+              "
+            >
+              داده‌ها آماده ورود به مرحله آمادگی هستند.
+              تطبیق با بانک مرجع فروشگاه‌ها در مرحله Readiness انجام می‌شود.
+            </p>
+
+          {% elif evidence_summary and evidence_summary.matching_status == "IN_PROGRESS" %}
+
+            <p
+              style="
+                margin: 0;
+                color: #64748b;
+                font-size: 0.875rem;
+              "
+            >
+              پردازش تطبیق برای بخشی از Evidenceها انجام شده است.
+              برای مشاهده نتیجه وارد مرحله آمادگی شوید.
+            </p>
+
+          {% elif evidence_summary and evidence_summary.matching_status == "PROCESSED" %}
+
+            <p
+              style="
+                margin: 0;
+                color: #64748b;
+                font-size: 0.875rem;
+              "
+            >
+              پردازش تطبیق انجام شده است.
+              نتیجه و شاخص آمادگی در مرحله Readiness قابل مشاهده است.
+            </p>
+
+          {% else %}
+
+            <p
+              style="
+                margin: 0;
+                color: #64748b;
+                font-size: 0.875rem;
+              "
+            >
+              برای ورود به مرحله آمادگی باید حداقل یک رکورد
+              فروشگاه با موفقیت وارد پروژه شده باشد.
+            </p>
+
+          {% endif %}
+
+        </div>
+
+
+        <!-- =================================================
+             Active Readiness Button
+             ================================================= -->
+
+        <div>
+
+          {% if summary and summary.is_finished and (summary.imported_rows or 0) > 0 %}
+
+            <a
+              href="/projects/{{ project_context.id }}/readiness"
+              class="dip-btn dip-btn--primary"
+              style="
+                padding: 10px 24px;
+                font-weight: 600;
+                text-decoration: none;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                white-space: nowrap;
+              "
+            >
+              <span>
+                تطبیق هوشمند
+              </span>
+
+              <i
+                class="bi bi-arrow-left"
+                aria-hidden="true"
+              ></i>
+            </a>
+
+          {% else %}
+
+            <button
+              type="button"
+              class="dip-btn dip-btn--primary"
+              disabled
+              style="
+                padding: 10px 24px;
+                font-weight: 600;
+                opacity: 0.55;
+                cursor: not-allowed;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                white-space: nowrap;
+              "
+            >
+              <span>
+                تطبیق هوشمند
+              </span>
+
+              <i
+                class="bi bi-arrow-left"
+                aria-hidden="true"
+              ></i>
+            </button>
+
+          {% endif %}
+
+        </div>
+
+      </div>
+
+
+    {% else %}
+
+
+      <!-- =================================================
+           No Batch
+           ================================================= -->
+
+      <div
+        style="
+          text-align: center;
+          padding: 48px 20px;
+        "
+      >
+
+        <p
+          style="
+            color: #64748b;
+            margin-bottom: 16px;
+          "
+        >
+          هنوز هیچ فایل فروشگاهی برای صحت‌سنجی
+          در این پروژه ثبت نشده است.
+        </p>
+
+        <a
+          href="/projects/{{ project_context.id }}/intake"
+          class="dip-btn dip-btn--outline"
+        >
+          بازگشت به دریافت داده
+        </a>
+
+      </div>
+
+
+    {% endif %}
+
   </section>
 
+
+  <!-- =====================================================
+       Shared Partials
+       ===================================================== -->
+
   {% include "partials/shared/recent_activity.html" %}
+
   {% include "partials/shared/delete_modal.html" %}
+
 </div>
+
 {% endblock %}
 
+
 {% block scripts %}
-  {{ super() }}
-  <script src="{{ url_for('static', path='js/components/journey.js') }}"></script>
+
+{{ super() }}
+
+<script
+  src="{{ url_for('static', path='js/components/journey.js') }}"
+></script>
+
 {% endblock %}

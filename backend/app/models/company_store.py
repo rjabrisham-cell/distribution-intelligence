@@ -6,13 +6,11 @@ CompanyStore = Company-Owned Store Instance
 Architecture
 ------------
 
-CompanyStore represents the canonical store record owned by a Company.
-
-A Company may have many CompanyStores.
+CompanyStore represents the canonical store record owned by a Company have many CompanyStores.
 
 A CompanyStore:
 
-    - belongs to exactly one Company
+    - belongs to exactly - belongs to exactly one Company
     - may optionally link to one Master Store
     - can be reused by multiple Projects
     - does NOT belong exclusively to one Project
@@ -176,6 +174,16 @@ class CompanyStore(BaseModel):
         nullable=True,
     )
 
+    # ==========================================================
+    # Geography
+    #
+    # MVP — Base Geography Only:
+    #     province / city
+    #
+    # Deep geography (district) removed from the readiness
+    # pipeline per the MVP decision.
+    # ==========================================================
+
     province: Mapped[str | None] = mapped_column(
         String(100),
         nullable=True,
@@ -183,12 +191,6 @@ class CompanyStore(BaseModel):
     )
 
     city: Mapped[str | None] = mapped_column(
-        String(100),
-        nullable=True,
-        index=True,
-    )
-
-    district: Mapped[str | None] = mapped_column(
         String(100),
         nullable=True,
         index=True,
@@ -312,10 +314,6 @@ class CompanyStore(BaseModel):
     # Master Store
     # ----------------------------------------------------------
 
-    # CompanyStore.master_store
-    #         ↕
-    # Store.company_stores
-
     master_store: Mapped["Store | None"] = relationship(
         "Store",
         back_populates="company_stores",
@@ -326,10 +324,6 @@ class CompanyStore(BaseModel):
     # ----------------------------------------------------------
     # Address Candidates
     # ----------------------------------------------------------
-
-    # AddressCandidate.company_store
-    #         ↕
-    # CompanyStore.address_candidates
 
     address_candidates: Mapped[
         list["AddressCandidate"]
@@ -344,10 +338,6 @@ class CompanyStore(BaseModel):
     # ----------------------------------------------------------
     # Project Usage
     # ----------------------------------------------------------
-
-    # CompanyStore.project_company_stores
-    #         ↕
-    # ProjectCompanyStore.company_store
 
     project_company_stores: Mapped[
         list["ProjectCompanyStore"]

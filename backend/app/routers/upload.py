@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Union
 
 from fastapi import (
     APIRouter,
@@ -6,22 +6,27 @@ from fastapi import (
     File,
     Form,
     HTTPException,
-    UploadFile,
+    UploadFile as FastAPIUploadFile
 )
 from fastapi.responses import FileResponse, RedirectResponse
 from pathlib import Path
 from sqlalchemy.orm import Session
+from starlette.datastructures import UploadFile as StarletteUploadFile
 
 from app.core.database import get_db
+from app.models.file import File
+from app.schemas.import_schema import (
+    EntityTypeEnum,
+    ImportStartRequest,
+)
 from app.services.file_service import FileService
+from app.services.import_service import ImportService
 from app.services.project_service import ProjectService
-
 
 router = APIRouter(
     prefix="/uploads",
     tags=["Uploads"],
 )
-
 
 # -------------------------------------------------------
 # Upload Files To Project
@@ -37,11 +42,31 @@ async def upload_project_files(
         Form(),
     ],
     files: Annotated[
-        list[UploadFile],
+        Union[FastAPIUploadFile, list[FastAPIUploadFile], None],
         File(),
-    ],
+    ] = None,
+    province_id: Annotated[
+        int | None,
+        Form(),
+    ] = None,
+    city_id: Annotated[
+        int | None,
+        Form(),
+    ] = None,
     db: Session = Depends(get_db),
 ):
+
+    # ── Normalize: any form → list[StarletteUploadFile] ──
+    if files is None:
+        files = []
+    elif isinstance(files, StarletteUploadFile):
+        files = [files]
+    elif not isinstance(files, list):
+        files = list(files)
+
+    # ── Debug (temporary) ──────────────────────────
+    print(f"[DEBUG] files type: {type(files).__name__}")
+    print(f"[DEBUG] files count: {len(files)}")
 
     project_service = ProjectService(db)
 
@@ -55,7 +80,7 @@ async def upload_project_files(
 
     file_service = FileService(db)
 
-    uploaded_count = 0
+    uploaded_files: list[File] = []
 
     for upload_file in files:
 
@@ -65,26 +90,57 @@ async def upload_project_files(
         if upload_file.filename == "":
             continue
 
-        await file_service.upload(
+        file_record = await file_service.upload(
             entity_type="PROJECT",
             entity_id=project_id,
             category=category,
             upload_file=upload_file,
         )
 
-        uploaded_count += 1
+        uploaded_files.append(file_record)
 
-    if uploaded_count == 0:
+    if not uploaded_files:
         raise HTTPException(
             status_code=400,
             detail="No valid files selected.",
         )
 
+    # ---------------------------------------------------
+    # Build ImportBatch for Store category.
+    # ---------------------------------------------------
+
+    if category == "stores":
+
+        import_service = ImportService(db)
+
+        for file_record in uploaded_files:
+
+            request = ImportStartRequest(
+                entity_type=EntityTypeEnum.STORE,
+                file_id=file_record.id,
+                column_mapping={},       # ← دیکشنری خالی، نه None
+                skip_validation=False,
+            )
+
+            start_response = import_service.start_import(
+                request=request,
+                file_path=file_record.file_path,
+            )
+
+            import_service.process_batch(
+                batch_id=start_response.batch_id,
+                province_id=province_id,
+                city_id=city_id,
+            )
+
+    # ---------------------------------------------------
+    # Redirect to Validation step
+    # ---------------------------------------------------
+
     return RedirectResponse(
-        url=f"/projects/{project_id}/intake",
+        url=f"/projects/{project_id}/validation",
         status_code=303,
     )
-
 
 # -------------------------------------------------------
 # Download File
@@ -123,7 +179,6 @@ def download_file(
         filename=file.original_name,
         media_type=file.content_type,
     )
-
 
 # -------------------------------------------------------
 # Delete File

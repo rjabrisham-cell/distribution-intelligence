@@ -1,38 +1,152 @@
 {% extends "base.html" %}
 
-{% block title %}
-  {% if project_context is defined and project_context is mapping %}
-    {{ project_context.get('name', 'پروژه') }}
-  {% else %}
-    پروژه
-  {% endif %}
-  - Readiness
+{% block title %}{{ project_context.get('name', 'پروژه') }} - آمادگی توزیع{% endblock %}
+
+{% block head %}
+  <link rel="stylesheet" href="http://localhost:8082/mapserver/cdn/css/map.css">
+  <style>
+    .rd-shell{display:grid;gap:20px}.rd-card{background:#fff;border:1px solid #e4eaf3;border-radius:22px;box-shadow:0 10px 35px rgba(20,45,90,.06);overflow:hidden}.rd-hero{padding:28px;background:linear-gradient(135deg,#f7fbff,#eef5ff);display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center}.rd-eyebrow{color:#2563eb;font-size:13px;font-weight:800}.rd-title{margin:7px 0 8px;font-size:25px;color:#12213a}.rd-subtitle{margin:0;color:#64748b;line-height:1.9}.rd-score{width:132px;height:132px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(#16a34a var(--score),#dce6f2 0);position:relative}.rd-score:after{content:"";position:absolute;inset:11px;background:#fff;border-radius:50%}.rd-score-content{position:relative;z-index:1;text-align:center}.rd-score-value{font-size:30px;font-weight:900;color:#12213a}.rd-score-label{font-size:11px;color:#64748b}.rd-status{display:inline-flex;align-items:center;gap:7px;border-radius:999px;padding:7px 12px;font-size:12px;font-weight:800;margin-top:13px}.rd-status-ready{background:#dcfce7;color:#166534}.rd-status-warning{background:#fef3c7;color:#92400e}.rd-status-stop{background:#fee2e2;color:#991b1b}.rd-alert{padding:14px 18px;border-radius:15px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412}.rd-kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}.rd-kpi{padding:18px}.rd-kpi-label{font-size:12px;color:#64748b}.rd-kpi-value{font-size:27px;font-weight:900;color:#17233b;margin-top:7px}.rd-kpi-note{font-size:11px;color:#94a3b8;margin-top:5px}.rd-main{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(280px,.75fr);gap:18px}.rd-map-card{min-height:590px;position:relative}.rd-map-head{padding:18px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e8edf5}.rd-map-title{font-weight:900;color:#17233b}.rd-legend{display:flex;gap:12px;font-size:11px;color:#64748b}.rd-dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-left:4px}.rd-map{height:515px;width:100%;background:#eef3f8}.rd-side{display:grid;gap:14px;align-content:start}.rd-panel{padding:20px}.rd-panel h3{margin:0 0 15px;font-size:16px;color:#17233b}.rd-progress-row{margin:14px 0}.rd-progress-head{display:flex;justify-content:space-between;font-size:12px;margin-bottom:7px}.rd-progress{height:8px;background:#edf2f7;border-radius:10px;overflow:hidden}.rd-progress span{display:block;height:100%;background:#2563eb;border-radius:10px}.rd-list{display:grid;gap:10px}.rd-list-item{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid #edf1f6;font-size:12px;color:#475569}.rd-list-item:last-child{border-bottom:0}.rd-list-item strong{color:#17233b}.rd-action{display:flex;justify-content:space-between;align-items:center;padding:20px 22px}.rd-action-copy strong{display:block;color:#17233b;margin-bottom:5px}.rd-action-copy span{font-size:12px;color:#64748b}.rd-button{display:inline-flex;align-items:center;gap:8px;padding:12px 17px;border:0;border-radius:12px;background:#2563eb;color:#fff;text-decoration:none;font:inherit;font-weight:800;cursor:pointer}.rd-button-secondary{background:#eef4ff;color:#1d4ed8}.rd-error{padding:16px;background:#fee2e2;color:#991b1b;border-radius:14px}.mapboxgl-popup-content{border-radius:14px!important;padding:13px!important}.rd-popup{direction:rtl;text-align:right;min-width:180px;font-family:Vazirmatn,Tahoma,sans-serif}.rd-popup strong{color:#17233b}.rd-popup small{display:block;color:#64748b;margin-top:4px}@media(max-width:1100px){.rd-kpis{grid-template-columns:repeat(3,1fr)}.rd-main{grid-template-columns:1fr}}@media(max-width:700px){.rd-hero{grid-template-columns:1fr}.rd-score{width:110px;height:110px}.rd-kpis{grid-template-columns:repeat(2,1fr)}.rd-action{align-items:stretch;flex-direction:column;gap:14px}.rd-legend{display:none}}
+    .rd-map-meta{display:flex;align-items:center;gap:12px;color:#64748b;font-size:11px}.rd-map-note{padding:8px 14px;background:#f8fafc;border-top:1px solid #edf1f6;color:#64748b;font-size:11px}.rd-map-error{display:none;position:absolute;z-index:5;top:76px;right:18px;left:18px;padding:10px 13px;border-radius:11px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;font-size:12px}.rd-tech{padding:20px}.rd-tech summary{cursor:pointer;font-weight:800;color:#334155}.rd-tech-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:15px}.rd-tech-item{background:#f8fafc;border-radius:11px;padding:11px}.rd-tech-item span{display:block;color:#64748b;font-size:11px}.rd-tech-item strong{display:block;color:#17233b;margin-top:5px;overflow-wrap:anywhere}
+    #readiness-map{position:relative;direction:ltr;overflow:hidden}.rd-map .mapboxgl-map,.rd-map .mapboxgl-canvas-container,.rd-map .mapboxgl-canvas{width:100%;height:100%}.rd-map .mapboxgl-canvas{position:absolute;inset:0}
+    .rd-map-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.rd-map-toggle{border:1px solid #dbe4f0;background:#fff;color:#334155;border-radius:10px;padding:7px 10px;font:inherit;font-size:11px;font-weight:800;cursor:pointer}.rd-map-toggle[aria-pressed="true"]{background:#e8f0ff;border-color:#93b4f5;color:#1d4ed8}.rd-map-filters{padding:10px 16px;display:flex;align-items:center;gap:7px;flex-wrap:wrap;border-bottom:1px solid #e8edf5;background:#fbfdff}.rd-map-filter{display:inline-flex;align-items:center;gap:6px;border:1px solid #dbe4f0;background:#fff;color:#475569;border-radius:999px;padding:7px 11px;font:inherit;font-size:11px;font-weight:800;cursor:pointer}.rd-map-filter:hover{border-color:#a8b9d2}.rd-map-filter[aria-pressed="true"]{color:#1d4ed8;border-color:#93b4f5;background:#e8f0ff}.rd-map-filter-count{min-width:20px;height:20px;padding:0 5px;border-radius:999px;display:inline-grid;place-items:center;background:#eef2f7;color:#334155;font-size:10px}.rd-map-filter[aria-pressed="true"] .rd-map-filter-count{background:#fff;color:#1d4ed8}.rd-missing{padding:20px}.rd-missing h3{margin:0;color:#17233b;font-size:17px}.rd-missing p{margin:6px 0 15px;color:#64748b;font-size:12px}.rd-table-wrap{overflow:auto}.rd-table{width:100%;border-collapse:collapse;min-width:720px;font-size:12px}.rd-table th,.rd-table td{padding:11px 12px;text-align:right;border-bottom:1px solid #edf1f6}.rd-table th{color:#64748b;background:#f8fafc}.rd-table td{color:#334155}.rd-badge{display:inline-flex;padding:4px 8px;border-radius:999px;font-size:10px;font-weight:800}.rd-badge-warning{background:#fff7ed;color:#c2410c}.rd-badge-muted{background:#f1f5f9;color:#475569}.rd-popup-reason{margin-top:8px;padding-top:7px;border-top:1px solid #e5e7eb;color:#92400e!important}
+  </style>
 {% endblock %}
 
 {% block content %}
-<div class="dip-container">
+<div class="dip-container rd-shell">
   {% include "partials/shared/breadcrumb.html" %}
   {% include "partials/shared/project_header.html" %}
   {% include "partials/shared/journey_stepper.html" %}
   {% include "partials/shared/current_step.html" %}
 
-  <section class="dip-card">
-    <div class="dip-section-head" style="margin-bottom: var(--spacing-md);">
-      <div>
-        <h2>ارزیابی نهایی آمادگی</h2>
-        <p style="color: var(--color-neutral-muted); font-size: 0.9rem;">
-          پایش شاخص‌های آمادگی توزیع پیش از ورود به موتور بهینه‌سازی سناریوها.
-        </p>
-      </div>
-    </div>
+  {% if audit_error or matching_error %}
+    <div class="rd-error"><i class="bi bi-exclamation-triangle"></i> {{ audit_error or matching_error }}</div>
+  {% endif %}
 
-    <div class="dip-empty-state">
-      <div class="dip-empty-state-icon">
-        <i class="bi bi-clipboard-data"></i>
+  {% set rs = readiness_summary or {} %}
+  {% set score = rs.get('percentage', 0) %}
+  {% set state = rs.get('status', 'not_ready') %}
+
+  <section class="rd-card rd-hero">
+    <div>
+      <div class="rd-eyebrow">INTELLIGENT DISTRIBUTION READINESS</div>
+      <h2 class="rd-title">ارزیابی آمادگی داده برای توزیع هوشمند</h2>
+      <p class="rd-subtitle">نتیجه یکپارچه اعتبار داده، تطبیق با Master، موقعیت جغرافیایی و قابلیت ورود فروشگاه‌ها به مرحله تصمیم‌گیری.</p>
+      {% if state == 'ready' %}
+        <span class="rd-status rd-status-ready"><i class="bi bi-check-circle-fill"></i> آماده ورود به تصمیم‌گیری</span>
+      {% elif state == 'ready_with_warning' %}
+        <span class="rd-status rd-status-warning"><i class="bi bi-exclamation-circle-fill"></i> آماده با موارد نیازمند بازبینی</span>
+      {% else %}
+        <span class="rd-status rd-status-stop"><i class="bi bi-x-circle-fill"></i> هنوز آماده نیست</span>
+      {% endif %}
+    </div>
+    <div class="rd-score" style="--score: {{ score }}%">
+      <div class="rd-score-content"><div class="rd-score-value">{{ score }}%</div><div class="rd-score-label">فروشگاه آماده</div></div>
+    </div>
+  </section>
+
+  {% if message %}<div class="rd-alert">{{ message }}</div>{% endif %}
+
+  <section class="rd-kpis">
+    <article class="rd-card rd-kpi"><div class="rd-kpi-label">فروشگاه فعال پروژه</div><div class="rd-kpi-value">{{ rs.get('total_stores', 0) }}</div><div class="rd-kpi-note">دامنه دقیق همین پروژه</div></article>
+    <article class="rd-card rd-kpi"><div class="rd-kpi-label">آماده توزیع</div><div class="rd-kpi-value" style="color:#15803d">{{ rs.get('ready_stores', 0) }}</div><div class="rd-kpi-note">قابل ارسال به مرحله تصمیم‌گیری</div></article>
+    <article class="rd-card rd-kpi"><div class="rd-kpi-label">نیازمند اقدام</div><div class="rd-kpi-value" style="color:#b45309">{{ rs.get('review_stores', 0) + rs.get('invalid_stores', 0) + rs.get('missing_coordinate_stores', 0) }}</div><div class="rd-kpi-note">بازبینی، نامعتبر یا فاقد مختصات</div></article>
+    <article class="rd-card rd-kpi"><div class="rd-kpi-label">دارای مختصات</div><div class="rd-kpi-value">{{ rs.get('stores_with_coordinates', 0) }}</div><div class="rd-kpi-note">قابل نمایش روی نقشه</div></article>
+    <article class="rd-card rd-kpi"><div class="rd-kpi-label">متصل به Master</div><div class="rd-kpi-value">{{ rs.get('matched_to_master', 0) }}</div><div class="rd-kpi-note">دارای هویت مرجع</div></article>
+  </section>
+
+  <section class="rd-main">
+    <article class="rd-card rd-map-card">
+      <header class="rd-map-head">
+        <div class="rd-map-title"><i class="bi bi-geo-alt-fill"></i> پراکندگی فروشگاه‌های پروژه</div>
+        <div class="rd-map-tools">
+          <div class="rd-map-meta"><span><i class="rd-dot" style="background:#16a34a"></i> متصل</span><span><i class="rd-dot" style="background:#2563eb"></i> جدید</span><span><i class="rd-dot" style="background:#f59e0b"></i> بازبینی</span><span><i class="rd-dot" style="background:#dc2626"></i> نامعتبر</span><strong>{{ rs.get('stores_with_coordinates', 0) }} نقطه</strong></div>
+          <button id="reference-stores-toggle" class="rd-map-toggle" type="button" aria-pressed="true">لایه مرجع FIMAP</button>
+          <button id="fit-project-stores" class="rd-map-toggle" type="button">نمایش همه نقاط</button>
+        </div>
+      </header>
+      <div class="rd-map-filters" role="group" aria-label="فیلتر وضعیت فروشگاه‌های روی نقشه">
+        <button class="rd-map-filter" type="button" data-status-filter="all" aria-pressed="true">همه نقاط <span class="rd-map-filter-count" data-status-count="all">۰</span></button>
+        <button class="rd-map-filter" type="button" data-status-filter="matched">متصل به Master <i class="rd-dot" style="background:#16a34a"></i><span class="rd-map-filter-count" data-status-count="matched">۰</span></button>
+        <button class="rd-map-filter" type="button" data-status-filter="new">رکورد جدید <i class="rd-dot" style="background:#2563eb"></i><span class="rd-map-filter-count" data-status-count="new">۰</span></button>
+        <button class="rd-map-filter" type="button" data-status-filter="review">نیازمند بازبینی <i class="rd-dot" style="background:#f59e0b"></i><span class="rd-map-filter-count" data-status-count="review">۰</span></button>
+        <button class="rd-map-filter" type="button" data-status-filter="invalid">نامعتبر <i class="rd-dot" style="background:#dc2626"></i><span class="rd-map-filter-count" data-status-count="invalid">۰</span></button>
       </div>
-      <p class="dip-empty-state-message">
-        نتایج آزمون‌های کیفیت داده و شاخص‌های آمادگی در این بخش نمایش داده خواهد شد.
-      </p>
+      <div id="readiness-map-error" class="rd-map-error"></div>
+      <div id="readiness-map" class="rd-map"></div>
+      <div class="rd-map-note">نقشه پایه و لایه‌های مرجع از FIMAP؛ نشانگرها متعلق به پروژه جاری DIP هستند.</div>
+    </article>
+
+    <aside class="rd-side">
+      {% if report and report.get('sections') %}
+        <article class="rd-card rd-panel">
+          <h3>ابعاد ارزیابی داده</h3>
+          {% for section in report.get('sections', []) %}
+            {% if section.get('name') in ['completeness','validity','duplicates'] %}
+              {% set pct = section.get('percentage') if section.get('percentage') is not none else 0 %}
+              <div class="rd-progress-row">
+                <div class="rd-progress-head"><span>{% if section.get('name') == 'completeness' %}کامل بودن{% elif section.get('name') == 'validity' %}اعتبار داده{% else %}یکتایی رکوردها{% endif %}</span><strong>{{ pct }}{% if section.get('percentage') is not none %}%{% endif %}</strong></div>
+                <div class="rd-progress"><span style="width:{{ pct }}%"></span></div>
+              </div>
+            {% endif %}
+          {% endfor %}
+        </article>
+      {% endif %}
+
+      <article class="rd-card rd-panel">
+        <h3>خلاصه Matching و موقعیت</h3>
+        <div class="rd-list">
+          <div class="rd-list-item"><span>شواهد پردازش‌شده</span><strong>{{ matching_summary.get('processed', 0) if matching_summary else 0 }}</strong></div>
+          <div class="rd-list-item"><span>تطبیق قطعی</span><strong>{{ matching_summary.get('confirmed_matches', 0) if matching_summary else 0 }}</strong></div>
+          <div class="rd-list-item"><span>بدون مختصات</span><strong>{{ rs.get('stores_without_coordinates', 0) }}</strong></div>
+          <div class="rd-list-item"><span>بدون اتصال Master</span><strong>{{ rs.get('unmatched_to_master', 0) }}</strong></div>
+        </div>
+      </article>
+    </aside>
+  </section>
+
+  {% set missing_rows = audit_run.get('missing_coordinate_rows', []) if audit_run else [] %}
+  {% if missing_rows %}
+    <section class="rd-card rd-missing">
+      <h3>فروشگاه‌های فاقد مختصات</h3>
+      <p>{{ missing_rows|length }} رکورد روی نقشه نمایش داده نشده‌اند و در مرحله Geocoding بررسی خواهند شد.</p>
+      <div class="rd-table-wrap">
+        <table class="rd-table">
+          <thead><tr><th>ردیف فایل</th><th>شناسه فروشگاه</th><th>نام فروشگاه</th><th>آدرس</th><th>مختصات مفقود</th><th>آمادگی Geocoding</th></tr></thead>
+          <tbody>
+            {% for item in missing_rows %}
+              <tr>
+                <td>{{ item.get('source_row') or '-' }}</td>
+                <td>{{ item.get('company_store_id') or '-' }}</td>
+                <td>{{ item.get('title') or '-' }}</td>
+                <td>{{ item.get('address') or '-' }}</td>
+                <td>{{ item.get('missing_fields', [])|join('، ') }}</td>
+                <td>{% if item.get('has_address_for_geocoding') %}<span class="rd-badge rd-badge-warning">قابل بررسی</span>{% else %}<span class="rd-badge rd-badge-muted">آدرس ناکافی</span>{% endif %}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  {% endif %}
+
+  {% if report %}
+    <details class="rd-card rd-tech">
+      <summary>جزئیات فنی و آماری ارزیابی</summary>
+      <div class="rd-tech-grid">
+        <div class="rd-tech-item"><span>شناسه ارزیابی</span><strong>{{ report.get('audit_run_id', '-') }}</strong></div>
+        <div class="rd-tech-item"><span>زمان اجرا</span><strong>{{ report.get('elapsed_sec', 0) }} ثانیه</strong></div>
+        {% for total in report.get('totals', []) %}<div class="rd-tech-item"><span>{{ total.get('label', '') }}</span><strong>{{ total.get('value', 0) }}</strong></div>{% endfor %}
+        {% for section in report.get('sections', []) %}{% for metric in section.get('metrics', []) %}<div class="rd-tech-item"><span>{{ metric.get('label', metric.get('key', '')) }}</span><strong>{{ metric.get('value', '-') }}</strong></div>{% endfor %}{% endfor %}
+      </div>
+    </details>
+  {% endif %}
+
+  <section class="rd-card rd-action">
+    <div class="rd-action-copy"><strong>گام بعد: تصمیم‌گیری هوشمند</strong><span>فقط رکوردهای آماده وارد بسته داده مرحله بعد می‌شوند؛ موارد بازبینی در گزارش باقی می‌مانند.</span></div>
+    <div>
+      <form method="post" action="/projects/{{ project_context.id }}/readiness" style="display:inline"><button class="rd-button rd-button-secondary" type="submit"><i class="bi bi-arrow-clockwise"></i> اجرای مجدد</button></form>
+      {% if rs.get('ready_stores', 0) > 0 %}<a class="rd-button" href="/projects/{{ project_context.id }}/decision">ادامه به تصمیم‌گیری <i class="bi bi-arrow-left"></i></a>{% endif %}
     </div>
   </section>
 
@@ -44,4 +158,261 @@
 {% block scripts %}
   {{ super() }}
   <script src="{{ url_for('static', path='js/components/journey.js') }}"></script>
+  <script src="http://localhost:8082/mapserver/cdn/js/jquery-3.6.0.min.js"></script>
+  <script src="http://localhost:8082/mapserver/cdn/js/map_value.js"></script>
+  <script>
+  (() => {
+    const geojson = JSON.parse({{ (map_geojson_json or '{"type":"FeatureCollection","features":[]}')|tojson }});
+    const mapElement = document.getElementById('readiness-map');
+    const errorElement = document.getElementById('readiness-map-error');
+    const showError = message => {
+      if (errorElement) {
+        errorElement.textContent = message;
+        errorElement.style.display = 'block';
+      }
+      console.error(message);
+    };
+    if (!mapElement) return;
+    if (typeof fimap === 'undefined') {
+      showError('کتابخانه FIMAP یعنی map_value.js بارگذاری نشد. سرویس localhost:8082 را بررسی کنید.');
+      return;
+    }
+    const features = Array.isArray(geojson.features)
+      ? geojson.features.filter(feature => {
+          const coordinates = feature && feature.geometry && feature.geometry.coordinates;
+          return feature && feature.geometry
+            && feature.geometry.type === 'Point'
+            && Array.isArray(coordinates)
+            && coordinates.length >= 2
+            && Number.isFinite(Number(coordinates[0]))
+            && Number.isFinite(Number(coordinates[1]))
+            && Number(coordinates[0]) >= -180
+            && Number(coordinates[0]) <= 180
+            && Number(coordinates[1]) >= -90
+            && Number(coordinates[1]) <= 90;
+        })
+      : [];
+    geojson.features = features;
+    features.forEach((feature, index) => {
+      if (feature.id == null) {
+        const companyStoreId = feature.properties && feature.properties.company_store_id;
+        feature.id = companyStoreId != null ? companyStoreId : index + 1;
+      }
+    });
+    const first = features[0];
+    const initialCenter = first
+      ? [Number(first.geometry.coordinates[0]), Number(first.geometry.coordinates[1])]
+      : [51.3890, 35.6892];
+    let fimapMap;
+    try {
+      fimapMap = new fimap({
+        fimap: 'readiness-map',
+        center: initialCenter,
+        zoom: features.length ? 8 : 5,
+        hash: false
+      });
+      if (typeof fimapMap.addNavigationControl === 'function') fimapMap.addNavigationControl();
+      if (typeof fimapMap.addGeolocateControl === 'function') fimapMap.addGeolocateControl();
+      if (typeof fimapMap.addCoordinateControl === 'function') fimapMap.addCoordinateControl();
+    } catch (error) {
+      console.error('FIMAP initialization error:', error);
+      showError('نقشه پایه FIMAP راه‌اندازی نشد.');
+      return;
+    }
+
+    if (typeof fimapMap.getMapObject !== 'function') {
+      showError('نسخه فعلی FIMAP متد getMapObject را ارائه نمی‌کند.');
+      return;
+    }
+    const rawMap = fimapMap.getMapObject();
+    if (!rawMap || typeof rawMap.addSource !== 'function') {
+      showError('شیء داخلی Mapbox از FIMAP دریافت نشد.');
+      return;
+    }
+
+    const safeText = value => String(value == null ? '' : value).replace(
+      /[&<>'"]/g,
+      character => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[character])
+    );
+
+    const statusLabel = status => ({
+      Ready: 'آماده',
+      Review: 'نیازمند بازبینی',
+      Invalid: 'نامعتبر',
+      MissingCoordinate: 'فاقد مختصات'
+    }[status] || status || '-');
+
+    const reasonLabel = reason => ({
+      latitude_missing: 'عرض جغرافیایی ثبت نشده است',
+      longitude_missing: 'طول جغرافیایی ثبت نشده است',
+      coordinate_invalid: 'مختصات خارج از محدوده معتبر است',
+      required_field_invalid: 'یکی از اطلاعات الزامی نامعتبر است',
+      incomplete_required_data: 'اطلاعات الزامی کامل نیست',
+      coordinate_warning: 'مختصات نیازمند کنترل است',
+      coordinate_unknown: 'وضعیت مختصات مشخص نیست',
+      duplicate: 'احتمال تکراری بودن رکورد وجود دارد'
+    }[reason] || reason);
+
+    const featureCategory = feature => {
+      const properties = feature.properties || {};
+      if (properties.readiness_status === 'Invalid') return 'invalid';
+      if (properties.readiness_status === 'Review') return 'review';
+      if (properties.readiness_status === 'Ready' && properties.matched_to_master === true) return 'matched';
+      return 'new';
+    };
+
+    const filterExpressions = {
+      matched: ['all', ['==', ['get', 'readiness_status'], 'Ready'], ['==', ['get', 'matched_to_master'], true]],
+      new: ['all', ['==', ['get', 'readiness_status'], 'Ready'], ['==', ['get', 'matched_to_master'], false]],
+      review: ['==', ['get', 'readiness_status'], 'Review'],
+      invalid: ['==', ['get', 'readiness_status'], 'Invalid']
+    };
+
+    const updateFilterCounts = () => {
+      const counts = {all: features.length, matched: 0, new: 0, review: 0, invalid: 0};
+      features.forEach(feature => { counts[featureCategory(feature)] += 1; });
+      Object.entries(counts).forEach(([key, value]) => {
+        const element = document.querySelector(`[data-status-count="${key}"]`);
+        if (element) element.textContent = Number(value).toLocaleString('fa-IR');
+      });
+    };
+
+    const fitToProject = () => {
+      const iranFeatures = features.filter(feature => {
+        const coordinates = feature.geometry.coordinates;
+        const longitude = Number(coordinates[0]);
+        const latitude = Number(coordinates[1]);
+        return longitude >= 44 && longitude <= 64 && latitude >= 24 && latitude <= 40;
+      });
+      const fitFeatures = iranFeatures.length ? iranFeatures : features;
+      if (!fitFeatures.length) return;
+      const bounds = new mapboxgl.LngLatBounds();
+      fitFeatures.forEach(feature => bounds.extend([
+        Number(feature.geometry.coordinates[0]),
+        Number(feature.geometry.coordinates[1])
+      ]));
+      if (fitFeatures.length === 1) {
+        rawMap.easeTo({center: fitFeatures[0].geometry.coordinates, zoom: 14});
+      } else {
+        rawMap.fitBounds(bounds, {padding: 55, maxZoom: 15, duration: 0});
+      }
+    };
+
+    const renderProjectStores = () => {
+      try {
+        const sourceId = 'dip-readiness-stores';
+        rawMap.addSource(sourceId, {
+          type: 'geojson',
+          data: geojson
+        });
+        rawMap.addLayer({
+          id: 'dip-readiness-points', type: 'circle', source: sourceId,
+          paint: {
+            'circle-color': [
+              'case',
+              ['==', ['get', 'readiness_status'], 'Invalid'], '#dc2626',
+              ['==', ['get', 'readiness_status'], 'Review'], '#f59e0b',
+              ['all', ['==', ['get', 'readiness_status'], 'Ready'], ['==', ['get', 'matched_to_master'], true]], '#16a34a',
+              '#2563eb'
+            ],
+            'circle-radius': ['interpolate', ['linear'], ['zoom'], 4, 3, 10, 5, 15, 7],
+            'circle-opacity': 0.88,
+            'circle-stroke-width': 1.5,
+            'circle-stroke-color': '#ffffff'
+          }
+        });
+        rawMap.addLayer({
+          id: 'dip-readiness-selected', type: 'circle', source: sourceId,
+          filter: ['==', ['get', 'company_store_id'], '__none__'],
+          paint: {
+            'circle-radius': ['interpolate', ['linear'], ['zoom'], 4, 7, 10, 10, 15, 13],
+            'circle-color': 'rgba(255,255,255,0)',
+            'circle-stroke-width': 3,
+            'circle-stroke-color': '#0f172a'
+          }
+        });
+
+        rawMap.on('click', 'dip-readiness-points', event => {
+          const feature = event.features && event.features[0];
+          if (!feature) return;
+          const properties = feature.properties || {};
+          let reasons = properties.reasons || [];
+          if (typeof reasons === 'string') {
+            try { reasons = JSON.parse(reasons); }
+            catch (_error) { reasons = reasons ? [reasons] : []; }
+          }
+          if (!Array.isArray(reasons)) reasons = [];
+          rawMap.setFilter('dip-readiness-selected', ['==', ['get', 'company_store_id'], properties.company_store_id]);
+          const reasonHtml = reasons.length
+            ? `<small class="rd-popup-reason">علت: ${reasons.map(reason => safeText(reasonLabel(reason))).join('، ')}</small>`
+            : '';
+          new mapboxgl.Popup({offset: 10})
+            .setLngLat(feature.geometry.coordinates.slice())
+            .setHTML(`<div class="rd-popup"><strong>${safeText(properties.title || 'فروشگاه DIP')}</strong><small>شناسه شرکتی: ${safeText(properties.company_store_id || '-')}</small><small>کد Master: ${safeText(properties.store_id || 'رکورد جدید')}</small><small>وضعیت: ${safeText(statusLabel(properties.readiness_status))}</small><small>کامل بودن: ${safeText(properties.completeness_percentage)}٪ | اعتبار: ${safeText(properties.validity_percentage)}٪</small>${reasonHtml}</div>`)
+            .addTo(rawMap);
+        });
+
+        ['dip-readiness-points'].forEach(layerId => {
+          rawMap.on('mouseenter', layerId, () => { rawMap.getCanvas().style.cursor = 'pointer'; });
+          rawMap.on('mouseleave', layerId, () => { rawMap.getCanvas().style.cursor = ''; });
+        });
+
+        rawMap.resize();
+        fitToProject();
+        window.setTimeout(fitToProject, 250);
+      } catch (error) {
+        console.error('FIMAP DIP layer error:', error);
+        showError('لایه فروشگاه‌های پروژه روی نقشه FIMAP بارگذاری نشد.');
+      }
+    };
+
+    const setupReferenceToggle = () => {
+      const button = document.getElementById('reference-stores-toggle');
+      if (!button || !rawMap.getLayer('s-supermarket')) {
+        if (button) button.style.display = 'none';
+        return;
+      }
+      rawMap.setLayerZoomRange('s-supermarket', 14, 22);
+      button.addEventListener('click', () => {
+        const visible = button.getAttribute('aria-pressed') === 'true';
+        rawMap.setLayoutProperty('s-supermarket', 'visibility', visible ? 'none' : 'visible');
+        button.setAttribute('aria-pressed', String(!visible));
+      });
+    };
+
+    const setupFitButton = () => {
+      const button = document.getElementById('fit-project-stores');
+      if (button) button.addEventListener('click', fitToProject);
+    };
+
+    const setupStatusFilters = () => {
+      updateFilterCounts();
+      document.querySelectorAll('[data-status-filter]').forEach(button => {
+        button.addEventListener('click', () => {
+          const selected = button.getAttribute('data-status-filter');
+          rawMap.setFilter('dip-readiness-points', selected === 'all' ? null : filterExpressions[selected]);
+          document.querySelectorAll('[data-status-filter]').forEach(item => {
+            item.setAttribute('aria-pressed', String(item === button));
+          });
+        });
+      });
+    };
+
+    const onMapReady = () => {
+      window.setTimeout(() => rawMap.resize(), 0);
+      setupReferenceToggle();
+      setupFitButton();
+      if (!features.length) {
+        showError('برای این پروژه نقطه دارای مختصات قابل نمایش وجود ندارد.');
+        return;
+      }
+      renderProjectStores();
+      setupStatusFilters();
+    };
+
+    if (typeof rawMap.loaded === 'function' && rawMap.loaded()) onMapReady();
+    else rawMap.once('load', onMapReady);
+    window.addEventListener('resize', () => rawMap.resize());
+  })();
+  </script>
 {% endblock %}

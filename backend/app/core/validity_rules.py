@@ -1,7 +1,7 @@
 # ============================================================================
 # Distribution Intelligence Platform (DIP)
 # Sprint 2 – Data Quality Audit Engine
-# Contract v1.2 (Frozen)
+# Contract v2.0 (Frozen — three-tier weight contract)
 #
 # Validity Rules – Single Source of Truth for Validity Checks
 # ============================================================================
@@ -54,84 +54,101 @@ class ValidityRule:
     description : str
         Human-readable description of what the rule checks.
     priority : int
-        Execution priority (lower = earlier).  Default 100.
+        Execution priority (lower = earlier). Default 100.
     metadata : dict
         Arbitrary metadata for future AI/Recommendation engines
         (e.g. distance thresholds, expected precision, etc.).
     check : RuleFunc
         Stateless callable: Store → dict[field_name, ValidationVerdict].
     """
+
     rule_name:   str
     description: str
     check:       RuleFunc
-    priority:    int                       = 100
-    metadata:    dict[str, Any]            = field(default_factory=dict)
+    priority:    int = 100
+    metadata:    dict[str, Any] = field(default_factory=dict)
 
 
 # ╔═══════════════════════════════════════════════════════════════════════════╗
-# ║                  P U R E   R U L E   F U N C T I O N S                   ║
+# ║                  P U R E   R U L E   F U N C T I O N S                 ║
 # ╚═══════════════════════════════════════════════════════════════════════════╝
 
 def _is_present(value: Any) -> bool:
     """Helper: value is not None and not an empty/whitespace string."""
     if value is None:
         return False
+
     if isinstance(value, str) and not value.strip():
         return False
+
     return True
 
 
 # ── Iran Phone ─────────────────────────────────────────────────────────────
-_MOBILE_RE     = re.compile(r"^09\d{9}$")
+
+_MOBILE_RE = re.compile(r"^09\d{9}$")
 _PHONE_LINE_RE = re.compile(r"^0\d{2,3}-?\d{7,8}$")
+
 
 def rule_iran_phone(store: Store) -> dict[str, ValidationVerdict]:
     """
-    Check phone (landline) field for Iranian phone number patterns.
+    Check landline (canonical_phone) and mobile for Iranian phone patterns.
 
-    NOTE: The Store model does not have a dedicated ``mobile`` field
-    (Contract v1.2).  We only validate the existing ``phone`` column.
-    If a ``mobile`` field is added later, it will be picked up automatically.
+    Contract v2.0 — aligned to real Store columns:
+      - ``canonical_phone`` → landline, validated with _PHONE_LINE_RE
+      - ``mobile``          → mobile, validated with _MOBILE_RE
+
+    NOTE (business decision deferred to completeness layer):
+    neither empty landline NOR empty mobile is marked INVALID here; they are
+    WARNING so that the "at least one of phone/mobile" rule can be evaluated
+    at the completeness level. This preserves prior non-blocking behavior.
     """
     results: dict[str, ValidationVerdict] = {}
 
-    phone = getattr(store, "phone", None)
-    if not _is_present(phone):
-        results["phone"] = ValidationVerdict.WARNING
-    elif _PHONE_LINE_RE.match(str(phone).strip().replace(" ", "")):
-        results["phone"] = ValidationVerdict.VALID
-    else:
-        results["phone"] = ValidationVerdict.INVALID
+    phone = getattr(store, "canonical_phone", None)
 
-    # mobile — defensive; only validated if the attribute exists on the model
+    if not _is_present(phone):
+        results["canonical_phone"] = ValidationVerdict.WARNING
+    elif _PHONE_LINE_RE.match(str(phone).strip().replace(" ", "")):
+        results["canonical_phone"] = ValidationVerdict.VALID
+    else:
+        results["canonical_phone"] = ValidationVerdict.INVALID
+
     mobile = getattr(store, "mobile", None)
-    if mobile is not None or hasattr(store, "mobile"):
-        if not _is_present(mobile):
-            results["mobile"] = ValidationVerdict.WARNING
-        elif _MOBILE_RE.match(str(mobile).strip()):
-            results["mobile"] = ValidationVerdict.VALID
-        else:
-            results["mobile"] = ValidationVerdict.INVALID
+
+    if not _is_present(mobile):
+        results["mobile"] = ValidationVerdict.WARNING
+    elif _MOBILE_RE.match(str(mobile).strip()):
+        results["mobile"] = ValidationVerdict.VALID
+    else:
+        results["mobile"] = ValidationVerdict.INVALID
 
     return results
 
 
 # ── Postal Code ────────────────────────────────────────────────────────────
+
 _POSTAL_RE = re.compile(r"^\d{10}$")
 
+
 def rule_iran_postal_code(store: Store) -> dict[str, ValidationVerdict]:
-    """Check that postal_code is exactly 10 digits (Iranian format)."""
+    """Check 10-digit Iranian postal code format."""
     pc = getattr(store, "postal_code", None)
+
     if not _is_present(pc):
         return {"postal_code": ValidationVerdict.WARNING}
+
     return {
-        "postal_code": ValidationVerdict.VALID
-        if _POSTAL_RE.match(str(pc).strip())
-        else ValidationVerdict.INVALID
+        "postal_code": (
+            ValidationVerdict.VALID
+            if _POSTAL_RE.match(str(pc).strip())
+            else ValidationVerdict.INVALID
+        )
     }
 
 
 # ── Coordinate Range ───────────────────────────────────────────────────────
+
 def rule_coordinate_range(store: Store) -> dict[str, ValidationVerdict]:
     """
     Validate latitude (-90 … 90) and longitude (-180 … 180).
@@ -139,17 +156,22 @@ def rule_coordinate_range(store: Store) -> dict[str, ValidationVerdict]:
     """
     results: dict[str, ValidationVerdict] = {}
 
-    for field, min_val, max_val in [("latitude", -90.0, 90.0),
-                                     ("longitude", -180.0, 180.0)]:
+    for field, min_val, max_val in [
+        ("latitude", -90.0, 90.0),
+        ("longitude", -180.0, 180.0),
+    ]:
         val = getattr(store, field, None)
+
         if not _is_present(val):
             results[field] = ValidationVerdict.INVALID
             continue
+
         try:
             f = float(val)
         except (TypeError, ValueError):
             results[field] = ValidationVerdict.INVALID
             continue
+
         if abs(f) <= 0.000_001:
             results[field] = ValidationVerdict.INVALID
         elif min_val <= f <= max_val:
@@ -161,6 +183,7 @@ def rule_coordinate_range(store: Store) -> dict[str, ValidationVerdict]:
 
 
 # ── Coordinate Precision ───────────────────────────────────────────────────
+
 def rule_coordinate_precision(store: Store) -> dict[str, ValidationVerdict]:
     """
     Check decimal precision of lat/lon values.
@@ -172,18 +195,23 @@ def rule_coordinate_precision(store: Store) -> dict[str, ValidationVerdict]:
 
     for field in ("latitude", "longitude"):
         raw = getattr(store, field, None)
+
         if not _is_present(raw):
             results[field] = ValidationVerdict.UNKNOWN
             continue
+
         try:
             s = str(float(raw))
         except (TypeError, ValueError):
             results[field] = ValidationVerdict.INVALID
             continue
+
         if "." not in s:
             results[field] = ValidationVerdict.INVALID
             continue
+
         decimals = len(s.split(".")[1])
+
         if decimals >= 5:
             results[field] = ValidationVerdict.VALID
         elif decimals >= 3:
@@ -195,8 +223,10 @@ def rule_coordinate_precision(store: Store) -> dict[str, ValidationVerdict]:
 
 
 # ── Coordinates in Iran (rough bounding box) ───────────────────────────────
+
 _IRAN_LAT_MIN, _IRAN_LAT_MAX = 24.0, 40.0
 _IRAN_LON_MIN, _IRAN_LON_MAX = 44.0, 64.0
+
 
 def rule_coordinate_in_iran(store: Store) -> dict[str, ValidationVerdict]:
     """
@@ -205,17 +235,22 @@ def rule_coordinate_in_iran(store: Store) -> dict[str, ValidationVerdict]:
     """
     results: dict[str, ValidationVerdict] = {}
 
-    for field, min_v, max_v in [("latitude", _IRAN_LAT_MIN, _IRAN_LAT_MAX),
-                                 ("longitude", _IRAN_LON_MIN, _IRAN_LON_MAX)]:
+    for field, min_v, max_v in [
+        ("latitude", _IRAN_LAT_MIN, _IRAN_LAT_MAX),
+        ("longitude", _IRAN_LON_MIN, _IRAN_LON_MAX),
+    ]:
         raw = getattr(store, field, None)
+
         if not _is_present(raw):
             results[field] = ValidationVerdict.INVALID
             continue
+
         try:
             f = float(raw)
         except (TypeError, ValueError):
             results[field] = ValidationVerdict.INVALID
             continue
+
         if min_v <= f <= max_v:
             results[field] = ValidationVerdict.VALID
         else:
@@ -225,13 +260,17 @@ def rule_coordinate_in_iran(store: Store) -> dict[str, ValidationVerdict]:
 
 
 # ── Coordinate Swap Detection ──────────────────────────────────────────────
-def rule_coordinate_swap_detection(store: Store) -> dict[str, ValidationVerdict]:
+
+def rule_coordinate_swap_detection(
+    store: Store,
+) -> dict[str, ValidationVerdict]:
     """
     Detect if latitude and longitude values may have been swapped
-    (lat in lon range and vice-versa).  This is a WARNING, not INVALID,
+    (lat in lon range and vice-versa). This is a WARNING, not INVALID,
     because the pair could still be correct for a location outside Iran.
     """
     results: dict[str, ValidationVerdict] = {}
+
     lat_raw = getattr(store, "latitude", None)
     lon_raw = getattr(store, "longitude", None)
 
@@ -252,40 +291,59 @@ def rule_coordinate_swap_detection(store: Store) -> dict[str, ValidationVerdict]
     lon_in_lat_range = _IRAN_LAT_MIN <= lon <= _IRAN_LAT_MAX
 
     if lat_in_lon_range and lon_in_lat_range:
-        results["latitude"]  = ValidationVerdict.WARNING
+        results["latitude"] = ValidationVerdict.WARNING
         results["longitude"] = ValidationVerdict.WARNING
     else:
-        results["latitude"]  = ValidationVerdict.UNKNOWN
+        results["latitude"] = ValidationVerdict.UNKNOWN
         results["longitude"] = ValidationVerdict.UNKNOWN
 
     return results
 
 
-# ── Province / City ID positivity ─────────────────────────────────────────
-def rule_province_city_id_positive(store: Store) -> dict[str, ValidationVerdict]:
-    """Ensure province_id > 0, city_id > 0, region_id >= 0."""
+# ── Province / City ID positivity ──────────────────────────────────────────
+
+def rule_province_city_id_positive(
+    store: Store,
+) -> dict[str, ValidationVerdict]:
+    """
+    Ensure geographic base ID fields are positive.
+
+    Contract v2.0 — aligned to real Store columns (no ``region_id``):
+      - ``province_id`` / ``city_id`` → must be > 0 (blocking)
+
+    NOTE (MVP scope): county_id / district_id / neighborhood_id / village_id
+    are removed from MVP and no longer validated here.
+    """
     results: dict[str, ValidationVerdict] = {}
 
-    def _check_int(field: str, allow_zero: bool = False) -> ValidationVerdict:
-        val = getattr(store, field, None)
+    def _check_int(field_name: str) -> ValidationVerdict:
+        val = getattr(store, field_name, None)
+
         if not _is_present(val):
             return ValidationVerdict.INVALID
+
         try:
             n = int(val)
         except (TypeError, ValueError):
             return ValidationVerdict.INVALID
-        if n > 0 or (allow_zero and n == 0):
-            return ValidationVerdict.VALID
-        return ValidationVerdict.INVALID
+
+        return (
+            ValidationVerdict.VALID
+            if n > 0
+            else ValidationVerdict.INVALID
+        )
 
     results["province_id"] = _check_int("province_id")
-    results["city_id"]     = _check_int("city_id")
-    results["region_id"]   = _check_int("region_id", allow_zero=True)
+    results["city_id"] = _check_int("city_id")
+
     return results
 
 
 # ── Province–City Consistency ──────────────────────────────────────────────
-def rule_province_city_consistency(store: Store) -> dict[str, ValidationVerdict]:
+
+def rule_province_city_consistency(
+    store: Store,
+) -> dict[str, ValidationVerdict]:
     """
     [NOT IMPLEMENTED YET — PLACEHOLDER]
     Check that city_id belongs to the specified province_id.
@@ -293,20 +351,37 @@ def rule_province_city_consistency(store: Store) -> dict[str, ValidationVerdict]
     Future: integrate with GeoKB province/city mapping.
     """
     try:
-        province = int(store.province_id) if getattr(store, "province_id", None) is not None else None
-        city     = int(store.city_id)     if getattr(store, "city_id", None) is not None else None
+        province = (
+            int(store.province_id)
+            if getattr(store, "province_id", None) is not None
+            else None
+        )
+        city = (
+            int(store.city_id)
+            if getattr(store, "city_id", None) is not None
+            else None
+        )
     except (TypeError, ValueError):
-        return {"province_id": ValidationVerdict.INVALID, "city_id": ValidationVerdict.INVALID}
+        return {
+            "province_id": ValidationVerdict.INVALID,
+            "city_id": ValidationVerdict.INVALID,
+        }
 
     if province is None or city is None:
-        return {"province_id": ValidationVerdict.INVALID, "city_id": ValidationVerdict.INVALID}
+        return {
+            "province_id": ValidationVerdict.INVALID,
+            "city_id": ValidationVerdict.INVALID,
+        }
 
     # TODO: integrate with GeoKB province/city mapping.
-    return {"province_id": ValidationVerdict.UNKNOWN, "city_id": ValidationVerdict.UNKNOWN}
+    return {
+        "province_id": ValidationVerdict.UNKNOWN,
+        "city_id": ValidationVerdict.UNKNOWN,
+    }
 
 
 # ╔═══════════════════════════════════════════════════════════════════════════╗
-# ║          R U L E   R E G I S T R Y   +   D I S C O V E R Y              ║
+# ║          R U L E   R E G I S T R Y   +   D I S C O V E R Y             ║
 # ╚═══════════════════════════════════════════════════════════════════════════╝
 
 # Master registry — populated via discover().
@@ -318,99 +393,139 @@ def discover() -> list[ValidityRule]:
     Auto-discover all ValidityRule instances defined in this module.
 
     Scans the module's global namespace for ValidityRule objects and
-    returns them sorted by priority.  This means adding a new rule is as
+    returns them sorted by priority. This means adding a new rule is as
     simple as creating a ValidityRule at module level — no manual
     registration needed.
 
     Called once at import time; result is cached in VALIDITY_RULES.
     """
     global VALIDITY_RULES
+
     if VALIDITY_RULES:
         return VALIDITY_RULES
 
     frame = inspect.currentframe()
+
     try:
         module_globals = frame.f_back.f_globals if frame.f_back else {}
     finally:
         del frame
 
     rules: list[ValidityRule] = []
+
     for obj in module_globals.values():
         if isinstance(obj, ValidityRule):
             rules.append(obj)
 
     rules.sort(key=lambda r: r.priority)
     VALIDITY_RULES = rules
+
     return VALIDITY_RULES
 
 
 # ╔═══════════════════════════════════════════════════════════════════════════╗
-# ║     R U L E   D E F I N I T I O N S   (registered via discover)         ║
+# ║     R U L E   D E F I N I T I O N S   (registered via discover)        ║
 # ╚═══════════════════════════════════════════════════════════════════════════╝
 
 RULE_IRAN_PHONE = ValidityRule(
-    rule_name   = "iran_phone",
-    description = "Iranian landline pattern (mobile if column exists)",
-    priority    = 10,
-    metadata    = {"locale": "IR", "format": "0XX-XXXXXXX"},
-    check       = rule_iran_phone,
+    rule_name="iran_phone",
+    description="Iranian landline (canonical_phone) + mobile pattern",
+    priority=10,
+    metadata={
+        "locale": "IR",
+        "format": "0XX-XXXXXXX",
+        "mobile_format": "09XXXXXXXXX",
+    },
+    check=rule_iran_phone,
 )
 
 RULE_POSTAL_CODE = ValidityRule(
-    rule_name   = "postal_code",
-    description = "10-digit Iranian postal code format",
-    priority    = 10,
-    metadata    = {"locale": "IR", "length": 10},
-    check       = rule_iran_postal_code,
+    rule_name="postal_code",
+    description="10-digit Iranian postal code format",
+    priority=10,
+    metadata={"locale": "IR", "length": 10},
+    check=rule_iran_postal_code,
 )
 
 RULE_COORDINATE_RANGE = ValidityRule(
-    rule_name   = "coordinate_range",
-    description = "Latitude [-90,90], longitude [-180,180], non-zero",
-    priority    = 5,
-    metadata    = {"domain": "geo", "lat_range": [-90, 90], "lon_range": [-180, 180]},
-    check       = rule_coordinate_range,
+    rule_name="coordinate_range",
+    description="Latitude [-90,90], longitude [-180,180], non-zero",
+    priority=5,
+    metadata={
+        "domain": "geo",
+        "lat_range": [-90, 90],
+        "lon_range": [-180, 180],
+    },
+    check=rule_coordinate_range,
 )
 
 RULE_COORDINATE_PRECISION = ValidityRule(
-    rule_name   = "coordinate_precision",
-    description = "Decimal precision of lat/lon (≥5 = VALID, 3-4 = WARNING, <3 = INVALID)",
-    priority    = 6,
-    metadata    = {"domain": "geo", "min_precision": 5, "warn_precision": 3},
-    check       = rule_coordinate_precision,
+    rule_name="coordinate_precision",
+    description=(
+        "Decimal precision of lat/lon "
+        "(≥5 = VALID, 3-4 = WARNING, <3 = INVALID)"
+    ),
+    priority=6,
+    metadata={
+        "domain": "geo",
+        "min_precision": 5,
+        "warn_precision": 3,
+    },
+    check=rule_coordinate_precision,
 )
 
 RULE_COORDINATE_IN_IRAN = ValidityRule(
-    rule_name   = "coordinate_in_iran",
-    description = "Coordinates fall within rough Iran bounding box (24-40°N, 44-64°E)",
-    priority    = 7,
-    metadata    = {"domain": "geo", "bbox": {"lat": [24, 40], "lon": [44, 64]}},
-    check       = rule_coordinate_in_iran,
+    rule_name="coordinate_in_iran",
+    description=(
+        "Coordinates fall within rough Iran bounding box "
+        "(24-40°N, 44-64°E)"
+    ),
+    priority=7,
+    metadata={
+        "domain": "geo",
+        "bbox": {
+            "lat": [24, 40],
+            "lon": [44, 64],
+        },
+    },
+    check=rule_coordinate_in_iran,
 )
 
 RULE_COORDINATE_SWAP = ValidityRule(
-    rule_name   = "coordinate_swap_detection",
-    description = "Warn if lat/lon appear swapped",
-    priority    = 8,
-    metadata    = {"domain": "geo", "type": "heuristic"},
-    check       = rule_coordinate_swap_detection,
+    rule_name="coordinate_swap_detection",
+    description="Warn if lat/lon appear swapped",
+    priority=8,
+    metadata={
+        "domain": "geo",
+        "type": "heuristic",
+    },
+    check=rule_coordinate_swap_detection,
 )
 
 RULE_PROVINCE_CITY_ID = ValidityRule(
-    rule_name   = "province_city_id_positive",
-    description = "province_id > 0, city_id > 0, region_id >= 0",
-    priority    = 10,
-    metadata    = {"domain": "address"},
-    check       = rule_province_city_id_positive,
+    rule_name="province_city_id_positive",
+    description="Geo ID positivity: province_id/city_id > 0",
+    priority=10,
+    metadata={"domain": "address"},
+    check=rule_province_city_id_positive,
 )
 
 RULE_PROVINCE_CITY_CONSISTENCY = ValidityRule(
-    rule_name   = "province_city_consistency",
-    description = "[NOT IMPLEMENTED YET] city belongs to declared province (placeholder)",
-    priority    = 50,
-    metadata    = {"domain": "address", "status": "placeholder", "todo": "integrate GeoKB"},
-    check       = rule_province_city_consistency,
+    rule_name="province_city_consistency",
+    description=(
+        "[NOT IMPLEMENTED YET] city belongs to declared province "
+        "(placeholder)"
+    ),
+    priority=50,
+    metadata={
+        "domain": "address",
+        "status": "placeholder",
+        "todo": "integrate GeoKB",
+    },
+    check=rule_province_city_consistency,
 )
 
+
 # ── Bootstrap discovery ────────────────────────────────────────────────────
+
 discover()
