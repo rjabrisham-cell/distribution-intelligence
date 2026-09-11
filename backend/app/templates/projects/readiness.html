@@ -145,7 +145,10 @@
   <section class="rd-card rd-action">
     <div class="rd-action-copy"><strong>گام بعد: تصمیم‌گیری هوشمند</strong><span>فقط رکوردهای آماده وارد بسته داده مرحله بعد می‌شوند؛ موارد بازبینی در گزارش باقی می‌مانند.</span></div>
     <div>
-      <form method="post" action="/projects/{{ project_context.id }}/readiness" style="display:inline"><button class="rd-button rd-button-secondary" type="submit"><i class="bi bi-arrow-clockwise"></i> اجرای مجدد</button></form>
+      <form method="post" action="/projects/{{ project_context.id }}/readiness/refresh" style="display:inline"><button class="rd-button rd-button-secondary" type="submit"><i class="bi bi-arrow-clockwise"></i> محاسبه مجدد آمادگی</button></form>
+      {% if batch and (batch.imported_rows or 0) > 0 %}
+      <form method="post" action="/projects/{{ project_context.id }}/matching/rerun" style="display:inline"><button class="rd-button rd-button-secondary" type="submit">{% if matching_summary and matching_summary.get('pending', 0) > 0 %}اجرای تطبیق{% else %}اجرای مجدد تطبیق{% endif %}</button></form>
+      {% endif %}
       {% if rs.get('ready_stores', 0) > 0 %}<a class="rd-button" href="/projects/{{ project_context.id }}/decision">ادامه به تصمیم‌گیری <i class="bi bi-arrow-left"></i></a>{% endif %}
     </div>
   </section>

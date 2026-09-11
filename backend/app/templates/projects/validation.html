@@ -498,7 +498,7 @@
               "
             >
               داده‌ها آماده ورود به مرحله آمادگی هستند.
-              تطبیق با بانک مرجع فروشگاه‌ها در مرحله Readiness انجام می‌شود.
+              تطبیق با بانک مرجع با انتخاب دکمه اجرای تطبیق انجام می‌شود.
             </p>
 
           {% elif evidence_summary and evidence_summary.matching_status == "IN_PROGRESS" %}
@@ -553,6 +553,12 @@
 
           {% if summary and summary.is_finished and (summary.imported_rows or 0) > 0 %}
 
+            {% if evidence_summary and evidence_summary.matching_status in ["PENDING", "IN_PROGRESS"] %}
+            <form method="post" action="/projects/{{ project_context.id }}/matching/rerun" style="display:inline">
+              <button type="submit" class="dip-btn dip-btn--primary">اجرای تطبیق و مشاهده آمادگی</button>
+            </form>
+            {% endif %}
+
             <a
               href="/projects/{{ project_context.id }}/readiness"
               class="dip-btn dip-btn--primary"
@@ -568,7 +574,7 @@
               "
             >
               <span>
-                تطبیق هوشمند
+                مشاهده آمادگی
               </span>
 
               <i

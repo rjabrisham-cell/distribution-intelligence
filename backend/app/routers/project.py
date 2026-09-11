@@ -6,7 +6,6 @@ Project Management Router - Vertical Slice aligned with Journey Stepper
 from __future__ import annotations
 
 import json
-import time
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -1299,21 +1298,9 @@ def readiness_step(
     project_id: int,
     db: Session = Depends(get_db),
 ):
-    """
-    Readiness GET.
+    """Render a fresh, read-only audit of persisted project data.
 
-    Behaviour:
-
-    1. Resolve latest STORE Batch for this Project.
-    2. Read persisted Matching state.
-    3. If all AddressCandidates are already processed:
-           DO NOT run Matching again.
-    4. If Matching is still pending:
-           run StoreMatchingService once.
-    5. Read persisted state again.
-    6. Run the project-scoped AuditRunner for every active project store.
-    7. Build the normalized audit report and GeoJSON map payload.
-    8. Render the final distribution-readiness view.
+    Matching is performed only by the explicit POST endpoint.
     """
 
     project = _get_project_or_404(
@@ -1393,80 +1380,10 @@ def readiness_step(
             ),
         )
 
-    # -------------------------------------------------------------------------
-    # Read existing Matching state BEFORE deciding whether to run engine
-    # -------------------------------------------------------------------------
-
-    before_summary = (
-        _build_matching_database_summary(
-            db,
-            batch,
-        )
-    )
-
-    total_candidates = int(
-        before_summary.get(
-            "total_candidates",
-            0,
-        )
-        or 0
-    )
-
-    processed_candidates = int(
-        before_summary.get(
-            "processed",
-            0,
-        )
-        or 0
-    )
-
-    matching_runtime: dict | None = None
-    matching_error: str | None = None
-    elapsed_sec: float | None = None
-
-    # -------------------------------------------------------------------------
-    # Run Matching only if actual pending evidence exists
-    # -------------------------------------------------------------------------
-
-    should_run_matching = (
-        total_candidates > 0
-        and processed_candidates < total_candidates
-    )
-
-    if should_run_matching:
-        started_at = time.perf_counter()
-
-        try:
-            matching_service = (
-                StoreMatchingService(
-                    db
-                )
-            )
-
-            matching_runtime = (
-                matching_service.run_for_batch(
-                    batch_id=batch.id,
-                    project_id=project_id,
-                    persist=True,
-                )
-            )
-
-        except Exception as exc:
-            db.rollback()
-
-            matching_error = (
-                f"{type(exc).__name__}: {exc}"
-            )
-
-        finally:
-            elapsed_sec = round(
-                time.perf_counter() - started_at,
-                3,
-            )
-
-    # -------------------------------------------------------------------------
-    # Always rebuild from persisted DB state
-    # -------------------------------------------------------------------------
+    # Preserve the template contract without invoking the matching engine.
+    matching_runtime = None
+    matching_error = None
+    should_run_matching = False
 
     matching_summary = (
         _build_matching_database_summary(
@@ -1515,7 +1432,7 @@ def readiness_step(
 
     elif audit_error:
         message = (
-            "Matching تکمیل شده است، اما اجرای ارزیابی آمادگی "
+            "اجرای ارزیابی آمادگی "
             "با خطا مواجه شد."
         )
 
@@ -1537,11 +1454,6 @@ def readiness_step(
         message = (
             "Matching هنوز برای تمام شواهد این Batch "
             "تکمیل نشده است."
-        )
-
-    elif should_run_matching:
-        message = (
-            "Matching اجرا و نتایج آن در پایگاه داده ثبت شد."
         )
 
     else:
@@ -1578,6 +1490,17 @@ def readiness_step(
     )
 
 
+@router.post("/{project_id}/readiness/refresh", response_class=HTMLResponse)
+async def refresh_readiness(
+    request: Request,
+    project_id: int,
+    db: Session = Depends(get_db),
+):
+    """Recalculate using the same read-only audit; never rerun matching."""
+    return readiness_step(request, project_id, db)
+
+
+@router.post("/{project_id}/matching/rerun", response_class=HTMLResponse)
 @router.post(
     "/{project_id}/readiness",
     response_class=HTMLResponse,
@@ -1587,15 +1510,7 @@ async def process_readiness(
     project_id: int,
     db: Session = Depends(get_db),
 ):
-    """
-    Explicit Matching re-run endpoint.
-
-    POST intentionally performs Matching again.
-    GET normally only reads persisted state when already complete.
-
-    Future UI can use this endpoint for a
-    "Re-run Matching" button.
-    """
+    """Explicit matching action; POST /readiness remains a legacy alias."""
 
     await request.form()
 
