@@ -114,6 +114,7 @@ def db(engine):
 
 @pytest.fixture
 def provider(monkeypatch):
+    monkeypatch.setenv('DEMO_ACCESS_MODE', 'otp')
     monkeypatch.setattr(settings, 'APP_ENV', 'development')
     monkeypatch.setenv('DEMO_OTP_PROVIDER', 'local')
     salt = secrets.token_hex(16)

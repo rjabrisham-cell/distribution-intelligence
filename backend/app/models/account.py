@@ -7,6 +7,7 @@ from app.models.base import BaseModel
 
 class Account(BaseModel):
     __tablename__ = "accounts"
+    demo_access_granted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     mobile_verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     # ==========================================================

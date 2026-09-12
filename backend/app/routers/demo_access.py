@@ -7,6 +7,7 @@ from app.core.config import settings
 from app.core.trial_policy import policy
 from app.services.demo_auth_service import DemoAuthService, LocalOtpProvider
 from app.services.trial_service import TrialService
+from app.services.demo_code_service import DemoCodeService
 
 router = APIRouter(prefix="/demo", tags=["Demo access"])
 
@@ -30,6 +31,15 @@ def issue(request: Request, mobile: str = Form(...), db=Depends(get_db)):
     reference = DemoAuthService(db, LocalOtpProvider(peer)).issue(mobile, peer)
     response = templates.TemplateResponse(request=request, name="demo_login.html", context={
         "public_demo": True, "challenge": reference, "csrf_token": request.cookies["dip_login_csrf"]})
+    return response
+
+
+@router.post("/access")
+def access(request: Request, mobile: str = Form(...), code: str = Form(...), db=Depends(get_db)):
+    token, csrf, destination = DemoCodeService(db).login(mobile, code, request.client.host)
+    response = RedirectResponse(destination, status_code=303)
+    cookie(response, "dip_session", token)
+    cookie(response, "dip_csrf", csrf, httponly=False)
     return response
 
 

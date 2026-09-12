@@ -5,6 +5,10 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class TrialPolicy:
+    access_code_capacity: int = int(os.getenv("DEMO_CODE_MAX_MOBILES", "3"))
+    access_mobile_attempts: int = 5
+    access_ip_attempts: int = 30
+    access_cooldown_seconds: int = 900
     quota: int = int(os.getenv("TRIAL_PROJECT_QUOTA", "1"))
     file_bytes: int = 2 * 1024 * 1024
     rows: int = 1000

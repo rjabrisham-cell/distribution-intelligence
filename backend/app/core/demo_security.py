@@ -1,5 +1,6 @@
 """Fail-closed HTTP boundary for public demo and owner-scoped trial routes."""
 import hmac
+import os
 import re
 from starlette.requests import Request
 from starlette.responses import JSONResponse, RedirectResponse
@@ -10,7 +11,7 @@ from app.repositories.demo_access_repository import DemoAccessRepository, digest
 from app.core.demo_logging import trial_request
 
 
-PUBLIC = {"/", "/demo/sample", "/demo/trial", "/demo/login", "/demo/otp/request", "/demo/otp/verify", "/health"}
+PUBLIC = {"/", "/demo/sample", "/demo/trial", "/demo/login", "/demo/access", "/health"}
 SAFE = {"GET", "HEAD"}
 
 
@@ -61,7 +62,7 @@ class DemoSecurityMiddleware:
         static = re.fullmatch(r"/static/(?:css|js|images|fonts)/[\w/.-]+\.(?:css|js|png|svg|jpg|jpeg|ico|woff2?|ttf)", path)
         if static and ".." not in path and method in SAFE:
             return await self.app(scope, receive, secured_send)
-        public = path in PUBLIC
+        public = path in PUBLIC or (path in {"/demo/otp/request", "/demo/otp/verify"} and settings.APP_ENV == "development" and os.getenv("DEMO_ACCESS_MODE") == "otp")
         if public and method in SAFE:
             return await self.app(scope, receive, secured_send)
         kind, resource_id = target(path)
@@ -163,7 +164,7 @@ class DemoSecurityMiddleware:
                     await self.app(scope, replay if method not in SAFE else receive, capture)
                     # OTP attempts/rate counters deliberately survive 4xx. Business
                     # writes are atomic across existing services' internal commits.
-                    if method not in SAFE and (status < 400 or path.startswith("/demo/otp/")):
+                    if method not in SAFE and (status < 400 or path == "/demo/access" or path.startswith("/demo/otp/")):
                         db.commit()
                         transaction.commit()
                         committed = True

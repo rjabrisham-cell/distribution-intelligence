@@ -1,8 +1,8 @@
 from datetime import datetime, timezone, timedelta
 from hashlib import sha256
-from sqlalchemy import select, text
+from sqlalchemy import select, text, or_
 from app.models import Account, Company, Project, File, ImportBatch
-from app.models.demo_access import DemoChallenge, DemoSession, DemoRateEvent
+from app.models.demo_access import DemoChallenge, DemoSession, DemoRateEvent, DemoAccessCode, DemoAccessCodeUsage
 
 
 def digest(value):
@@ -43,7 +43,26 @@ class DemoAccessRepository:
         return self.db.scalar(select(DemoSession).where(DemoSession.token_hash == digest(token), DemoSession.expires_at > now(), DemoSession.revoked_at.is_(None)))
 
     def verified_account(self, account_id):
-        return self.db.scalar(select(Account).where(Account.id == account_id, Account.mobile_verified_at.is_not(None)))
+        return self.db.scalar(select(Account).where(Account.id == account_id, or_(Account.mobile_verified_at.is_not(None), Account.demo_access_granted_at.is_not(None))))
+
+    def access_code(self, code_hash):
+        return self.db.scalar(select(DemoAccessCode).where(DemoAccessCode.code_hash == code_hash).with_for_update())
+
+    def redeem_code(self, code, mobile):
+        account = self.db.scalar(select(Account).where(Account.mobile == mobile))
+        usage = self.db.scalar(select(DemoAccessCodeUsage).where(DemoAccessCodeUsage.access_code_id == code.id, DemoAccessCodeUsage.account_id == account.id)) if account else None
+        if not usage:
+            if self.db.query(DemoAccessCodeUsage).filter_by(access_code_id=code.id).count() >= code.max_mobile_uses:
+                return None
+            if account is None:
+                account = Account(mobile=mobile)
+                self.db.add(account)
+                self.db.flush()
+            usage = DemoAccessCodeUsage(access_code_id=code.id, account_id=account.id, first_used_at=now(), last_used_at=now())
+            self.db.add(usage)
+        usage.last_used_at = now()
+        account.demo_access_granted_at = now()
+        return account
 
     def verify_account(self, mobile):
         account = self.db.scalar(select(Account).where(Account.mobile == mobile))
