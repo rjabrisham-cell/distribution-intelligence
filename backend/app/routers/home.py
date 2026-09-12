@@ -15,7 +15,7 @@ async def home(request: Request):
     return templates.TemplateResponse(
         request,
         "index.html",
-        {},
+        {"public_demo": True},
     )
 
 
@@ -28,11 +28,11 @@ def demo_sample(request: Request, db: Session = Depends(get_db)):
         response = readiness_step(request, settings.DEMO_SAMPLE_PROJECT_ID, db)
     if not response.context.get("batch") or response.context.get("audit_error"):
         raise HTTPException(503, "نمونه تحلیل‌شده فعلاً در دسترس نیست.")
-    context = dict(response.context, demo_sample=True)
+    from app.services.demo_sample_service import public_sample_context
+    context = public_sample_context(response.context)
     return templates.TemplateResponse(request=request, name="projects/readiness.html", context=context)
 
 
 @router.get("/demo/trial")
 def demo_trial():
-    # Temporary existing onboarding route; OTP gate replaces this in milestone 4.
-    return RedirectResponse("/projects/new", status_code=303)
+    return RedirectResponse("/demo/login", status_code=303)

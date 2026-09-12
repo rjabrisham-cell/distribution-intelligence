@@ -80,6 +80,23 @@ async def upload_project_files(
 
     file_service = FileService(db)
 
+    trial_account = db.info.get("trial_account_id")
+    trial_hash = None
+    if trial_account:
+        from hashlib import sha256
+        from app.core.trial_policy import policy
+        from app.services.entitlement_service import EntitlementService
+        from app.services.trial_file_service import validate_trial_xlsx
+        EntitlementService(db).assert_trial(trial_account, project_id)
+        if category != "stores" or len(files) != 1:
+            raise HTTPException(400, "فقط یک فایل فروشگاه بارگذاری کنید.")
+        payload = await files[0].read(policy.file_bytes + 1)
+        validate_trial_xlsx(files[0].filename or "", payload)
+        await files[0].seek(0)
+        trial_hash = sha256(payload).hexdigest()
+        if project.trial_file_hash == trial_hash and project.active_store_batch_id:
+            return RedirectResponse(url=f"/projects/{project_id}/validation", status_code=303)
+
     uploaded_files: list[File] = []
 
     for upload_file in files:
@@ -132,6 +149,16 @@ async def upload_project_files(
                 province_id=province_id,
                 city_id=city_id,
             )
+            if trial_account:
+                from app.models.import_batch import ImportBatch
+                batch = db.get(ImportBatch, start_response.batch_id)
+                status = getattr(batch.status, "value", batch.status)
+                if str(status).lower() != "completed" or not batch.imported_rows:
+                    raise HTTPException(400, "پردازش فایل کامل نشد؛ فایل را اصلاح کنید. سهمیه مصرف نشده است.")
+                project.trial_file_hash = trial_hash
+                project.trial_state = "UPLOADED"
+                project.trial_result_batch_id = None
+                db.commit()
 
     # ---------------------------------------------------
     # Redirect to Validation step

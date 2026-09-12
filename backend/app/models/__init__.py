@@ -335,3 +335,4 @@ __all__ = [
 ]
 
 from app.models.import_store_row import ImportStoreRow
+from app.models.demo_access import DemoChallenge, DemoSession, DemoRateEvent

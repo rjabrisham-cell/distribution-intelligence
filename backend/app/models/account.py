@@ -1,4 +1,5 @@
-from sqlalchemy import String
+from sqlalchemy import String, DateTime
+from datetime import datetime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import BaseModel
@@ -6,6 +7,7 @@ from app.models.base import BaseModel
 
 class Account(BaseModel):
     __tablename__ = "accounts"
+    mobile_verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     # ==========================================================
     # Identity
@@ -37,6 +39,6 @@ class Account(BaseModel):
         return (
             f"<Account("
             f"id={self.id}, "
-            f"mobile='{self.mobile}'"
+            "mobile=<redacted>"
             f")>"
         )

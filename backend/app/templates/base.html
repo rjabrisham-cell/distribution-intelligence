@@ -16,10 +16,14 @@
 </head>
 <body class="dip-body">
     <div class="dip-app-shell">
+        {% if demo_sample or public_demo %}
+        <nav aria-label="منوی عمومی DIP" style="padding:20px"><a href="/">معرفی DIP</a> · <a href="/demo/sample">نمونه تهران</a> · <a href="/demo/trial">ارزیابی آزمایشی</a></nav>
+        {% else %}
         {% include "partials/sidebar.html" %}
+        {% endif %}
 
         <div class="dip-main-shell">
-            {% include "partials/navbar.html" %}
+            {% if not (demo_sample or public_demo) %}{% include "partials/navbar.html" %}{% endif %}
 
             <main class="dip-content" id="main-content">
                 {% block content %}{% endblock %}
@@ -49,5 +53,6 @@
     </script>
 
     {% block scripts %}{% endblock %}
+    {% if not (demo_sample or public_demo) %}<script src="/static/js/demo-csrf.js"></script>{% endif %}
 </body>
 </html>

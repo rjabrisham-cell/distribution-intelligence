@@ -1,4 +1,5 @@
 from typing import Generator
+from fastapi import Request
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
@@ -18,7 +19,11 @@ SessionLocal = sessionmaker(
 )
 
 
-def get_db() -> Generator[Session, None, None]:
+def get_db(request: Request) -> Generator[Session, None, None]:
+    guarded = getattr(request.state, "demo_db", None)
+    if guarded is not None:
+        yield guarded
+        return
     db = SessionLocal()
     try:
         yield db

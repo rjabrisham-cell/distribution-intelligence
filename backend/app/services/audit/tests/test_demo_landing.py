@@ -15,7 +15,7 @@ from app.services.audit.tests.test_readiness_routes import page
 def test_landing_value_and_cta_destinations():
     request = SimpleNamespace(url_for=lambda *a, **kw: "/static/" + kw.get("path", ""))
     html = templates.env.get_template("index.html").render(request=request)
-    assert "داده خام فروشگاه‌ها را به داده آماده تصمیم‌گیری تبدیل کنید" in html
+    assert "داده خام شبکه پخش‌تان را به داده‌ای قابل اعتماد و آماده تصمیم‌گیری تبدیل کنید" in html
     assert 'href="/demo/sample"' in html
     assert html.count('href="/demo/trial"') == 2
     for label in ("دریافت داده", "اعتبارسنجی", "تطبیق", "سنجش آمادگی", "نقشه و گزارش"):
@@ -57,7 +57,7 @@ def test_sample_requires_explicit_public_project(monkeypatch):
 def test_trial_uses_existing_onboarding_and_preserves_existing_routes():
     response = home.demo_trial()
     assert response.status_code == 303
-    assert response.headers["location"] == "/projects/new"
+    assert response.headers["location"] == "/demo/login"
     from app.main import app
     paths = {path.rstrip("/") or "/" for path in app.openapi()["paths"]}
     assert {"/", "/dashboard", "/projects", "/projects/new", "/demo/trial", "/demo/sample"} <= paths

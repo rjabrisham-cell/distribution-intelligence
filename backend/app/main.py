@@ -31,7 +31,7 @@ from app.routers.geographic_router import router as geographic_router  # ← ج�
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
-    debug=settings.DEBUG,
+    debug=False,
 )
 
 # ----------------------------------------------------
@@ -63,6 +63,19 @@ app.include_router(admin_router)
 app.include_router(project_router)
 app.include_router(import_router)
 app.include_router(geographic_router)  # ← جدید
+
+from app.routers.demo_access import router as demo_access_router
+from app.core.demo_security import DemoSecurityMiddleware
+from fastapi.responses import JSONResponse
+app.include_router(demo_access_router)
+app.add_middleware(DemoSecurityMiddleware)
+from app.core.demo_logging import install as install_demo_log_filter
+install_demo_log_filter()
+
+
+@app.exception_handler(Exception)
+async def public_error(request, exc):
+    return JSONResponse({"detail": "سرویس موقتاً در دسترس نیست."}, status_code=503)
 
 # ----------------------------------------------------
 # Health

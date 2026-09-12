@@ -60,10 +60,12 @@ must remain independent.
 from __future__ import annotations
 
 from enum import Enum
+from datetime import datetime
 from typing import TYPE_CHECKING
 
 from sqlalchemy import (
     Boolean,
+    DateTime,
     ForeignKey,
     Integer,
     String,
@@ -115,6 +117,11 @@ class Project(BaseModel):
     """
 
     __tablename__ = "projects"
+    trial_owner_id: Mapped[int | None] = mapped_column(ForeignKey("accounts.id"), nullable=True, index=True)
+    trial_state: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    trial_result_batch_id: Mapped[int | None] = mapped_column(ForeignKey("import_batches.id"), nullable=True)
+    trial_consumed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    trial_file_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)
 
     active_store_batch_id: Mapped[int | None] = mapped_column(
         ForeignKey("import_batches.id", ondelete="RESTRICT", name="fk_projects_active_store_batch"),

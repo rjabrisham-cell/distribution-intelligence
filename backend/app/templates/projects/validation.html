@@ -555,6 +555,7 @@
           {% if summary and summary.is_finished and (summary.imported_rows or 0) > 0 %}
 
             {% if evidence_summary and evidence_summary.matching_status in ["PENDING", "IN_PROGRESS"] %}
+            {% if project.trial_state in ['PROCESSING', 'FAILED', 'COMPLETED'] %}<p>{{ {'PROCESSING':'در حال پردازش','FAILED':'پردازش ناموفق؛ سهمیه مصرف نشده است','COMPLETED':'نتیجه آماده مشاهده است'}[project.trial_state] }}</p>{% endif %}
             <form method="post" action="/projects/{{ project_context.id }}/matching/rerun" style="display:inline">
               <button type="submit" class="dip-btn dip-btn--primary">اجرای تطبیق و مشاهده آمادگی</button>
             </form>

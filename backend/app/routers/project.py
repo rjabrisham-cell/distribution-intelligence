@@ -23,6 +23,7 @@ from app.services.file_service import FileService
 from app.services.audit.audit_runner import AuditRunner
 from app.services.audit.report_builder import ReportBuilder
 from app.services.store_matching_service import StoreMatchingService
+from app.services.trial_service import TrialService
 
 
 router = APIRouter(
@@ -181,6 +182,14 @@ def _build_context(
 
     if extra:
         context.update(extra)
+
+    state = getattr(request, "state", None)
+    account_id = getattr(state, "demo_account_id", None) if state else None
+    if (isinstance(account_id, int) and current_stage_id == "readiness"
+            and getattr(project, "trial_state", None) == "COMPLETED"
+            and not context.get("audit_error")):
+        from app.services.trial_receipt import issue
+        context["trial_receipt"] = issue(account_id, project.id, project.active_store_batch_id)
 
     return context
 
@@ -841,6 +850,7 @@ def list_projects(
 
     projects = (
         db.query(Project)
+        .filter(Project.trial_owner_id == request.state.demo_account_id)
         .all()
     )
 
@@ -866,6 +876,7 @@ def grid_projects(
 
     projects = (
         db.query(Project)
+        .filter(Project.trial_owner_id == request.state.demo_account_id)
         .all()
     )
 
@@ -907,54 +918,14 @@ def new_project_form(
     response_class=HTMLResponse,
 )
 def create_project_from_form(
+    request: Request,
     name: str = Form(...),
     description: str | None = Form(None),
     code: str | None = Form(None),
     db: Session = Depends(get_db),
 ):
-    """
-    Create project from HTML form.
-
-    Development:
-        current projects belong to Company #1.
-
-    Production:
-        company_id must come from authenticated context.
-    """
-
-    clean_name = (
-        name.strip()
-    )
-
-    db_project = Project(
-        company_id=1,
-        name=clean_name,
-        description=(
-            description.strip()
-            if description and description.strip()
-            else None
-        ),
-        code=(
-            code.strip()
-            if code and code.strip()
-            else None
-        ),
-    )
-
-    db.add(
-        db_project
-    )
-
-    db.commit()
-
-    db.refresh(
-        db_project
-    )
-
-    return RedirectResponse(
-        url=f"/projects/{db_project.id}",
-        status_code=303,
-    )
+    db_project = TrialService(db).create(request.state.demo_account_id, name, description, code)
+    return RedirectResponse(url=f"/projects/{db_project.id}", status_code=303)
 
 
 # =============================================================================
@@ -1375,7 +1346,7 @@ def readiness_step(
             map_geojson = audit_run.get("map_geojson") or map_geojson
         except Exception as exc:
             db.rollback()
-            audit_error = f"{type(exc).__name__}: {exc}"
+            audit_error = "ارزیابی موقتاً در دسترس نیست؛ دوباره تلاش کنید."
 
     report = audit_report
 
@@ -1498,6 +1469,16 @@ async def process_readiness(
             ),
         )
 
+    trial_account = db.info.get("trial_account_id") if isinstance(getattr(db, "info", None), dict) else None
+    if trial_account:
+        from app.services.entitlement_service import EntitlementService
+        EntitlementService(db).assert_trial(trial_account, project_id)
+        if project.trial_result_batch_id == batch.id and project.trial_state == "COMPLETED":
+            return RedirectResponse(url=f"/projects/{project_id}/readiness", status_code=303)
+        TrialService(db).mark_processing(trial_account, project_id, batch.id)
+        project.trial_state = "PROCESSING"
+        db.flush()
+
     matching_service = (
         StoreMatchingService(
             db
@@ -1509,6 +1490,14 @@ async def process_readiness(
         project_id=project_id,
         persist=True,
     )
+    if trial_account:
+        result = readiness_step(request, project_id, db)
+        if result.context.get("audit_error") or not result.context.get("readiness_summary"):
+            raise HTTPException(503, "پردازش نتیجه کامل نشد؛ سهمیه مصرف نشده است.")
+        project.trial_state = "COMPLETED"
+        project.trial_result_batch_id = batch.id
+        db.commit()
+
 
     return RedirectResponse(
         url=f"/projects/{project_id}/readiness",
@@ -1831,10 +1820,16 @@ async def process_scenario_compare(
 # =============================================================================
 
 
+def _project_api_view(project):
+    # Do not serialize eager ORM relationships (Company -> other legacy projects).
+    return {key: getattr(project, key) for key in ("id", "name", "description", "code", "status", "is_active", "trial_state")}
+
+
 @router.get(
     "/api/"
 )
 def read_projects(
+    request: Request,
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db),
@@ -1843,12 +1838,13 @@ def read_projects(
 
     projects = (
         db.query(Project)
+        .filter(Project.trial_owner_id == request.state.demo_account_id)
         .offset(skip)
         .limit(limit)
         .all()
     )
 
-    return projects
+    return [_project_api_view(project) for project in projects]
 
 
 @router.get(
@@ -1874,50 +1870,21 @@ def read_project(
             detail="Project not found",
         )
 
-    return project
+    return _project_api_view(project)
 
 
 @router.post(
     "/api/"
 )
 def create_project(
+    request: Request,
     name: str = Form(...),
     description: str | None = Form(None),
     code: str | None = Form(None),
     db: Session = Depends(get_db),
 ):
-    """Create project through current development API."""
-
-    clean_name = (
-        name.strip()
-    )
-
-    db_project = Project(
-        company_id=1,
-        name=clean_name,
-        description=(
-            description.strip()
-            if description and description.strip()
-            else None
-        ),
-        code=(
-            code.strip()
-            if code and code.strip()
-            else None
-        ),
-    )
-
-    db.add(
-        db_project
-    )
-
-    db.commit()
-
-    db.refresh(
-        db_project
-    )
-
-    return db_project
+    db_project = TrialService(db).create(request.state.demo_account_id, name, description, code)
+    return _project_api_view(db_project)
 
 
 @router.delete(

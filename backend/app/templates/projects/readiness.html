@@ -14,6 +14,7 @@
 
 {% block content %}
 <div class="dip-container rd-shell">
+  {% if not demo_sample and trial_receipt %}<span hidden data-trial-result="/demo/result/{{ project.id }}/ack" data-receipt="{{ trial_receipt }}"></span>{% endif %}
   {% if demo_sample %}
   <section class="rd-card rd-missing"><h1>نمونه تحلیل‌شده DIP</h1><p>این نمونه فقط برای مشاهده است؛ بازکردن این صفحه تطبیق یا تغییری در داده‌ها ایجاد نمی‌کند.</p><a href="/" class="rd-button rd-button-secondary">بازگشت به معرفی DIP</a></section>
   {% else %}
@@ -134,7 +135,7 @@
     </section>
   {% endif %}
 
-  {% if report %}
+  {% if report and not demo_sample %}
     <details class="rd-card rd-tech">
       <summary>جزئیات فنی و آماری ارزیابی</summary>
       <div class="rd-tech-grid">

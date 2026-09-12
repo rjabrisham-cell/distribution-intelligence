@@ -105,7 +105,8 @@ def test_explicit_matching_keeps_legacy_post_and_redirect(page, monkeypatch):
 def test_audit_error_does_not_fall_back_to_matching(page):
     page.audit.return_value.run.side_effect = ValueError("audit failed")
     response = routes.readiness_step(page.request, 23, page.db)
-    assert "audit failed" in response["context"]["audit_error"]
+    assert response["context"]["audit_error"]
+    assert "audit failed" not in response["context"]["audit_error"]
     page.matching.assert_not_called()
     page.db.commit.assert_not_called()
 
