@@ -808,7 +808,7 @@ class ImportService:
             batch.file_id,
         )
 
-        if source_file is None:
+        if source_file is None or source_file.removed_at is not None:
             raise FileProcessingError(
                 f"Source file #{batch.file_id} "
                 f"not found for STORE import."
@@ -993,6 +993,10 @@ class ImportService:
                     batch
                 )
             )
+
+            if (batch.completed_at is not None
+                    and batch.status == STATUS_MAP[ImportStatusEnum.COMPLETED]):
+                return self._progress[batch_id]  # A completed import is immutable.
 
             (
                 intake_province_name,
@@ -1329,6 +1333,9 @@ class ImportService:
         )
 
         try:
+            if entity_type == EntityTypeEnum.STORE and imported > 0:
+                from app.repositories.store_dataset_repository import StoreDatasetRepository
+                StoreDatasetRepository(self.db).activate(project_id, batch)
             self.db.commit()
         except Exception as exc:
             self.db.rollback()
@@ -1941,6 +1948,11 @@ class ImportService:
             ProjectCompanyStore,
         )
 
+        from app.repositories.store_dataset_repository import StoreDatasetRepository
+        dataset = StoreDatasetRepository(self.db)
+        if dataset.row(batch_id, row_number) is not None:
+            return  # Retrying an accepted row must not create another store.
+
         store_code_raw = self._clean_optional(
             mapped_row.get("store_code")
         )
@@ -2070,19 +2082,8 @@ class ImportService:
                 row_number,
             )
 
-        else:
-            for (
-                field_name,
-                value,
-            ) in mutable_values.items():
-                if value is not None:
-                    setattr(
-                        company_store,
-                        field_name,
-                        value,
-                    )
-
-            self.db.flush()
+        # Existing company inputs are historical/shared. This batch's input
+        # is retained below in ImportStoreRow, not written over that history.
 
         link = (
             self.db.query(
@@ -2142,6 +2143,10 @@ class ImportService:
             province_name=resolved_province,
             city_name=resolved_city,
         )
+
+        snapshot = {key: self._to_trace_value(value) for key, value in mapped_row.items()}
+        snapshot.update(province_name=resolved_province, city_name=resolved_city)
+        dataset.record(batch_id, company_store.id, row_number, snapshot)
 
     # ==========================================================
     # Generic Row Persistence

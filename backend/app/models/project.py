@@ -116,6 +116,12 @@ class Project(BaseModel):
 
     __tablename__ = "projects"
 
+    active_store_batch_id: Mapped[int | None] = mapped_column(
+        ForeignKey("import_batches.id", ondelete="RESTRICT", name="fk_projects_active_store_batch"),
+        nullable=True,
+        index=True,
+    )
+
     # ==========================================================
     # Identity
     # ==========================================================

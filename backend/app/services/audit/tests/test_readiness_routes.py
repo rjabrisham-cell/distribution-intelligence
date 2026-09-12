@@ -123,7 +123,10 @@ def test_real_audit_preserves_confirmed_master_and_selected_evidence(page, monke
     query = page.db.query.return_value
     for method in ("join", "outerjoin", "filter", "order_by"):
         getattr(query, method).return_value = query
-    query.all.return_value = [(SimpleNamespace(), company, master, evidence)]
+    from app.repositories.store_dataset_repository import StoreDatasetRepository
+    row = SimpleNamespace(id=1, row_number=1, snapshot=vars(company).copy())
+    monkeypatch.setattr(StoreDatasetRepository, "audit_rows",
+                        lambda *_: [(row, company, master, evidence)])
     monkeypatch.setattr(routes, "AuditRunner", AuditRunner)
     for action in (lambda: routes.readiness_step(page.request, 23, page.db),
                    lambda: asyncio.run(routes.refresh_readiness(page.request, 23, page.db))):

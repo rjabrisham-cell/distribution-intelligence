@@ -209,38 +209,9 @@ def _find_latest_store_batch(
     db: Session,
     project_id: int,
 ) -> ImportBatch | None:
-    """
-    Find latest STORE ImportBatch belonging to exactly this Project.
-
-    Join:
-
-        ImportBatch.file_id
-            -> File.id
-
-        File.entity_type = PROJECT
-        File.entity_id   = project_id
-        File.category    = stores
-
-        ImportBatch.entity_type = STORE
-    """
-
-    return (
-        db.query(ImportBatch)
-        .join(
-            File,
-            ImportBatch.file_id == File.id,
-        )
-        .filter(
-            File.entity_type == "PROJECT",
-            File.entity_id == project_id,
-            File.category == "stores",
-            ImportBatch.entity_type == EntityType.STORE,
-        )
-        .order_by(
-            ImportBatch.id.desc()
-        )
-        .first()
-    )
+    """Compatibility name: select only the explicitly active store dataset."""
+    from app.services.store_dataset_service import StoreDatasetService
+    return StoreDatasetService(db).active_batch(project_id)
 
 
 # =============================================================================
@@ -252,21 +223,9 @@ def _batch_candidate_query(
     db: Session,
     batch_id: int,
 ):
-    """Return AddressCandidate query scoped to one ImportBatch."""
-
-    source_pattern = (
-        f"import_batch:{batch_id}:row:%"
-    )
-
-    return (
-        db.query(AddressCandidate)
-        .filter(
-            AddressCandidate.source_type == "excel",
-            AddressCandidate.source_id.like(
-                source_pattern
-            ),
-        )
-    )
+    """Return evidence belonging to the active dataset's exact input rows."""
+    from app.services.store_dataset_service import StoreDatasetService
+    return StoreDatasetService(db).candidate_query(batch_id)
 
 
 # =============================================================================
@@ -1197,7 +1156,7 @@ def validation_step(
                     "evidence_summary": None,
                     "row_errors": [],
                     "message": (
-                        "هیچ فایل Store برای این پروژه یافت نشد."
+                        "Dataset فعال فروشگاه وجود ندارد. یک فایل فروشگاه بارگذاری و Import کنید."
                     ),
                 },
             ),
@@ -1344,7 +1303,7 @@ def readiness_step(
                     "report": None,
                     "matching_error": None,
                     "message": (
-                        "هیچ STORE Batch برای این پروژه یافت نشد."
+                        "Dataset فعال فروشگاه وجود ندارد. یک فایل فروشگاه بارگذاری و Import کنید."
                     ),
                 },
             ),

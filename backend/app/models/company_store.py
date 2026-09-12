@@ -144,9 +144,9 @@ class CompanyStore(BaseModel):
     # Identity
     # ==========================================================
 
-    store_code: Mapped[str] = mapped_column(
+    store_code: Mapped[str | None] = mapped_column(
         String(128),
-        nullable=False,
+        nullable=True,
         index=True,
         comment=(
             "کد فروشگاه در سیستم شرکت "

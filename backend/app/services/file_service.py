@@ -213,6 +213,10 @@ class FileService:
         if file is None:
             return False
 
+        if file.entity_type == "PROJECT" and file.category == "stores":
+            self.repository.delete(file)
+            return True
+
         path = Path(file.file_path)
 
         if path.exists():

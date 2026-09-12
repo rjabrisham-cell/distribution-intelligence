@@ -241,6 +241,14 @@ class StoreMatchingService:
         batch_id = int(batch_id)
         project_id = int(project_id)
 
+        from app.repositories.store_dataset_repository import StoreDatasetRepository
+        dataset = StoreDatasetRepository(self.db)
+        active = dataset.active_batch(project_id)
+        if active is None or active.id != batch_id:
+            raise ValueError("Matching requires the active store dataset")
+        inputs = {f"import_batch:{batch_id}:row:{row.row_number}": row
+                  for row in dataset.rows(batch_id)}
+
         source_prefix = (
             f"import_batch:{batch_id}:row:"
         )
@@ -249,11 +257,7 @@ class StoreMatchingService:
         # 1. Project CompanyStore scope
         # ------------------------------------------------------------------
 
-        project_company_store_ids = (
-            self._load_project_company_store_ids(
-                project_id=project_id
-            )
-        )
+        project_company_store_ids = {row.company_store_id for row in inputs.values()}
 
         if not project_company_store_ids:
             return self._empty_report(
@@ -276,6 +280,10 @@ class StoreMatchingService:
                 ),
             )
         )
+
+        address_candidates = [candidate for candidate in address_candidates
+                              if candidate.source_id in inputs
+                              and inputs[candidate.source_id].company_store_id == candidate.company_store_id]
 
         if not address_candidates:
             return self._empty_report(
@@ -343,21 +351,22 @@ class StoreMatchingService:
                 )
                 continue
 
+            input_store = dataset.input_view(company_store, inputs[candidate.source_id].snapshot)
             geo = self._resolve_geography(
                 province=(
                     candidate.province
-                    or company_store.province
+                    or input_store.province
                 ),
                 city=(
                     candidate.city
-                    or company_store.city
+                    or input_store.city
                 ),
             )
 
             prepared_input = (
                 self._build_prepared_input(
                     candidate=candidate,
-                    company_store=company_store,
+                    company_store=input_store,
                     geo=geo,
                 )
             )
@@ -570,6 +579,7 @@ class StoreMatchingService:
 
         if persist:
             try:
+                dataset.require_active_for_write(project_id, batch_id)
                 for decision in all_decisions:
                     candidate = candidate_by_id.get(
                         int(

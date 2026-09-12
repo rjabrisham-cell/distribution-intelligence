@@ -30,7 +30,7 @@ class FileRepository:
 
     def get(self, file_id: int) -> Optional[File]:
         """Retrieve a single File by its primary key."""
-        return self.db.query(File).filter(File.id == file_id).first()
+        return self.db.query(File).filter(File.removed_at.is_(None)).filter(File.id == file_id).first()
 
     def get_by_id(self, file_id: int) -> Optional[File]:
         """Alias for get()."""
@@ -48,7 +48,7 @@ class FileRepository:
     ) -> list[File]:
         """Return a paginated list of all files."""
         return (
-            self.db.query(File)
+            self.db.query(File).filter(File.removed_at.is_(None))
             .order_by(File.created_at.desc())
             .offset(skip)
             .limit(limit)
@@ -66,7 +66,7 @@ class FileRepository:
     ) -> list[File]:
         """Return all files attached to a specific entity."""
         return (
-            self.db.query(File)
+            self.db.query(File).filter(File.removed_at.is_(None))
             .filter(
                 File.entity_type == entity_type,
                 File.entity_id == entity_id,
@@ -86,7 +86,7 @@ class FileRepository:
     ) -> int:
         """Return the number of files attached to an entity."""
         return (
-            self.db.query(File)
+            self.db.query(File).filter(File.removed_at.is_(None))
             .filter(
                 File.entity_type == entity_type,
                 File.entity_id == entity_id,
@@ -113,7 +113,7 @@ class FileRepository:
     ) -> list[File]:
         """Return project files filtered by category."""
         return (
-            self.db.query(File)
+            self.db.query(File).filter(File.removed_at.is_(None))
             .filter(
                 File.entity_type == "PROJECT",
                 File.entity_id == project_id,
@@ -137,5 +137,9 @@ class FileRepository:
 
     def delete(self, file: File) -> None:
         """Remove a File record from the database."""
+        if file.entity_type == "PROJECT" and file.category == "stores":
+            from app.repositories.store_dataset_repository import StoreDatasetRepository
+            StoreDatasetRepository(self.db).remove_file(file)
+            return
         self.db.delete(file)
         self.db.commit()

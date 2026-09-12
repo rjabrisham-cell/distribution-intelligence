@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Any
 from uuid import uuid4
 
@@ -252,33 +252,16 @@ class AuditRunner:
                 self.db.close()
 
     def _load_project_store_views(self) -> tuple[ProjectStoreAuditView, ...]:
-        source_pattern = f"import_batch:{self.batch_id}:row:%"
-        rows = (
-            self.db.query(ProjectCompanyStore, CompanyStore, Store, AddressCandidate)
-            .join(CompanyStore, CompanyStore.id == ProjectCompanyStore.company_store_id)
-            .outerjoin(Store, Store.id == CompanyStore.master_store_id)
-            .outerjoin(
-                AddressCandidate,
-                (AddressCandidate.company_store_id == CompanyStore.id)
-                & (AddressCandidate.source_type == "excel")
-                & (AddressCandidate.source_id.like(source_pattern)),
-            )
-            .filter(
-                ProjectCompanyStore.project_id == self.project_id,
-                ProjectCompanyStore.is_active.is_(True),
-                ProjectCompanyStore.removed_at.is_(None),
-            )
-            .order_by(ProjectCompanyStore.id)
-            .all()
-        )
-
-        views: list[ProjectStoreAuditView] = []
-        seen: set[int] = set()
-        for _link, company, master, evidence in rows:
-            if company.id in seen:
+        from app.repositories.store_dataset_repository import StoreDatasetRepository
+        dataset = StoreDatasetRepository(self.db)
+        views = []
+        seen = set()
+        for row, company, master, evidence in dataset.audit_rows(self.project_id, self.batch_id):
+            if row.id in seen:
                 continue
-            seen.add(company.id)
-            views.append(self._build_store_view(company, master, evidence))
+            seen.add(row.id)
+            view = self._build_store_view(dataset.input_view(company, row.snapshot), master, evidence)
+            views.append(replace(view, source_id=f"import_batch:{self.batch_id}:row:{row.row_number}"))
         return tuple(views)
 
     @classmethod

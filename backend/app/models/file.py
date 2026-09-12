@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from datetime import datetime
 
-from sqlalchemy import BigInteger, Integer, String
+from sqlalchemy import BigInteger, DateTime, Integer, String
 from sqlalchemy.orm import (
     Mapped,
     mapped_column,
@@ -18,6 +19,8 @@ if TYPE_CHECKING:
 
 class File(BaseModel):
     __tablename__ = "files"
+
+    removed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     # ==========================================================
     # Entity Reference

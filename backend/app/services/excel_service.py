@@ -419,6 +419,7 @@ class ExcelService:
             # ------------------------------------------------------
 
             if suffix == ".csv":
+                kwargs.pop("sheet_name", None)  # Excel-only option from parse().
                 return cls._read_csv(
                     path,
                     **kwargs,

@@ -318,6 +318,7 @@ __all__ = [
     # Import Engine
     # ------------------------------------------------------
     "ImportBatch",
+    "ImportStoreRow",
     "RowError",
 
     # ------------------------------------------------------
@@ -332,3 +333,5 @@ __all__ = [
     "GPSRecord",
 
 ]
+
+from app.models.import_store_row import ImportStoreRow
