@@ -11,6 +11,8 @@ def get_bool(value: str, default: bool = False) -> bool:
 
 
 class Settings:
+    # Set only to a project explicitly approved for public demonstration.
+    DEMO_SAMPLE_PROJECT_ID = int(os.getenv("DEMO_SAMPLE_PROJECT_ID", "0"))
     APP_NAME = os.getenv("APP_NAME", "Distribution Intelligence")
     APP_VERSION = os.getenv("APP_VERSION", "0.2.0")
     APP_ENV = os.getenv("APP_ENV", "development")

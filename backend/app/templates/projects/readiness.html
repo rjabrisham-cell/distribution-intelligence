@@ -14,10 +14,14 @@
 
 {% block content %}
 <div class="dip-container rd-shell">
+  {% if demo_sample %}
+  <section class="rd-card rd-missing"><h1>نمونه تحلیل‌شده DIP</h1><p>این نمونه فقط برای مشاهده است؛ بازکردن این صفحه تطبیق یا تغییری در داده‌ها ایجاد نمی‌کند.</p><a href="/" class="rd-button rd-button-secondary">بازگشت به معرفی DIP</a></section>
+  {% else %}
   {% include "partials/shared/breadcrumb.html" %}
   {% include "partials/shared/project_header.html" %}
   {% include "partials/shared/journey_stepper.html" %}
   {% include "partials/shared/current_step.html" %}
+  {% endif %}
 
   {% if audit_error or matching_error %}
     <div class="rd-error"><i class="bi bi-exclamation-triangle"></i> {{ audit_error or matching_error }}</div>
@@ -142,6 +146,7 @@
     </details>
   {% endif %}
 
+  {% if not demo_sample %}
   <section class="rd-card rd-action">
     <div class="rd-action-copy"><strong>گام بعد: تصمیم‌گیری هوشمند</strong><span>فقط رکوردهای آماده وارد بسته داده مرحله بعد می‌شوند؛ موارد بازبینی در گزارش باقی می‌مانند.</span></div>
     <div>
@@ -155,6 +160,9 @@
 
   {% include "partials/shared/recent_activity.html" %}
   {% include "partials/shared/delete_modal.html" %}
+  {% else %}
+  <section class="rd-card rd-action"><a class="rd-button" href="/demo/trial">ارزیابی فایل فروشگاه‌های خودم</a></section>
+  {% endif %}
 </div>
 {% endblock %}
 

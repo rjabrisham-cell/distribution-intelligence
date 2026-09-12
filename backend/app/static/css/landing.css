@@ -1,0 +1,19 @@
+.landing-hero{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(260px,1fr);gap:40px;align-items:center;padding:44px;border:1px solid #e2e8f0;border-radius:24px;background:linear-gradient(135deg,#fff,#eef5ff)}
+.landing-hero-copy h1{font-size:clamp(28px,3vw,44px);line-height:1.65;color:#17233b;margin:16px 0}
+.landing-hero-copy p{font-size:17px;line-height:2;color:#526078;max-width:680px}
+.landing-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
+.landing-actions a,.landing-final a{white-space:normal;text-align:center}
+.landing-panel-card{background:#fff;border:1px solid #dce6f5;border-radius:20px;padding:28px;box-shadow:0 12px 32px #183a6b08}
+.landing-workflow{list-style:none;counter-reset:step;display:grid;gap:16px;padding:0;margin:24px 0 0}
+.landing-workflow li{counter-increment:step;display:flex;align-items:center;gap:14px;color:#26354d;font-weight:700}
+.landing-workflow li:before{content:counter(step);display:grid;place-items:center;width:34px;height:34px;border-radius:12px;background:#edf3ff;color:#245fed;font-size:15px}
+.landing-section-title{font-size:26px;margin:42px 0 22px;color:#17233b}
+.landing-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.landing-grid .dip-info-card{padding:25px;background:#fff;border:1px solid #e2e8f0;border-radius:18px}
+.landing-grid h3{font-size:18px;color:#17233b;margin:12px 0}
+.landing-grid p{line-height:1.9;color:#64748b;margin:0}
+.landing-final{margin-top:32px;padding:32px;border-radius:20px;background:#edf3ff;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
+.landing-final h2{font-size:22px;margin:0;color:#17233b}
+.landing-actions a:focus-visible,.landing-final a:focus-visible{outline:3px solid #17233b;outline-offset:4px}
+@media(max-width:1000px){.landing-hero{grid-template-columns:1fr;padding:28px}.landing-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.landing-hero{padding:20px;gap:24px}.landing-grid{grid-template-columns:1fr}.landing-actions{flex-direction:column}.landing-final{padding:24px}}
