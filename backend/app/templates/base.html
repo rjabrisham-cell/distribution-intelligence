@@ -17,6 +17,7 @@
 <body class="dip-body">
     <div class="dip-app-shell"{% if demo_sample or public_demo %} style="display:block"{% endif %}>
         {% if demo_sample or public_demo %}
+        <p style="margin:0;padding:5px 12px 0;text-align:center;font-size:10px;line-height:1.5;color:#94a3b8">به تأیید پروردگار، آن را بنا نهاده‌ و توسعه دهنده ایم.</p>
         <nav aria-label="منوی عمومی DIP" style="padding:20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">{% include "partials/brand.html" %}<a href="/">معرفی DIP</a> · <a href="/demo/sample">نمونه تهران</a> · <a href="/demo/trial">ارزیابی آزمایشی</a></nav>
         {% else %}
         {% include "partials/sidebar.html" %}

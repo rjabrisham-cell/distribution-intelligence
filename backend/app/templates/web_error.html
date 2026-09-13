@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}{{ error_status }} | DIP{% endblock %}
+{% block content %}
+<section class="dip-info-card" style="max-width:720px;margin:32px auto;padding:28px">
+  <h1>{{ 'صفحه در دسترس نیست' if error_status == 404 else 'درخواست انجام نشد' }}</h1>
+  <div role="alert" data-web-error style="padding:16px;border-radius:12px;background:#fff7ed;color:#9a3412">{{ error_message }}</div>
+  {% if upload_error %}
+  <p>برای آماده‌سازی فایل، قالب نمونه DIP را دانلود کنید و اطلاعات فروشگاه‌های خود را مطابق آن وارد کنید.</p>
+  <a href="/import/template/store" class="dip-btn dip-btn-primary">دانلود فایل نمونه فروشگاه‌ها</a>
+  {% endif %}
+  <p><a href="{{ return_url }}" class="dip-btn dip-btn-primary">بازگشت به صفحه امن</a></p>
+</section>
+{% endblock %}

@@ -9,6 +9,7 @@ from app.core.config import settings
 from app.core.trial_policy import policy
 from app.repositories.demo_access_repository import DemoAccessRepository, digest
 from app.core.demo_logging import trial_request
+from app.core.web_errors import error_response, wants_html
 
 
 PUBLIC = {"/", "/demo/sample", "/demo/trial", "/demo/login", "/demo/access", "/health"}
@@ -56,7 +57,7 @@ class DemoSecurityMiddleware:
             await send(message)
 
         async def reject(status, message="دسترسی مجاز نیست."):
-            await JSONResponse({"detail": message}, status_code=status)(scope, receive, secured_send)
+            await error_response(request, status, message)(scope, receive, secured_send)
 
         # Only code assets are public. Raw uploads and arbitrary static files are not.
         static = re.fullmatch(r"/static/(?:css|js|images|fonts)/[\w/.-]+\.(?:css|js|png|svg|jpg|jpeg|ico|woff2?|ttf)", path)
@@ -162,6 +163,20 @@ class DemoSecurityMiddleware:
                         messages.append(message)
 
                     await self.app(scope, replay if method not in SAFE else receive, capture)
+                    if status >= 400 and (wants_html(request) or status >= 500):
+                        start = next((m for m in messages if m['type'] == 'http.response.start'), {})
+                        headers = dict(start.get('headers', []))
+                        if b'application/json' in headers.get(b'content-type', b''):
+                            import json
+                            try:
+                                payload = json.loads(b''.join(m.get('body', b'') for m in messages))
+                                detail = payload.get('detail') if isinstance(payload, dict) else None
+                            except (ValueError, TypeError):
+                                detail = None
+                            if status >= 500:
+                                detail = "سرویس موقتاً در دسترس نیست."
+                            messages.clear()
+                            await error_response(request, status, detail)(scope, replay, capture)
                     # OTP attempts/rate counters deliberately survive 4xx. Business
                     # writes are atomic across existing services' internal commits.
                     if method not in SAFE and (status < 400 or path == "/demo/access" or path.startswith("/demo/otp/")):
@@ -175,7 +190,9 @@ class DemoSecurityMiddleware:
                         transaction.rollback()
                     if self.raise_errors:
                         raise
-                    return await reject(503, "سرویس موقتاً در دسترس نیست.")
+                    import logging
+                    logging.getLogger(__name__).exception('Public request failed')
+                    return await reject(500, "سرویس موقتاً در دسترس نیست.")
                 finally:
                     trial_request.reset(log_token)
                     if transaction.is_active:

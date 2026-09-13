@@ -21,6 +21,10 @@ def test_landing_value_and_cta_destinations():
     for label in ("دریافت داده", "اعتبارسنجی", "تطبیق", "سنجش آمادگی", "نقشه و گزارش"):
         assert label in html
     assert "چه چیزی تحویل می‌گیرید؟" in html
+    public = templates.env.get_template('index.html').render(request=request, public_demo=True)
+    assert 'به تأیید پروردگار، آن را بنا نهاده‌ و توسعه دهنده ایم.' in public
+    assert '<span dir="ltr"' in public and 'Distribution Intelligence Platform</span>' in public
+    assert '<a href="/" title="Distribution Intelligence Platform"' in public
 
 
 def test_sample_uses_prepared_snapshot_without_calculation(page, monkeypatch):

@@ -72,10 +72,23 @@ app.add_middleware(DemoSecurityMiddleware)
 from app.core.demo_logging import install as install_demo_log_filter
 install_demo_log_filter()
 
+from starlette.exceptions import HTTPException as StarletteHTTPException
+
+
+@app.exception_handler(StarletteHTTPException)
+async def public_http_error(request, exc):
+    from app.core.web_errors import error_response
+    detail = "سرویس موقتاً در دسترس نیست." if exc.status_code >= 500 else exc.detail
+    response = error_response(request, exc.status_code, detail)
+    if exc.headers:
+        response.headers.update(exc.headers)
+    return response
+
 
 @app.exception_handler(Exception)
 async def public_error(request, exc):
-    return JSONResponse({"detail": "سرویس موقتاً در دسترس نیست."}, status_code=503)
+    from app.core.web_errors import error_response
+    return error_response(request, 500, "سرویس موقتاً در دسترس نیست.")
 
 # ----------------------------------------------------
 # Health

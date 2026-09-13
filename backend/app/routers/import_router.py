@@ -189,7 +189,7 @@ async def download_store_template():
     """
 
     path = Path(
-        "app/static/templates/store_template.xlsx"
+        "app/static/templates/stores_template.xlsx"
     )
 
     if not path.exists():
@@ -198,14 +198,23 @@ async def download_store_template():
             detail="Template not found",
         )
 
-    return FileResponse(
-        path=str(path),
-        filename="store_template.xlsx",
-        media_type=(
-            "application/vnd.openxmlformats-officedocument."
-            "spreadsheetml.sheet"
-        ),
-    )
+    # Preserve the existing template's headings, styles and validation. Never
+    # send its example data; clearing here only affects the in-memory download.
+    from io import BytesIO
+    from openpyxl import load_workbook
+    from fastapi.responses import StreamingResponse
+    workbook = load_workbook(path)
+    for sheet in workbook.worksheets:
+        for row in sheet.iter_rows(min_row=2):
+            for cell in row:
+                cell.value = None
+                cell.comment = None
+    output = BytesIO()
+    workbook.save(output)
+    workbook.close()
+    output.seek(0)
+    return StreamingResponse(output, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                             headers={"Content-Disposition": 'attachment; filename="DIP_store_data_template.xlsx"'})
 
 
 # ==========================================================
