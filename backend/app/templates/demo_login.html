@@ -3,16 +3,17 @@
 {% block content %}
 <section class="dip-info-card" style="max-width:520px;margin:40px auto;padding:30px">
 <h1>ورود به ارزیابی آزمایشی</h1>
+{% if login_error %}<p role="alert" style="color:#b42318">{{ login_error }}</p>{% endif %}
 {% if challenge %}
 <p>کد تأیید را وارد کنید. اعتبار کد دو دقیقه است.</p>
 <form method="post" action="/demo/otp/verify">
 <input type="hidden" name="reference" value="{{ challenge }}">
 <label>کد تأیید <input name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required></label>
 {% else %}
-<p>برای دریافت کد دسترسی نسخه آزمایشی، با تیم DIP تماس بگیرید.</p>
-<form method="post" action="/demo/access">
-<label>شماره موبایل <input name="mobile" type="tel" dir="ltr" maxlength="20" autocomplete="tel" required></label>
-<label>کد دسترسی Demo <input name="code" dir="ltr" maxlength="8" minlength="8" autocomplete="off" required></label>
+<p>برای دریافت کد دسترسی نسخه آزمایشی، با تیم DIP تماس بگیرید: <a href="tel:09909323183" dir="ltr">09909323183</a></p>
+<form method="post" action="/demo/access" style="display:grid;gap:16px">
+<label>شماره موبایل <input name="mobile" type="tel" dir="ltr" maxlength="20" autocomplete="tel" value="{{ mobile|default('') }}" required></label>
+<label>کد دسترسی Demo <input name="code" type="text" dir="ltr" maxlength="32" autocomplete="off" required></label>
 {% endif %}
 <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 <button class="dip-btn dip-btn-primary" type="submit">ادامه</button>

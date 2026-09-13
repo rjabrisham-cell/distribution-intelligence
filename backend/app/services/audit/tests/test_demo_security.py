@@ -248,7 +248,7 @@ def test_sample_public_without_internal_links_or_writes(client, monkeypatch):
         assert response.status_code == 200
         for forbidden in ['href="/projects','href="/dashboard','method="post"','/matching/rerun','"store_id"']:
             assert forbidden not in response.text
-    assert render.call_count == 2
+    render.assert_not_called()
     assert client.post('/projects/1/matching/rerun').status_code == 401
 
 

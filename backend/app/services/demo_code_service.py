@@ -1,5 +1,4 @@
 """Temporary invitation access. This does not verify ownership of a mobile."""
-import hashlib
 import re
 import secrets
 from datetime import timedelta
@@ -8,13 +7,9 @@ from app.core.trial_policy import policy
 from app.models.demo_access import DemoSession
 from app.repositories.demo_access_repository import DemoAccessRepository, digest, now
 from app.services.demo_auth_service import normalize_mobile
+from app.core.demo_code_format import ALPHABET, access_hash, normalize_access_code
 
-ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 ERROR = "اطلاعات ورود معتبر نیست یا امکان استفاده از این کد وجود ندارد."
-
-
-def access_hash(code):
-    return hashlib.scrypt(code.encode(), salt=b"DIP-demo-access-v1", n=16384, r=8, p=1).hex()
 
 
 class DemoCodeService:
@@ -31,7 +26,7 @@ class DemoCodeService:
         mobile_ok = self.repo.rate("access-mobile:" + (normalized or mobile[:64]), policy.access_mobile_attempts, policy.access_cooldown_seconds)
         if not ip_ok or not mobile_ok:
             raise HTTPException(429, "تلاش‌های ورود زیاد است؛ ۱۵ دقیقه بعد دوباره تلاش کنید.")
-        value = code.strip().upper()
+        value = normalize_access_code(code)
         if not normalized or not re.fullmatch("[" + ALPHABET + "]{8}", value):
             raise HTTPException(400, ERROR)
         if not self.repo.lock("otp:" + normalized):

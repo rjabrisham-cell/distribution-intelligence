@@ -3,7 +3,7 @@
 {% block title %}{{ project_context.get('name', 'پروژه') }} - آمادگی توزیع{% endblock %}
 
 {% block head %}
-  <link rel="stylesheet" href="http://localhost:8082/mapserver/cdn/css/map.css">
+  {% if not demo_sample %}<link rel="stylesheet" href="http://localhost:8082/mapserver/cdn/css/map.css">{% endif %}
   <style>
     .rd-shell{display:grid;gap:20px}.rd-card{background:#fff;border:1px solid #e4eaf3;border-radius:22px;box-shadow:0 10px 35px rgba(20,45,90,.06);overflow:hidden}.rd-hero{padding:28px;background:linear-gradient(135deg,#f7fbff,#eef5ff);display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center}.rd-eyebrow{color:#2563eb;font-size:13px;font-weight:800}.rd-title{margin:7px 0 8px;font-size:25px;color:#12213a}.rd-subtitle{margin:0;color:#64748b;line-height:1.9}.rd-score{width:132px;height:132px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(#16a34a var(--score),#dce6f2 0);position:relative}.rd-score:after{content:"";position:absolute;inset:11px;background:#fff;border-radius:50%}.rd-score-content{position:relative;z-index:1;text-align:center}.rd-score-value{font-size:30px;font-weight:900;color:#12213a}.rd-score-label{font-size:11px;color:#64748b}.rd-status{display:inline-flex;align-items:center;gap:7px;border-radius:999px;padding:7px 12px;font-size:12px;font-weight:800;margin-top:13px}.rd-status-ready{background:#dcfce7;color:#166534}.rd-status-warning{background:#fef3c7;color:#92400e}.rd-status-stop{background:#fee2e2;color:#991b1b}.rd-alert{padding:14px 18px;border-radius:15px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412}.rd-kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}.rd-kpi{padding:18px}.rd-kpi-label{font-size:12px;color:#64748b}.rd-kpi-value{font-size:27px;font-weight:900;color:#17233b;margin-top:7px}.rd-kpi-note{font-size:11px;color:#94a3b8;margin-top:5px}.rd-main{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(280px,.75fr);gap:18px}.rd-map-card{min-height:590px;position:relative}.rd-map-head{padding:18px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e8edf5}.rd-map-title{font-weight:900;color:#17233b}.rd-legend{display:flex;gap:12px;font-size:11px;color:#64748b}.rd-dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-left:4px}.rd-map{height:515px;width:100%;background:#eef3f8}.rd-side{display:grid;gap:14px;align-content:start}.rd-panel{padding:20px}.rd-panel h3{margin:0 0 15px;font-size:16px;color:#17233b}.rd-progress-row{margin:14px 0}.rd-progress-head{display:flex;justify-content:space-between;font-size:12px;margin-bottom:7px}.rd-progress{height:8px;background:#edf2f7;border-radius:10px;overflow:hidden}.rd-progress span{display:block;height:100%;background:#2563eb;border-radius:10px}.rd-list{display:grid;gap:10px}.rd-list-item{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid #edf1f6;font-size:12px;color:#475569}.rd-list-item:last-child{border-bottom:0}.rd-list-item strong{color:#17233b}.rd-action{display:flex;justify-content:space-between;align-items:center;padding:20px 22px}.rd-action-copy strong{display:block;color:#17233b;margin-bottom:5px}.rd-action-copy span{font-size:12px;color:#64748b}.rd-button{display:inline-flex;align-items:center;gap:8px;padding:12px 17px;border:0;border-radius:12px;background:#2563eb;color:#fff;text-decoration:none;font:inherit;font-weight:800;cursor:pointer}.rd-button-secondary{background:#eef4ff;color:#1d4ed8}.rd-error{padding:16px;background:#fee2e2;color:#991b1b;border-radius:14px}.mapboxgl-popup-content{border-radius:14px!important;padding:13px!important}.rd-popup{direction:rtl;text-align:right;min-width:180px;font-family:Vazirmatn,Tahoma,sans-serif}.rd-popup strong{color:#17233b}.rd-popup small{display:block;color:#64748b;margin-top:4px}@media(max-width:1100px){.rd-kpis{grid-template-columns:repeat(3,1fr)}.rd-main{grid-template-columns:1fr}}@media(max-width:700px){.rd-hero{grid-template-columns:1fr}.rd-score{width:110px;height:110px}.rd-kpis{grid-template-columns:repeat(2,1fr)}.rd-action{align-items:stretch;flex-direction:column;gap:14px}.rd-legend{display:none}}
     .rd-map-meta{display:flex;align-items:center;gap:12px;color:#64748b;font-size:11px}.rd-map-note{padding:8px 14px;background:#f8fafc;border-top:1px solid #edf1f6;color:#64748b;font-size:11px}.rd-map-error{display:none;position:absolute;z-index:5;top:76px;right:18px;left:18px;padding:10px 13px;border-radius:11px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;font-size:12px}.rd-tech{padding:20px}.rd-tech summary{cursor:pointer;font-weight:800;color:#334155}.rd-tech-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:15px}.rd-tech-item{background:#f8fafc;border-radius:11px;padding:11px}.rd-tech-item span{display:block;color:#64748b;font-size:11px}.rd-tech-item strong{display:block;color:#17233b;margin-top:5px;overflow-wrap:anywhere}
@@ -110,6 +110,16 @@
     </aside>
   </section>
 
+  {% if demo_sample and sample_rows %}
+  <section class="rd-card rd-missing">
+    <h3>نمونه رکوردها</h3><p>نمونه‌ای از وضعیت‌های واقعی؛ اطلاعات هویتی و تماس نمایش داده نمی‌شود.</p>
+    <div class="rd-table-wrap"><table class="rd-table"><thead><tr><th>ردیف نمایشی</th><th>وضعیت آمادگی</th><th>تطبیق</th><th>مختصات</th><th>نیاز به اصلاح</th></tr></thead><tbody>
+    {% for row in sample_rows %}
+    <tr data-sample-row><td>{{ loop.index }}</td><td>{{ {'Ready':'آماده','Review':'نیازمند بازبینی','Invalid':'نامعتبر','NEEDS_GEOCODING':'نیازمند مختصات'}.get(row.status, 'نیازمند بررسی') }}</td><td>{{ 'متصل به مرجع' if row.matched else ('بدون اتصال' if row.matched == false else 'نمایش داده نمی‌شود') }}</td><td>{{ 'دارد' if row.coordinates else 'ندارد' }}</td><td>{{ {'Ready':'—','Review':'نیازمند بررسی کیفیت داده','Invalid':'اطلاعات نامعتبر','NEEDS_GEOCODING':'تکمیل مختصات'}.get(row.status, 'بررسی اطلاعات') }}</td></tr>
+    {% endfor %}
+    </tbody></table></div>
+  </section>
+  {% endif %}
   {% set missing_rows = audit_run.get('missing_coordinate_rows', []) if audit_run else [] %}
   {% if missing_rows %}
     <section class="rd-card rd-missing">
@@ -169,11 +179,11 @@
 
 {% block scripts %}
   {{ super() }}
-  <script src="{{ url_for('static', path='js/components/journey.js') }}"></script>
+  {% if not demo_sample %}<script src="{{ url_for('static', path='js/components/journey.js') }}"></script>
   <script src="http://localhost:8082/mapserver/cdn/js/jquery-3.6.0.min.js"></script>
-  <script src="http://localhost:8082/mapserver/cdn/js/map_value.js"></script>
+  <script src="http://localhost:8082/mapserver/cdn/js/map_value.js"></script>{% endif %}
   <script>
-  (() => {
+  function initializeReadinessMap() {
     const geojson = JSON.parse({{ (map_geojson_json or '{"type":"FeatureCollection","features":[]}')|tojson }});
     const mapElement = document.getElementById('readiness-map');
     const errorElement = document.getElementById('readiness-map-error');
@@ -425,6 +435,40 @@
     if (typeof rawMap.loaded === 'function' && rawMap.loaded()) onMapReady();
     else rawMap.once('load', onMapReady);
     window.addEventListener('resize', () => rawMap.resize());
+  }
+  {% if demo_sample %}
+  // The score and report paint before the optional map library is requested.
+  (() => {
+    let started = false;
+    const element = document.getElementById('readiness-map');
+    const loadScript = src => new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = src; script.onload = resolve; script.onerror = reject;
+      document.body.appendChild(script);
+    });
+    const start = async () => {
+      if (started) return; started = true;
+      const css = document.createElement('link'); css.rel = 'stylesheet';
+      css.href = 'http://localhost:8082/mapserver/cdn/css/map.css'; document.head.appendChild(css);
+      try {
+        await loadScript('http://localhost:8082/mapserver/cdn/js/jquery-3.6.0.min.js');
+        await loadScript('http://localhost:8082/mapserver/cdn/js/map_value.js');
+        initializeReadinessMap();
+      } catch (_) {
+        const error = document.getElementById('readiness-map-error');
+        error.textContent = 'نقشه فعلاً در دسترس نیست؛ خلاصه و نمونه رکوردها قابل مشاهده‌اند.';
+        error.style.display = 'block';
+      }
+    };
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      if ('IntersectionObserver' in window) {
+        const observer = new IntersectionObserver(entries => {
+          if (entries.some(entry => entry.isIntersecting)) { observer.disconnect(); start(); }
+        });
+        if (element) observer.observe(element);
+      } else { setTimeout(start, 0); }
+    }));
   })();
+  {% else %}initializeReadinessMap();{% endif %}
   </script>
 {% endblock %}

@@ -64,7 +64,10 @@ def test_http_errors_rate_csrf_and_login(client, db, caplog):
     for number, code in [(n,'BAD'),(n,disabled),('invalid',value)]:
         result=client.post('/demo/access',data={'mobile':number,'code':code,'csrf_token':csrf})
         assert result.status_code==400
-        details.append(result.json()['detail'])
+        assert 'text/html' in result.headers['content-type']
+        assert 'name="code"' in result.text and f'value="{code}"' not in result.text
+        assert f'value="{number}"' in result.text
+        details.append(re.search(r'role="alert"[^>]*>(.*?)</p>', result.text)[1])
     assert len(set(details))==1
     result=client.post('/demo/access',data={'mobile':n,'code':value,'csrf_token':csrf},follow_redirects=False)
     assert result.status_code==303 and 'dip_session' in client.cookies
@@ -76,6 +79,20 @@ def test_http_errors_rate_csrf_and_login(client, db, caplog):
         result=client.post('/demo/access',data={'mobile':n,'code':'BAD','csrf_token':csrf})
     assert result.status_code==429
     assert value not in caplog.text and n not in caplog.text and access_hash(value) not in caplog.text
+
+
+@pytest.mark.parametrize('variant', ['abcdefgh', ' ABCDEFGH ', '\ufeffABCDEFGH', '\r\nABCDEFGH\r\n', '\ufeff abcdefgh\r\n', '\u200fABCDEFGH\u200e'])
+def test_host_backend_code_normalization_contract(variant):
+    from app.core.demo_code_format import access_hash as shared_hash
+    assert access_hash(variant) == shared_hash('ABCDEFGH')
+
+
+def test_normalized_code_http_login(client, db):
+    value, _ = seed(db)
+    page = client.get('/demo/login')
+    csrf = client.cookies['dip_login_csrf']
+    response = client.post('/demo/access', data={'mobile':mobile(), 'code':'\ufeff '+value.lower()+'\r\n', 'csrf_token':csrf}, follow_redirects=False)
+    assert response.status_code == 303
 
 
 def test_migration_upgrade_downgrade(engine):

@@ -15,9 +15,9 @@
     {% block head %}{% endblock %}
 </head>
 <body class="dip-body">
-    <div class="dip-app-shell">
+    <div class="dip-app-shell"{% if demo_sample or public_demo %} style="display:block"{% endif %}>
         {% if demo_sample or public_demo %}
-        <nav aria-label="منوی عمومی DIP" style="padding:20px"><a href="/">معرفی DIP</a> · <a href="/demo/sample">نمونه تهران</a> · <a href="/demo/trial">ارزیابی آزمایشی</a></nav>
+        <nav aria-label="منوی عمومی DIP" style="padding:20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">{% include "partials/brand.html" %}<a href="/">معرفی DIP</a> · <a href="/demo/sample">نمونه تهران</a> · <a href="/demo/trial">ارزیابی آزمایشی</a></nav>
         {% else %}
         {% include "partials/sidebar.html" %}
         {% endif %}

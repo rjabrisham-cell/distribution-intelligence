@@ -60,7 +60,7 @@ class DemoSecurityMiddleware:
 
         # Only code assets are public. Raw uploads and arbitrary static files are not.
         static = re.fullmatch(r"/static/(?:css|js|images|fonts)/[\w/.-]+\.(?:css|js|png|svg|jpg|jpeg|ico|woff2?|ttf)", path)
-        if static and ".." not in path and method in SAFE:
+        if (static and ".." not in path or path == "/static/logo/DIPLogo.webp") and method in SAFE:
             return await self.app(scope, receive, secured_send)
         public = path in PUBLIC or (path in {"/demo/otp/request", "/demo/otp/verify"} and settings.APP_ENV == "development" and os.getenv("DEMO_ACCESS_MODE") == "otp")
         if public and method in SAFE:

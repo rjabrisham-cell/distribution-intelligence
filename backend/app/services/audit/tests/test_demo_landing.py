@@ -23,13 +23,12 @@ def test_landing_value_and_cta_destinations():
     assert "چه چیزی تحویل می‌گیرید؟" in html
 
 
-def test_sample_reuses_readonly_readiness_and_hides_write_actions(page, monkeypatch):
-    monkeypatch.setattr(settings, "DEMO_SAMPLE_PROJECT_ID", 23)
+def test_sample_uses_prepared_snapshot_without_calculation(page, monkeypatch):
+    monkeypatch.setattr(settings, "DEMO_SAMPLE_PROJECT_ID", 1)
     monkeypatch.setattr(home.templates, "TemplateResponse", lambda **kw: kw)
-    original = project.readiness_step
-    monkeypatch.setattr(project, "readiness_step", lambda *a: SimpleNamespace(context=original(*a)["context"]))
-    page.db.no_autoflush = nullcontext()
-    response = home.demo_sample(page.request, page.db)
+    calculation = Mock(side_effect=AssertionError('Sample must not calculate readiness'))
+    monkeypatch.setattr(project, "readiness_step", calculation)
+    response = home.demo_sample(page.request)
     context = response["context"]
     context["request"] = SimpleNamespace(url_for=lambda *a, **kw: "/static/" + kw.get("path", ""))
     html = templates.env.get_template("projects/readiness.html").render(context)
@@ -40,6 +39,10 @@ def test_sample_reuses_readonly_readiness_and_hides_write_actions(page, monkeypa
     assert "/readiness/refresh" not in html
     assert "/projects/23/decision" not in html
     assert "962" in html
+    assert 10 <= html.count('data-sample-row') <= 20
+    assert 'IntersectionObserver' in html
+    assert '/static/logo/DIPLogo.webp' in html
+    calculation.assert_not_called()
     page.matching.assert_not_called()
     page.db.commit.assert_not_called()
     page.db.flush.assert_not_called()
@@ -49,7 +52,7 @@ def test_sample_requires_explicit_public_project(monkeypatch):
     monkeypatch.setattr(settings, "DEMO_SAMPLE_PROJECT_ID", 0)
     db = Mock()
     with pytest.raises(HTTPException) as error:
-        home.demo_sample(Mock(), db)
+        home.demo_sample(Mock())
     assert error.value.status_code == 503
     assert not db.mock_calls
 

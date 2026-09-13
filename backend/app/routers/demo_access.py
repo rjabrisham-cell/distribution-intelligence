@@ -1,5 +1,5 @@
 import secrets
-from fastapi import APIRouter, Request, Depends, Form
+from fastapi import APIRouter, Request, Depends, Form, HTTPException
 from fastapi.responses import RedirectResponse
 from app.core.database import get_db
 from app.core.templates import templates
@@ -36,7 +36,13 @@ def issue(request: Request, mobile: str = Form(...), db=Depends(get_db)):
 
 @router.post("/access")
 def access(request: Request, mobile: str = Form(...), code: str = Form(...), db=Depends(get_db)):
-    token, csrf, destination = DemoCodeService(db).login(mobile, code, request.client.host)
+    try:
+        token, csrf, destination = DemoCodeService(db).login(mobile, code, request.client.host)
+    except HTTPException as exc:
+        return templates.TemplateResponse(request=request, name="demo_login.html", context={
+            "public_demo": True, "csrf_token": request.cookies["dip_login_csrf"],
+            "mobile": mobile[:32], "login_error": exc.detail,
+        }, status_code=exc.status_code)
     response = RedirectResponse(destination, status_code=303)
     cookie(response, "dip_session", token)
     cookie(response, "dip_csrf", csrf, httponly=False)

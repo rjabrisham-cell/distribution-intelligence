@@ -20,16 +20,11 @@ async def home(request: Request):
 
 
 @router.get("/demo/sample", response_class=HTMLResponse)
-def demo_sample(request: Request, db: Session = Depends(get_db)):
-    from app.routers.project import readiness_step
+def demo_sample(request: Request):
     if not settings.DEMO_SAMPLE_PROJECT_ID:
         raise HTTPException(503, "نمونه عمومی هنوز تعیین نشده است.")
-    with db.no_autoflush:
-        response = readiness_step(request, settings.DEMO_SAMPLE_PROJECT_ID, db)
-    if not response.context.get("batch") or response.context.get("audit_error"):
-        raise HTTPException(503, "نمونه تحلیل‌شده فعلاً در دسترس نیست.")
-    from app.services.demo_sample_service import public_sample_context
-    context = public_sample_context(response.context)
+    from app.services.demo_sample_service import prepared_sample_context
+    context = prepared_sample_context(settings.DEMO_SAMPLE_PROJECT_ID)
     return templates.TemplateResponse(request=request, name="projects/readiness.html", context=context)
 
 
