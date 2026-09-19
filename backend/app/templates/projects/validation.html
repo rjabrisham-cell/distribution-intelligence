@@ -10,7 +10,10 @@
 
 
 {% block content %}
-{% if message %}<div class="dip-card" role="status">{{ message }}</div>{% endif %}
+
+{% if message %}
+  <div class="dip-card" role="status">{{ message }}</div>
+{% endif %}
 
 <div class="dip-container dip-validation">
 
@@ -128,7 +131,6 @@
           margin-top: 24px;
         "
       >
-
 
         <!-- Imported -->
 
@@ -468,152 +470,347 @@
           background: #f8fafc;
           border: 1px solid #e2e8f0;
           border-radius: 10px;
-          display: flex;
-          flex-wrap: wrap;
-          justify-content: space-between;
-          align-items: center;
-          gap: 20px;
         "
       >
 
-        <div>
+        <div
+          style="
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+          "
+        >
 
-          <h3
-            style="
-              margin: 0 0 6px 0;
-              font-size: 1rem;
-              color: #1e293b;
-            "
-          >
-            مرحله بعد: تطبیق و آمادگی
-          </h3>
+          <!-- =================================================
+               Status Text
+               ================================================= -->
 
+          <div>
 
-          {% if evidence_summary and evidence_summary.matching_status == "PENDING" %}
-
-            <p
+            <h3
               style="
-                margin: 0;
-                color: #64748b;
-                font-size: 0.875rem;
+                margin: 0 0 6px 0;
+                font-size: 1rem;
+                color: #1e293b;
               "
             >
-              داده‌ها آماده ورود به مرحله آمادگی هستند.
-              تطبیق با بانک مرجع با انتخاب دکمه اجرای تطبیق انجام می‌شود.
-            </p>
-
-          {% elif evidence_summary and evidence_summary.matching_status == "IN_PROGRESS" %}
-
-            <p
-              style="
-                margin: 0;
-                color: #64748b;
-                font-size: 0.875rem;
-              "
-            >
-              پردازش تطبیق برای بخشی از Evidenceها انجام شده است.
-              برای مشاهده نتیجه وارد مرحله آمادگی شوید.
-            </p>
-
-          {% elif evidence_summary and evidence_summary.matching_status == "PROCESSED" %}
-
-            <p
-              style="
-                margin: 0;
-                color: #64748b;
-                font-size: 0.875rem;
-              "
-            >
-              پردازش تطبیق انجام شده است.
-              نتیجه و شاخص آمادگی در مرحله Readiness قابل مشاهده است.
-            </p>
-
-          {% else %}
-
-            <p
-              style="
-                margin: 0;
-                color: #64748b;
-                font-size: 0.875rem;
-              "
-            >
-              برای ورود به مرحله آمادگی باید حداقل یک رکورد
-              فروشگاه با موفقیت وارد پروژه شده باشد.
-            </p>
-
-          {% endif %}
-
-        </div>
+              مرحله بعد: تطبیق و آمادگی
+            </h3>
 
 
-        <!-- =================================================
-             Active Readiness Button
-             ================================================= -->
+            {% if evidence_summary and evidence_summary.matching_status == "PENDING" %}
 
-        <div>
+              <p
+                style="
+                  margin: 0;
+                  color: #64748b;
+                  font-size: 0.875rem;
+                "
+              >
+                داده‌ها آماده ورود به مرحله آمادگی هستند.
+                تطبیق با بانک مرجع با انتخاب دکمه اجرای تطبیق انجام می‌شود.
+              </p>
 
-          {% if summary and summary.is_finished and (summary.imported_rows or 0) > 0 %}
+            {% elif evidence_summary and evidence_summary.matching_status == "IN_PROGRESS" %}
 
-            {% if evidence_summary and evidence_summary.matching_status in ["PENDING", "IN_PROGRESS"] %}
-            {% if project.trial_state in ['PROCESSING', 'FAILED', 'COMPLETED'] %}<p>{{ {'PROCESSING':'در حال پردازش','FAILED':'پردازش ناموفق؛ سهمیه مصرف نشده است','COMPLETED':'نتیجه آماده مشاهده است'}[project.trial_state] }}</p>{% endif %}
-            <form method="post" action="/projects/{{ project_context.id }}/matching/rerun" style="display:inline">
-              <button type="submit" class="dip-btn dip-btn--primary">اجرای تطبیق و مشاهده آمادگی</button>
-            </form>
+              <p
+                style="
+                  margin: 0;
+                  color: #64748b;
+                  font-size: 0.875rem;
+                "
+              >
+                پردازش تطبیق برای بخشی از Evidenceها انجام شده است.
+                برای مشاهده نتیجه منتظر تکمیل پردازش باشید.
+              </p>
+
+            {% elif evidence_summary and evidence_summary.matching_status == "PROCESSED" %}
+
+              <p
+                style="
+                  margin: 0;
+                  color: #64748b;
+                  font-size: 0.875rem;
+                "
+              >
+                پردازش تطبیق انجام شده است.
+                نتیجه و شاخص آمادگی در مرحله Readiness قابل مشاهده است.
+              </p>
+
+            {% else %}
+
+              <p
+                style="
+                  margin: 0;
+                  color: #64748b;
+                  font-size: 0.875rem;
+                "
+              >
+                برای ورود به مرحله آمادگی باید حداقل یک رکورد
+                فروشگاه با موفقیت وارد پروژه شده باشد.
+              </p>
+
             {% endif %}
 
-            <a
-              href="/projects/{{ project_context.id }}/readiness"
-              class="dip-btn dip-btn--primary"
-              style="
-                padding: 10px 24px;
-                font-weight: 600;
-                text-decoration: none;
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                gap: 8px;
-                white-space: nowrap;
-              "
-            >
-              <span>
-                مشاهده آمادگی
-              </span>
+          </div>
 
-              <i
-                class="bi bi-arrow-left"
-                aria-hidden="true"
-              ></i>
-            </a>
 
-          {% else %}
+          <!-- =================================================
+               Actions
+               ================================================= -->
 
-            <button
-              type="button"
-              class="dip-btn dip-btn--primary"
-              disabled
-              style="
-                padding: 10px 24px;
-                font-weight: 600;
-                opacity: 0.55;
-                cursor: not-allowed;
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                gap: 8px;
-                white-space: nowrap;
-              "
-            >
-              <span>
-                تطبیق هوشمند
-              </span>
+          <div
+            style="
+              display: flex;
+              flex-direction: column;
+              align-items: stretch;
+              gap: 10px;
+              min-width: 250px;
+            "
+          >
 
-              <i
-                class="bi bi-arrow-left"
-                aria-hidden="true"
-              ></i>
-            </button>
+            {% if summary and summary.is_finished and (summary.imported_rows or 0) > 0 %}
 
-          {% endif %}
+
+              <!-- =================================================
+                   Matching Action
+                   ================================================= -->
+
+              {% if evidence_summary and evidence_summary.matching_status in ["PENDING", "IN_PROGRESS"] %}
+
+                {% if project.trial_state in ['PROCESSING', 'FAILED', 'COMPLETED'] %}
+
+                  <p
+                    style="
+                      margin: 0;
+                      color: #64748b;
+                      font-size: 0.82rem;
+                      text-align: center;
+                    "
+                  >
+                    {{
+                      {
+                        'PROCESSING':'در حال پردازش',
+                        'FAILED':'پردازش ناموفق؛ سهمیه مصرف نشده است',
+                        'COMPLETED':'نتیجه آماده مشاهده است'
+                      }[project.trial_state]
+                    }}
+                  </p>
+
+                {% endif %}
+
+
+                <form
+                  id="dip-matching-form"
+                  method="post"
+                  action="/projects/{{ project_context.id }}/matching/rerun"
+                  style="display: block;"
+                >
+
+                  <button
+                    id="dip-matching-submit"
+                    type="submit"
+                    class="dip-btn dip-btn--primary"
+                    style="
+                      width: 100%;
+                      min-width: 250px;
+                      padding: 11px 24px;
+                      font-weight: 600;
+                      display: inline-flex;
+                      align-items: center;
+                      justify-content: center;
+                      gap: 10px;
+                      white-space: nowrap;
+                    "
+                  >
+
+                    <span
+                      id="dip-matching-spinner"
+                      aria-hidden="true"
+                      style="
+                        display: none;
+                        width: 16px;
+                        height: 16px;
+                        border: 2px solid rgba(255,255,255,0.45);
+                        border-top-color: currentColor;
+                        border-radius: 50%;
+                        animation: dip-simple-spin 0.8s linear infinite;
+                        flex-shrink: 0;
+                      "
+                    ></span>
+
+                    <span id="dip-matching-label">
+                      اجرای تطبیق
+                    </span>
+
+                    <i
+                      id="dip-matching-arrow"
+                      class="bi bi-arrow-left"
+                      aria-hidden="true"
+                    ></i>
+
+                  </button>
+
+                </form>
+
+
+                <!--
+                  این پیام فقط وضعیت ظاهری UI است.
+                  هیچ ارتباطی با lifecycle یا polling ندارد.
+                -->
+
+                <div
+                  id="dip-matching-waiting"
+                  hidden
+                  role="status"
+                  aria-live="polite"
+                  style="
+                    width: 100%;
+                    box-sizing: border-box;
+                    padding: 10px 14px;
+                    border-radius: 9px;
+                    background: #eff6ff;
+                    border: 1px solid #bfdbfe;
+                    color: #1d4ed8;
+                    text-align: center;
+                    font-size: 0.82rem;
+                  "
+                >
+
+                  <span
+                    style="
+                      display: inline-flex;
+                      align-items: center;
+                      gap: 7px;
+                    "
+                  >
+
+                    <i
+                      class="bi bi-hourglass-split"
+                      aria-hidden="true"
+                    ></i>
+
+                    تطبیق در حال انجام است؛ لطفاً منتظر بمانید...
+
+                  </span>
+
+                </div>
+
+              {% endif %}
+
+
+              <!-- =================================================
+                   Readiness Action
+                   ================================================= -->
+
+              {% if evidence_summary and evidence_summary.matching_status == "PROCESSED" %}
+
+                <a
+                  id="dip-readiness-button"
+                  href="/projects/{{ project_context.id }}/readiness"
+                  class="dip-btn dip-btn--primary"
+                  style="
+                    width: 100%;
+                    min-width: 250px;
+                    padding: 11px 24px;
+                    font-weight: 600;
+                    text-decoration: none;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 8px;
+                    white-space: nowrap;
+                    box-sizing: border-box;
+                  "
+                >
+
+                  <span>
+                    مشاهده آمادگی
+                  </span>
+
+                  <i
+                    class="bi bi-arrow-left"
+                    aria-hidden="true"
+                  ></i>
+
+                </a>
+
+              {% else %}
+
+                <button
+                  id="dip-readiness-button"
+                  type="button"
+                  disabled
+                  aria-disabled="true"
+                  class="dip-btn dip-btn--primary"
+                  style="
+                    width: 100%;
+                    min-width: 250px;
+                    padding: 11px 24px;
+                    font-weight: 600;
+                    opacity: 0.45;
+                    cursor: not-allowed;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 8px;
+                    white-space: nowrap;
+                    box-sizing: border-box;
+                    border: 0;
+                  "
+                >
+
+                  <span>
+                    مشاهده آمادگی
+                  </span>
+
+                  <i
+                    class="bi bi-lock"
+                    aria-hidden="true"
+                  ></i>
+
+                </button>
+
+              {% endif %}
+
+
+            {% else %}
+
+              <button
+                type="button"
+                class="dip-btn dip-btn--primary"
+                disabled
+                style="
+                  width: 100%;
+                  min-width: 250px;
+                  padding: 11px 24px;
+                  font-weight: 600;
+                  opacity: 0.55;
+                  cursor: not-allowed;
+                  display: inline-flex;
+                  align-items: center;
+                  justify-content: center;
+                  gap: 8px;
+                  white-space: nowrap;
+                "
+              >
+
+                <span>
+                  تطبیق هوشمند
+                </span>
+
+                <i
+                  class="bi bi-arrow-left"
+                  aria-hidden="true"
+                ></i>
+
+              </button>
+
+            {% endif %}
+
+          </div>
 
         </div>
 
@@ -679,5 +876,110 @@
 <script
   src="{{ url_for('static', path='js/components/journey.js') }}"
 ></script>
+
+
+<script>
+(() => {
+
+  const form = document.getElementById("dip-matching-form");
+
+  if (!form) {
+    return;
+  }
+
+  const button = document.getElementById("dip-matching-submit");
+  const label = document.getElementById("dip-matching-label");
+  const spinner = document.getElementById("dip-matching-spinner");
+  const arrow = document.getElementById("dip-matching-arrow");
+  const waiting = document.getElementById("dip-matching-waiting");
+
+
+  form.addEventListener("submit", function () {
+
+    /*
+     * =====================================================
+     * IMPORTANT
+     * =====================================================
+     *
+     * این handler فقط ظاهر UI را تغییر می‌دهد.
+     *
+     * هیچ preventDefault وجود ندارد.
+     * هیچ fetch وجود ندارد.
+     * هیچ polling وجود ندارد.
+     * هیچ timeout وجود ندارد.
+     * هیچ redirect دستی وجود ندارد.
+     *
+     * بنابراین submit طبیعی فرم بلافاصله ادامه پیدا می‌کند
+     * و Backend / Redirect فعلی کاملاً دست‌نخورده باقی می‌ماند.
+     * =====================================================
+     */
+
+
+    if (button) {
+
+      button.disabled = true;
+
+      button.setAttribute(
+        "aria-busy",
+        "true"
+      );
+
+      button.style.opacity = "0.75";
+
+      button.style.cursor = "wait";
+
+    }
+
+
+    if (spinner) {
+
+      spinner.style.display = "inline-block";
+
+    }
+
+
+    if (label) {
+
+      label.textContent = "در حال اجرای تطبیق...";
+
+    }
+
+
+    if (arrow) {
+
+      arrow.style.display = "none";
+
+    }
+
+
+    if (waiting) {
+
+      waiting.hidden = false;
+
+    }
+
+    /*
+     * عمداً هیچ دستور دیگری وجود ندارد.
+     *
+     * مرورگر در همین نقطه submit طبیعی فرم را انجام می‌دهد.
+     */
+
+  });
+
+})();
+</script>
+
+
+<style>
+
+@keyframes dip-simple-spin {
+
+  to {
+    transform: rotate(360deg);
+  }
+
+}
+
+</style>
 
 {% endblock %}
