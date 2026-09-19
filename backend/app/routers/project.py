@@ -9,7 +9,7 @@ import json
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
+from app.core.templates import templates
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -30,11 +30,6 @@ router = APIRouter(
     prefix="/projects",
     tags=["projects"],
 )
-
-templates = Jinja2Templates(
-    directory="app/templates",
-)
-
 
 # =============================================================================
 # Data Contract Helpers
