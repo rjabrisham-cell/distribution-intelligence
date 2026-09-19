@@ -21,6 +21,7 @@
         <nav aria-label="منوی عمومی DIP" style="padding:20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">{% include "partials/brand.html" %}<a href="/">معرفی DIP</a> · <a href="/demo/sample">نمونه تهران</a> · <a href="/demo/trial">ارزیابی آزمایشی</a></nav>
         {% else %}
         {% include "partials/sidebar.html" %}
+        <button type="button" class="dip-sidebar-backdrop" hidden tabindex="-1" aria-label="بستن منو"></button>
         {% endif %}
 
         <div class="dip-main-shell">
@@ -37,10 +38,59 @@
             const body = document.body;
             const toggleButtons = document.querySelectorAll('[data-sidebar-toggle]');
             const sidebarLinks = document.querySelectorAll('.dip-sidebar__group-toggle');
+            const sidebar = document.querySelector('.dip-sidebar');
+            const main = document.querySelector('.dip-main-shell');
+            const backdrop = document.querySelector('.dip-sidebar-backdrop');
+            const compact = window.matchMedia('(max-width: 1023px)');
+            let opener;
+            let closeButton;
+            function setDrawer(open, restoreFocus = false) {
+                if (!sidebar) return;
+                open = compact.matches && open;
+                body.classList.toggle('dip-sidebar-open', open);
+                sidebar.inert = compact.matches && !open;
+                main.inert = open;
+                backdrop.hidden = !open;
+                toggleButtons.forEach(btn => btn.setAttribute('aria-expanded', String(compact.matches ? open : !body.classList.contains('dip-sidebar-collapsed'))));
+                if (open) closeButton.focus();
+                else if (restoreFocus && opener) opener.focus();
+            }
+            if (sidebar) {
+                sidebar.id = 'dip-navigation';
+                closeButton = document.createElement('button');
+                closeButton.type = 'button';
+                closeButton.className = 'dip-sidebar-close';
+                closeButton.textContent = 'بستن منو ×';
+                closeButton.addEventListener('click', () => setDrawer(false, true));
+                sidebar.prepend(closeButton);
+                toggleButtons.forEach(btn => btn.setAttribute('aria-controls', sidebar.id));
+                backdrop.addEventListener('click', () => setDrawer(false, true));
+                sidebar.addEventListener('click', event => {
+                    if (event.target.closest('a[href]')) setDrawer(false, true);
+                });
+                document.addEventListener('keydown', event => {
+                    if (!body.classList.contains('dip-sidebar-open')) return;
+                    if (event.key === 'Escape') { event.preventDefault(); setDrawer(false, true); }
+                    if (event.key === 'Tab') {
+                        const items = [...sidebar.querySelectorAll('a[href],button:not(:disabled),[tabindex="0"]')].filter(el => el.getClientRects().length);
+                        const first = items[0], last = items[items.length - 1];
+                        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+                        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+                    }
+                });
+                compact.addEventListener('change', () => setDrawer(false));
+                setDrawer(false);
+            }
 
             toggleButtons.forEach(btn => {
                 btn.addEventListener('click', function () {
-                    body.classList.toggle('dip-sidebar-collapsed');
+                    if (compact.matches) {
+                        opener = btn;
+                        setDrawer(!body.classList.contains('dip-sidebar-open'), true);
+                    } else {
+                        body.classList.toggle('dip-sidebar-collapsed');
+                        btn.setAttribute('aria-expanded', String(!body.classList.contains('dip-sidebar-collapsed')));
+                    }
                 });
             });
 

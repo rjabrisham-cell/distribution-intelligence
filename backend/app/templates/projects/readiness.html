@@ -8,6 +8,37 @@
     .rd-map-meta{display:flex;align-items:center;gap:12px;color:#64748b;font-size:11px}.rd-map-note{padding:8px 14px;background:#f8fafc;border-top:1px solid #edf1f6;color:#64748b;font-size:11px}.rd-map-error{display:none;position:absolute;z-index:5;top:76px;right:18px;left:18px;padding:10px 13px;border-radius:11px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;font-size:12px}.rd-tech{padding:20px}.rd-tech summary{cursor:pointer;font-weight:800;color:#334155}.rd-tech-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:15px}.rd-tech-item{background:#f8fafc;border-radius:11px;padding:11px}.rd-tech-item span{display:block;color:#64748b;font-size:11px}.rd-tech-item strong{display:block;color:#17233b;margin-top:5px;overflow-wrap:anywhere}
     #readiness-map{position:relative;direction:ltr;overflow:hidden}.rd-map .mapboxgl-map,.rd-map .mapboxgl-canvas-container,.rd-map .mapboxgl-canvas{width:100%;height:100%}.rd-map .mapboxgl-canvas{position:absolute;inset:0}
     .rd-map-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.rd-map-toggle{border:1px solid #dbe4f0;background:#fff;color:#334155;border-radius:10px;padding:7px 10px;font:inherit;font-size:11px;font-weight:800;cursor:pointer}.rd-map-toggle[aria-pressed="true"]{background:#e8f0ff;border-color:#93b4f5;color:#1d4ed8}.rd-map-filters{padding:10px 16px;display:flex;align-items:center;gap:7px;flex-wrap:wrap;border-bottom:1px solid #e8edf5;background:#fbfdff}.rd-map-filter{display:inline-flex;align-items:center;gap:6px;border:1px solid #dbe4f0;background:#fff;color:#475569;border-radius:999px;padding:7px 11px;font:inherit;font-size:11px;font-weight:800;cursor:pointer}.rd-map-filter:hover{border-color:#a8b9d2}.rd-map-filter[aria-pressed="true"]{color:#1d4ed8;border-color:#93b4f5;background:#e8f0ff}.rd-map-filter-count{min-width:20px;height:20px;padding:0 5px;border-radius:999px;display:inline-grid;place-items:center;background:#eef2f7;color:#334155;font-size:10px}.rd-map-filter[aria-pressed="true"] .rd-map-filter-count{background:#fff;color:#1d4ed8}.rd-missing{padding:20px}.rd-missing h3{margin:0;color:#17233b;font-size:17px}.rd-missing p{margin:6px 0 15px;color:#64748b;font-size:12px}.rd-table-wrap{overflow:auto}.rd-table{width:100%;border-collapse:collapse;min-width:720px;font-size:12px}.rd-table th,.rd-table td{padding:11px 12px;text-align:right;border-bottom:1px solid #edf1f6}.rd-table th{color:#64748b;background:#f8fafc}.rd-table td{color:#334155}.rd-badge{display:inline-flex;padding:4px 8px;border-radius:999px;font-size:10px;font-weight:800}.rd-badge-warning{background:#fff7ed;color:#c2410c}.rd-badge-muted{background:#f1f5f9;color:#475569}.rd-popup-reason{margin-top:8px;padding-top:7px;border-top:1px solid #e5e7eb;color:#92400e!important}
+    @media (max-width:1023px) {
+      .rd-shell,.rd-main,.rd-side,.rd-card {min-width:0}
+      .rd-kpis,.rd-tech-grid {grid-template-columns:repeat(2,minmax(0,1fr))}
+      .rd-main {grid-template-columns:minmax(0,1fr)}
+      .rd-map-head {flex-wrap:wrap;gap:12px}
+      .rd-map-tools,.rd-map-meta {flex-wrap:wrap;min-width:0}
+      .rd-map-meta {display:flex;gap:10px}
+      .rd-map-toggle,.rd-map-filter {min-height:44px;font-size:12px;white-space:normal}
+      .rd-table-wrap {max-width:100%;overscroll-behavior-x:contain}
+      .rd-map .mapboxgl-ctrl-group button {width:44px;height:44px}
+      .rd-map .mapboxgl-ctrl {max-width:calc(100% - 20px)}
+    }
+    @media (max-width:600px) {
+      .rd-hero,.rd-panel,.rd-missing,.rd-tech {padding:16px}
+      .rd-title {font-size:21px;overflow-wrap:anywhere}
+      .rd-kpi {padding:12px}
+      .rd-map-head,.rd-map-filters {padding:12px}
+      .rd-map-tools {width:100%}
+      .rd-map-meta {flex-basis:100%;line-height:1.8}
+      .rd-map-toggle,.rd-map-filter {flex:1 1 auto;justify-content:center}
+      .rd-map-card {min-height:0}
+      .rd-map {height:clamp(320px,55svh,440px)}
+      .rd-map-error {top:auto;bottom:36px;left:10px;right:10px;pointer-events:none}
+      .rd-action {padding:16px}
+      .rd-action form,.rd-action .rd-button {width:100%;white-space:normal;justify-content:center;min-height:44px}
+      .rd-list-item,.rd-progress-head {flex-wrap:wrap}
+      .rd-popup {min-width:0;max-width:230px;overflow-wrap:anywhere}
+    }
+    @media (max-width:374px) {
+      .rd-kpis,.rd-tech-grid {grid-template-columns:minmax(0,1fr)}
+    }
   </style>
 {% endblock %}
 
