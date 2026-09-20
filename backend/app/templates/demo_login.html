@@ -1,7 +1,78 @@
 {% extends "base.html" %}
 {% block title %}ورود به ارزیابی آزمایشی DIP{% endblock %}
+{% block head %}
+{{ super() }}
+<style>
+  .demo-login-card h1 {
+    font-size: clamp(22px, 5vw, 34px);
+    line-height: 1.5;
+    white-space: nowrap;
+  }
+
+  .demo-access-guide {
+    margin: 22px 0 24px;
+    color: #334155;
+    font-size: 15px;
+    line-height: 1.9;
+  }
+
+  .demo-access-guide p {
+    margin: 0 0 12px;
+  }
+
+  .demo-access-guide__row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .demo-access-guide__sms {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 10px 2px;
+    color: #1d4ed8;
+    background: #eff6ff;
+    border-bottom: 2px solid #2563eb;
+    border-radius: 7px 7px 3px 3px;
+    font-weight: 700;
+    text-decoration: none;
+    direction: ltr;
+    white-space: nowrap;
+  }
+
+  .demo-access-guide__sms:hover,
+  .demo-access-guide__sms:focus-visible {
+    color: #1e40af;
+    background: #dbeafe;
+  }
+
+  .demo-access-guide__message {
+    padding: 10px 12px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+  }
+
+  @media (max-width: 560px) {
+    .demo-login-card {
+      margin: 24px 12px !important;
+      padding: 24px 20px !important;
+    }
+
+    .demo-login-card h1 {
+      font-size: clamp(20px, 6.2vw, 26px);
+    }
+
+    .demo-access-guide {
+      font-size: 14px;
+    }
+  }
+</style>
+{% endblock %}
 {% block content %}
-<section class="dip-info-card" style="max-width:520px;margin:40px auto;padding:30px">
+<section class="dip-info-card demo-login-card" style="max-width:520px;margin:40px auto;padding:30px">
 <h1>ورود به ارزیابی آزمایشی</h1>
 {% if login_error %}<p role="alert" style="color:#b42318">{{ login_error }}</p>{% endif %}
 {% if challenge %}
@@ -10,7 +81,14 @@
 <input type="hidden" name="reference" value="{{ challenge }}">
 <label>کد تأیید <input name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required></label>
 {% else %}
-<p>برای دریافت کد دسترسی نسخه آزمایشی، با تیم DIP تماس بگیرید: <a href="tel:09909323183" dir="ltr">09909323183</a></p>
+<div class="demo-access-guide">
+  <p>برای دریافت کد دسترسی نسخه آزمایشی، پیامک زیر را به تیم DIP ارسال کنید.</p>
+  <p class="demo-access-guide__row">
+    <strong>شماره گیرنده:</strong>
+    <a class="demo-access-guide__sms" href="sms:09909323183?&amp;body=%D8%AF%D8%B1%D8%AE%D9%88%D8%A7%D8%B3%D8%AA%20%DA%A9%D8%AF%20%D8%AF%D8%B3%D8%AA%D8%B1%D8%B3%DB%8C%20%D9%86%D8%B3%D8%AE%D9%87%20%D8%A2%D8%B2%D9%85%D8%A7%DB%8C%D8%B4%DB%8C%20DIP">۰۹۹۰۹۳۲۳۱۸۳</a>
+  </p>
+  <p class="demo-access-guide__message"><strong>متن پیام:</strong> درخواست کد دسترسی نسخه آزمایشی DIP</p>
+</div>
 <form method="post" action="/demo/access" style="display:grid;gap:16px">
 <label>شماره موبایل <input name="mobile" type="tel" dir="ltr" maxlength="20" autocomplete="tel" value="{{ mobile|default('') }}" required></label>
 <label>کد دسترسی Demo <input name="code" type="text" dir="ltr" maxlength="32" autocomplete="off" required></label>
