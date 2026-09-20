@@ -112,5 +112,18 @@ class Settings:
     )
     ETL_LIMIT_ROWS = int(os.getenv("ETL_LIMIT_ROWS", "0"))
 
+    MATCHING_QUEUE_WORKER_ENABLED = get_bool(
+        os.getenv("MATCHING_QUEUE_WORKER_ENABLED"), True
+    )
+    MATCHING_QUEUE_POLL_SECONDS = max(
+        1, int(os.getenv("MATCHING_QUEUE_POLL_SECONDS", "3"))
+    )
+    MATCHING_QUEUE_HEARTBEAT_SECONDS = max(
+        5, int(os.getenv("MATCHING_QUEUE_HEARTBEAT_SECONDS", "10"))
+    )
+    MATCHING_QUEUE_STALE_SECONDS = max(
+        30, int(os.getenv("MATCHING_QUEUE_STALE_SECONDS", "90"))
+    )
+
 
 settings = Settings()

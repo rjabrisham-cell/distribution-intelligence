@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}وضعیت پردازش تطبیق | DIP{% endblock %}
+
+{% block head %}
+<style>
+  .mq-wrap{max-width:760px;margin:40px auto;padding:0 16px}.mq-card{background:#fff;border:1px solid #dfe7f1;border-radius:24px;padding:42px;box-shadow:0 18px 55px rgba(15,35,70,.08);text-align:center}.mq-pulse{width:72px;height:72px;margin:0 auto 22px;border-radius:50%;display:grid;place-items:center;background:#eaf2ff;color:#2563eb;font-size:28px;position:relative}.mq-pulse:after{content:"";position:absolute;inset:0;border:2px solid #2563eb;border-radius:50%;animation:mq-pulse 1.8s ease-out infinite}.mq-card h1{margin:0 0 12px;color:#142033;font-size:clamp(24px,4vw,34px)}.mq-message{margin:0;color:#526176;line-height:2}.mq-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:26px 0}.mq-stat{padding:16px;border-radius:15px;background:#f7f9fc;border:1px solid #e6ecf4}.mq-stat span{display:block;color:#7a8799;font-size:12px}.mq-stat strong{display:block;margin-top:6px;color:#17233b;font-size:18px}.mq-note{font-size:12px;color:#7a8799;line-height:1.9}.mq-error{background:#fff1f2;border:1px solid #fecdd3;color:#9f1239;border-radius:14px;padding:14px;margin:20px 0}.mq-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:24px}.mq-btn{border:0;border-radius:12px;padding:12px 18px;font:inherit;font-weight:800;cursor:pointer;text-decoration:none;background:#2563eb;color:#fff}.mq-btn--soft{background:#eef4ff;color:#1d4ed8}@keyframes mq-pulse{to{transform:scale(1.45);opacity:0}}@media(max-width:600px){.mq-wrap{margin:20px auto}.mq-card{padding:28px 18px;border-radius:20px}.mq-meta{grid-template-columns:1fr}.mq-actions,.mq-btn,.mq-actions form{width:100%}.mq-btn{display:block;min-height:46px}}
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="mq-wrap" data-project-id="{{ project_context.id }}">
+  <section class="mq-card" aria-live="polite">
+    <div class="mq-pulse" id="mq-icon"><i class="bi bi-hourglass-split"></i></div>
+    <h1 id="mq-title">درخواست تطبیق در حال پیگیری است</h1>
+    <p class="mq-message" id="mq-message">{{ queue.message }}</p>
+    <div class="mq-meta" id="mq-meta">
+      <div class="mq-stat"><span>درخواست‌های جلوتر</span><strong id="mq-ahead">{{ queue.jobs_ahead }}</strong></div>
+      <div class="mq-stat"><span>زمان تقریبی باقی‌مانده</span><strong id="mq-eta">{% if queue.eta_minutes %}حدود {{ queue.eta_minutes }} دقیقه{% else %}در حال محاسبه{% endif %}</strong></div>
+    </div>
+    <p class="mq-note">زمان نمایش‌داده‌شده تقریبی است و بر اساس مدت پردازش درخواست‌های قبلی محاسبه می‌شود. بستن این صفحه پردازش را متوقف نمی‌کند.</p>
+    <div class="mq-error" id="mq-error" {% if queue.status != 'FAILED' %}hidden{% endif %}>{{ queue.error_message or '' }}</div>
+    <div class="mq-actions">
+      <button class="mq-btn mq-btn--soft" type="button" id="mq-refresh">بررسی مجدد وضعیت</button>
+      <form method="post" action="/projects/{{ project_context.id }}/matching/retry" id="mq-retry" {% if queue.status != 'FAILED' %}hidden{% endif %}>
+        <button class="mq-btn" type="submit">تلاش مجدد</button>
+      </form>
+    </div>
+  </section>
+</main>
+<script>
+(() => {
+  const root = document.querySelector('.mq-wrap');
+  const projectId = root.dataset.projectId;
+  const message = document.getElementById('mq-message');
+  const ahead = document.getElementById('mq-ahead');
+  const eta = document.getElementById('mq-eta');
+  const error = document.getElementById('mq-error');
+  const retry = document.getElementById('mq-retry');
+  let timer = null;
+  let pending = false;
+
+  async function refresh() {
+    if (pending) return;
+    pending = true;
+    try {
+      const response = await fetch(`/projects/api/${projectId}/matching/status`, {
+        credentials: 'same-origin', headers: {'Accept': 'application/json'}, cache: 'no-store'
+      });
+      if (!response.ok) throw new Error('status');
+      const data = await response.json();
+      message.textContent = data.message;
+      ahead.textContent = data.jobs_ahead ?? 0;
+      eta.textContent = data.eta_minutes ? `حدود ${data.eta_minutes} دقیقه` : 'در حال محاسبه';
+      if (data.status === 'COMPLETED') {
+        clearInterval(timer);
+        window.location.assign(data.redirect_url);
+      } else if (data.status === 'FAILED') {
+        clearInterval(timer);
+        error.textContent = data.error_message || data.message;
+        error.hidden = false;
+        retry.hidden = false;
+        document.getElementById('mq-title').textContent = 'پردازش کامل نشد';
+      }
+    } catch (_) {
+      message.textContent = 'ارتباط موقتاً برقرار نشد؛ پردازش در پس‌زمینه ادامه دارد.';
+    } finally {
+      pending = false;
+    }
+  }
+  document.getElementById('mq-refresh').addEventListener('click', refresh);
+  timer = setInterval(refresh, 4000);
+  refresh();
+})();
+</script>
+{% endblock %}

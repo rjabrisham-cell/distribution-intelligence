@@ -21,7 +21,7 @@ def target(path):
     if path in {"/projects", "/projects/grid", "/projects/new", "/projects/api", "/demo/logout"}:
         return "account", None
     for kind, pattern in [
-        ("project", r"/projects/(?:api/)?(\d+)(?:/(?:intake|validation|readiness(?:/refresh)?|matching/rerun|decision|distribution|results|profiling|scenario-compare))?"),
+        ("project", r"/projects/(?:api/)?(\d+)(?:/(?:intake|validation|readiness(?:/refresh)?|matching/(?:rerun|status|retry)|decision|distribution|results|profiling|scenario-compare))?"),
         ("project", r"/uploads/project/(\d+)"),
         ("project", r"/demo/result/(\d+)/ack"),
         ("file", r"/(?:files|uploads/file)/(\d+)/(?:download|delete)"),

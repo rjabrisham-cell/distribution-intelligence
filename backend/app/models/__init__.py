@@ -195,6 +195,10 @@ from app.models.row_error import (
     RowError,
 )
 
+from app.models.matching_job import (
+    MatchingJob,
+)
+
 # ==========================================================
 # Operational Resources
 # ==========================================================
@@ -320,6 +324,7 @@ __all__ = [
     "ImportBatch",
     "ImportStoreRow",
     "RowError",
+    "MatchingJob",
 
     # ------------------------------------------------------
     # Operational Resources

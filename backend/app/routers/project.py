@@ -8,7 +8,7 @@ from __future__ import annotations
 import json
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from app.core.templates import templates
 from sqlalchemy.orm import Session
 
@@ -18,12 +18,15 @@ from app.models.address_candidate import AddressCandidate
 from app.models.file import File
 from app.models.import_batch import ImportBatch
 from app.models.project import Project
+from app.models.matching_job import MatchingJob
 from app.models.row_error import RowError
 from app.services.file_service import FileService
 from app.services.audit.audit_runner import AuditRunner
 from app.services.audit.report_builder import ReportBuilder
 from app.services.store_matching_service import StoreMatchingService
 from app.services.trial_service import TrialService
+from app.repositories.matching_job_repository import MatchingJobRepository
+from app.services.matching_queue_service import queue_status
 
 
 router = APIRouter(
@@ -1250,6 +1253,14 @@ def readiness_step(
         project_id,
     )
 
+    trial_account = db.info.get("trial_account_id") if isinstance(getattr(db, "info", None), dict) else None
+    if trial_account and batch:
+        active_job = MatchingJobRepository(db).active(trial_account, project_id, batch.id)
+        if active_job:
+            return RedirectResponse(
+                url=f"/projects/{project_id}/matching/status", status_code=303
+            )
+
     # -------------------------------------------------------------------------
     # No STORE Batch
     # -------------------------------------------------------------------------
@@ -1435,7 +1446,7 @@ async def process_readiness(
     project_id: int,
     db: Session = Depends(get_db),
 ):
-    """Explicit matching action; POST /readiness remains a legacy alias."""
+    """Enqueue matching; POST /readiness remains a legacy alias."""
 
     await request.form()
 
@@ -1465,38 +1476,94 @@ async def process_readiness(
         )
 
     trial_account = db.info.get("trial_account_id") if isinstance(getattr(db, "info", None), dict) else None
-    if trial_account:
-        from app.services.entitlement_service import EntitlementService
-        EntitlementService(db).assert_trial(trial_account, project_id)
-        if project.trial_result_batch_id == batch.id and project.trial_state == "COMPLETED":
-            return RedirectResponse(url=f"/projects/{project_id}/readiness", status_code=303)
-        TrialService(db).mark_processing(trial_account, project_id, batch.id)
-        project.trial_state = "PROCESSING"
-        db.flush()
-
-    matching_service = (
-        StoreMatchingService(
-            db
+    if not trial_account:
+        raise HTTPException(status_code=403, detail="ورود معتبر لازم است.")
+    from app.services.entitlement_service import EntitlementService
+    EntitlementService(db).assert_trial(trial_account, project_id)
+    if project.trial_result_batch_id == batch.id and project.trial_state == "COMPLETED":
+        return RedirectResponse(url=f"/projects/{project_id}/readiness", status_code=303)
+    job = MatchingJobRepository(db).enqueue(trial_account, project_id, batch.id)
+    if job.project_id != project_id or job.batch_id != batch.id:
+        raise HTTPException(
+            status_code=409,
+            detail="یک درخواست دیگر از حساب شما در حال پردازش است.",
         )
-    )
-
-    matching_service.run_for_batch(
-        batch_id=batch.id,
-        project_id=project_id,
-        persist=True,
-    )
-    if trial_account:
-        result = readiness_step(request, project_id, db)
-        if result.context.get("audit_error") or not result.context.get("readiness_summary"):
-            raise HTTPException(503, "پردازش نتیجه کامل نشد؛ سهمیه مصرف نشده است.")
-        project.trial_state = "COMPLETED"
-        project.trial_result_batch_id = batch.id
-        db.commit()
-
-
+    project.trial_state = "QUEUED"
+    db.flush()
     return RedirectResponse(
-        url=f"/projects/{project_id}/readiness",
-        status_code=303,
+        url=f"/projects/{project_id}/matching/status", status_code=303
+    )
+
+
+def _matching_job_for_request(db, project_id: int):
+    account_id = db.info.get("trial_account_id") if isinstance(getattr(db, "info", None), dict) else None
+    if not account_id:
+        raise HTTPException(status_code=403, detail="ورود معتبر لازم است.")
+    project = _get_project_or_404(db, project_id)
+    if not project:
+        raise HTTPException(status_code=404, detail="پروژه پیدا نشد.")
+    batch = _find_latest_store_batch(db, project_id)
+    if not batch:
+        raise HTTPException(status_code=404, detail="داده فعال فروشگاه پیدا نشد.")
+    job = MatchingJobRepository(db).latest(account_id, project_id, batch.id)
+    return account_id, project, batch, job
+
+
+@router.get("/{project_id}/matching/status", response_class=HTMLResponse)
+def matching_status_page(
+    request: Request, project_id: int, db: Session = Depends(get_db)
+):
+    _, project, _, job = _matching_job_for_request(db, project_id)
+    if not job:
+        return RedirectResponse(url=f"/projects/{project_id}/validation", status_code=303)
+    if job.status == "COMPLETED":
+        return RedirectResponse(url=f"/projects/{project_id}/readiness", status_code=303)
+    return templates.TemplateResponse(
+        request=request,
+        name="projects/matching_status.html",
+        context=_build_context(
+            request,
+            project,
+            "readiness",
+            extra={"job": job, "queue": queue_status(db, job)},
+        ),
+    )
+
+
+@router.get("/api/{project_id}/matching/status", response_class=JSONResponse)
+def matching_status_api(
+    project_id: int, db: Session = Depends(get_db)
+):
+    _, _, _, job = _matching_job_for_request(db, project_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="درخواست پردازش پیدا نشد.")
+    return JSONResponse(queue_status(db, job))
+
+
+@router.post("/{project_id}/matching/retry", response_class=HTMLResponse)
+async def retry_matching(
+    request: Request, project_id: int, db: Session = Depends(get_db)
+):
+    await request.form()
+    account_id, project, batch, job = _matching_job_for_request(db, project_id)
+    if job and job.status in ("QUEUED", "PROCESSING"):
+        return RedirectResponse(
+            url=f"/projects/{project_id}/matching/status", status_code=303
+        )
+    if job and job.status == "COMPLETED":
+        return RedirectResponse(url=f"/projects/{project_id}/readiness", status_code=303)
+    from app.services.entitlement_service import EntitlementService
+    EntitlementService(db).assert_trial(account_id, project_id)
+    queued = MatchingJobRepository(db).enqueue(account_id, project_id, batch.id)
+    if queued.project_id != project_id or queued.batch_id != batch.id:
+        raise HTTPException(
+            status_code=409,
+            detail="یک درخواست دیگر از حساب شما در حال پردازش است.",
+        )
+    project.trial_state = "QUEUED"
+    db.flush()
+    return RedirectResponse(
+        url=f"/projects/{project_id}/matching/status", status_code=303
     )
 
 

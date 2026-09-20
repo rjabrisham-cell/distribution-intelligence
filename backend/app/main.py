@@ -72,6 +72,20 @@ app.add_middleware(DemoSecurityMiddleware)
 from app.core.demo_logging import install as install_demo_log_filter
 install_demo_log_filter()
 
+
+@app.on_event("startup")
+def start_matching_queue_worker():
+    if settings.MATCHING_QUEUE_WORKER_ENABLED:
+        from app.services.matching_queue_service import matching_queue_worker
+        matching_queue_worker.start()
+
+
+@app.on_event("shutdown")
+def stop_matching_queue_worker():
+    if settings.MATCHING_QUEUE_WORKER_ENABLED:
+        from app.services.matching_queue_service import matching_queue_worker
+        matching_queue_worker.stop()
+
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 
