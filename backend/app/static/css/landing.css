@@ -1,19 +1,992 @@
-.landing-hero{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(260px,1fr);gap:40px;align-items:center;padding:44px;border:1px solid #e2e8f0;border-radius:24px;background:linear-gradient(135deg,#fff,#eef5ff)}
-.landing-hero-copy h1{font-size:clamp(28px,3vw,44px);line-height:1.65;color:#17233b;margin:16px 0}
-.landing-hero-copy p{font-size:17px;line-height:2;color:#526078;max-width:680px}
-.landing-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
-.landing-actions a,.landing-final a{white-space:normal;text-align:center}
-.landing-panel-card{background:#fff;border:1px solid #dce6f5;border-radius:20px;padding:28px;box-shadow:0 12px 32px #183a6b08}
-.landing-workflow{list-style:none;counter-reset:step;display:grid;gap:16px;padding:0;margin:24px 0 0}
-.landing-workflow li{counter-increment:step;display:flex;align-items:center;gap:14px;color:#26354d;font-weight:700}
-.landing-workflow li:before{content:counter(step);display:grid;place-items:center;width:34px;height:34px;border-radius:12px;background:#edf3ff;color:#245fed;font-size:15px}
-.landing-section-title{font-size:26px;margin:42px 0 22px;color:#17233b}
-.landing-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
-.landing-grid .dip-info-card{padding:25px;background:#fff;border:1px solid #e2e8f0;border-radius:18px}
-.landing-grid h3{font-size:18px;color:#17233b;margin:12px 0}
-.landing-grid p{line-height:1.9;color:#64748b;margin:0}
-.landing-final{margin-top:32px;padding:32px;border-radius:20px;background:#edf3ff;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
-.landing-final h2{font-size:22px;margin:0;color:#17233b}
-.landing-actions a:focus-visible,.landing-final a:focus-visible{outline:3px solid #17233b;outline-offset:4px}
-@media(max-width:1000px){.landing-hero{grid-template-columns:1fr;padding:28px}.landing-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:600px){.landing-hero{padding:20px;gap:24px}.landing-grid{grid-template-columns:1fr}.landing-actions{flex-direction:column}.landing-final{padding:24px}}
+/* ============================================================
+   DIP LANDING
+   Distribution Intelligence Platform
+   ============================================================ */
+
+:root {
+    --dip-navy: #17233b;
+    --dip-navy-deep: #0f1b31;
+    --dip-blue: #245fed;
+    --dip-blue-dark: #194cc9;
+    --dip-blue-soft: #edf3ff;
+
+    --dip-text: #26354d;
+    --dip-muted: #66748a;
+    --dip-light: #94a3b8;
+
+    --dip-border: #e3e9f2;
+    --dip-border-strong: #d5dfed;
+
+    --dip-white: #ffffff;
+    --dip-bg: #f7f9fc;
+
+    --dip-radius-xl: 28px;
+    --dip-radius-lg: 22px;
+    --dip-radius-md: 18px;
+
+    --dip-shadow:
+        0 18px 50px rgba(23, 35, 59, 0.07);
+}
+
+
+/* ============================================================
+   BASE
+   ============================================================ */
+
+.dip-landing {
+    width: min(1180px, calc(100% - 40px));
+    margin: 0 auto;
+    padding: 28px 0 70px;
+    color: var(--dip-text);
+}
+
+.dip-landing *,
+.dip-landing *::before,
+.dip-landing *::after {
+    box-sizing: border-box;
+}
+
+.dip-landing h1,
+.dip-landing h2,
+.dip-landing h3,
+.dip-landing p {
+    margin-top: 0;
+}
+
+.section-kicker {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    color: var(--dip-blue);
+}
+
+.dip-public-nav {
+    width: min(1180px, calc(100% - 40px));
+    margin-inline: auto;
+}
+
+.dip-public-nav a {
+    color: var(--dip-navy);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.dip-public-nav .dip-public-brand {
+    line-height: 0;
+}
+
+
+/* ============================================================
+   HERO
+   ============================================================ */
+
+.landing-hero {
+    position: relative;
+    overflow: hidden;
+
+    min-height: 440px;
+    padding: 64px 72px;
+
+    border: 1px solid var(--dip-border);
+    border-radius: var(--dip-radius-xl);
+
+    background:
+        radial-gradient(
+            circle at 88% 20%,
+            rgba(36, 95, 237, 0.10),
+            transparent 31%
+        ),
+        linear-gradient(
+            135deg,
+            #ffffff 0%,
+            #f7faff 58%,
+            #edf4ff 100%
+        );
+
+    box-shadow: var(--dip-shadow);
+}
+
+
+/* subtle background accent */
+
+.landing-hero::after {
+    content: "";
+    position: absolute;
+
+    width: 260px;
+    height: 260px;
+
+    left: -150px;
+    bottom: -160px;
+
+    border-radius: 50%;
+
+    background: rgba(36, 95, 237, 0.05);
+}
+
+
+/* ============================================================
+   HERO COPY
+   ============================================================ */
+
+.landing-hero-copy {
+    position: relative;
+    z-index: 2;
+
+    max-width: 920px;
+    margin-inline-start: auto;
+}
+
+.dip-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    padding: 8px 13px;
+
+    border: 1px solid #dbe6fb;
+    border-radius: 999px;
+
+    background: rgba(255, 255, 255, 0.72);
+
+    color: var(--dip-blue);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+}
+
+.landing-hero-copy h1 {
+    max-width: 760px;
+
+    margin: 20px 0 20px;
+
+    color: var(--dip-navy);
+
+    font-size: clamp(31px, 4vw, 49px);
+    font-weight: 800;
+    line-height: 1.55;
+    letter-spacing: -0.02em;
+}
+
+.landing-hero-copy h1 strong {
+    color: var(--dip-blue);
+    font-weight: 800;
+}
+
+.landing-hero-description {
+    max-width: 720px;
+
+    margin: 0;
+
+    color: #5c6a80;
+
+    font-size: 16px;
+    line-height: 2.15;
+}
+
+
+/* ============================================================
+   HERO ACTIONS
+   ============================================================ */
+
+.landing-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 13px;
+
+    margin-top: 30px;
+}
+
+.landing-actions a {
+    width: min(285px, 100%);
+    white-space: normal;
+    text-align: center;
+}
+
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+
+.dip-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 48px;
+    padding: 0 23px;
+
+    border-radius: 14px;
+
+    text-decoration: none;
+
+    font-size: 14px;
+    font-weight: 800;
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        background 0.2s ease;
+}
+
+.dip-btn:hover {
+    transform: translateY(-2px);
+}
+
+.dip-btn-lg {
+    min-height: 54px;
+    padding-inline: 27px;
+}
+
+.dip-btn-primary {
+    color: #fff;
+    background: var(--dip-blue);
+
+    box-shadow:
+        0 10px 24px rgba(36, 95, 237, 0.20);
+}
+
+.dip-btn-primary:hover {
+    background: var(--dip-blue-dark);
+}
+
+.dip-btn-outline-secondary {
+    color: #fff;
+    background: var(--dip-navy);
+    border: 1px solid var(--dip-navy);
+
+    box-shadow:
+        0 10px 24px rgba(23, 35, 59, 0.16);
+}
+
+.dip-btn-outline-secondary:hover {
+    color: #fff;
+    background: var(--dip-navy-deep);
+}
+
+
+/* ============================================================
+   OUTPUT SECTION
+   ============================================================ */
+
+.landing-output-section {
+    margin-top: 78px;
+}
+
+.landing-section-heading {
+    margin-bottom: 28px;
+
+    padding-bottom: 20px;
+
+    border-bottom: 1px solid var(--dip-border);
+}
+
+.section-heading-main {
+    display: block;
+}
+
+.landing-section-heading h2 {
+    margin: 5px 0 0;
+
+    color: var(--dip-navy);
+
+    font-size: 28px;
+    font-weight: 800;
+}
+
+/* ============================================================
+   HORIZONTAL OUTPUT CARDS
+   ============================================================ */
+
+.landing-output-list {
+    display: grid;
+
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    gap: 16px;
+}
+
+.dip-output-card {
+    position: relative;
+
+    display: grid;
+
+    grid-template-columns: minmax(0, 1fr) auto;
+
+    align-items: center;
+
+    min-height: 142px;
+
+    padding: 22px 23px;
+
+    border: 1px solid var(--dip-border);
+
+    border-radius: var(--dip-radius-lg);
+
+    background: var(--dip-white);
+
+    box-shadow:
+        0 8px 28px rgba(23, 35, 59, 0.035);
+
+    transition:
+        transform 0.22s ease,
+        border-color 0.22s ease,
+        box-shadow 0.22s ease;
+}
+
+.dip-output-card::before {
+    content: "";
+
+    position: absolute;
+
+    top: 20px;
+    right: 0;
+
+    width: 3px;
+    height: 38px;
+
+    border-radius: 3px 0 0 3px;
+
+    background: var(--dip-blue);
+
+    opacity: 0;
+
+    transition: opacity 0.22s ease;
+}
+
+.dip-output-card:hover {
+    transform: translateY(-3px);
+
+    border-color: #cfdcf3;
+
+    box-shadow:
+        0 16px 38px rgba(23, 35, 59, 0.08);
+}
+
+.dip-output-card:hover::before {
+    opacity: 1;
+}
+
+
+/* card content */
+
+.output-card-content {
+    min-width: 0;
+
+    padding-inline: 0 18px;
+}
+
+.output-card-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.output-card-title h3 {
+    margin: 0;
+
+    color: var(--dip-navy);
+
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.output-icon {
+    display: grid;
+    place-items: center;
+
+    width: 28px;
+    height: 28px;
+
+    border-radius: 9px;
+
+    background: var(--dip-blue-soft);
+
+    color: var(--dip-blue);
+
+    font-size: 9px;
+    font-weight: 900;
+}
+
+.output-card-content p {
+    margin: 9px 0 0;
+
+    color: var(--dip-muted);
+
+    font-size: 13px;
+    line-height: 1.9;
+}
+
+
+/* technical label */
+
+.output-card-indicator {
+    align-self: start;
+
+    margin-top: 3px;
+
+    color: #a4b0c1;
+
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+
+    white-space: nowrap;
+}
+
+
+/* ============================================================
+   INTELLIGENCE JOURNEY
+   ============================================================ */
+
+.landing-intelligence-section {
+    position: relative;
+
+    margin-top: 86px;
+    padding: 54px;
+
+    overflow: hidden;
+
+    border-radius: var(--dip-radius-xl);
+
+    background:
+        radial-gradient(
+            circle at 85% 15%,
+            rgba(36, 95, 237, 0.10),
+            transparent 30%
+        ),
+        #f5f8fd;
+}
+
+.intelligence-heading {
+    max-width: 720px;
+}
+
+.intelligence-heading h2 {
+    margin: 8px 0 10px;
+
+    color: var(--dip-navy);
+
+    font-size: 34px;
+    font-weight: 800;
+}
+
+.intelligence-heading p {
+    max-width: 680px;
+
+    margin: 0;
+
+    color: var(--dip-muted);
+
+    font-size: 16px;
+    line-height: 2.15;
+}
+
+
+/* journey */
+
+.intelligence-journey {
+    display: grid;
+
+    grid-template-columns:
+        1fr
+        auto
+        1fr
+        auto
+        1fr
+        auto
+        1.25fr;
+
+    align-items: center;
+
+    gap: 12px;
+
+    margin-top: 38px;
+}
+
+.journey-card {
+    min-height: 100px;
+
+    display: flex;
+    align-items: center;
+    gap: 15px;
+
+    padding: 18px 19px;
+
+    border: 1px solid #dce5f2;
+    border-radius: 18px;
+
+    background: rgba(255, 255, 255, 0.84);
+}
+
+.journey-card-final {
+    border-color: #cbdafa;
+
+    background: #fff;
+}
+
+.journey-number {
+    display: grid;
+    place-items: center;
+
+    width: 34px;
+    height: 34px;
+
+    flex: 0 0 34px;
+
+    border-radius: 10px;
+
+    background: var(--dip-blue-soft);
+
+    color: var(--dip-blue);
+
+    font-size: 10px;
+    font-weight: 900;
+}
+
+.journey-card h3 {
+    margin: 0 0 5px;
+
+    color: var(--dip-navy);
+
+    font-size: 19px;
+    font-weight: 800;
+}
+
+.journey-card p {
+    margin: 0;
+
+    color: var(--dip-muted);
+
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.journey-arrow {
+    color: #9babc0;
+
+    font-size: 22px;
+}
+
+
+/* ============================================================
+   IR INTELLIGENCE
+   ============================================================ */
+
+.landing-ir-section {
+    margin-top: 86px;
+    padding: 10px 0 0;
+}
+
+.ir-section-top {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+
+    margin-bottom: 28px;
+}
+
+.ir-title-block {
+    flex: 0 0 auto;
+}
+
+.ir-title-block h2 {
+    margin: 6px 0 0;
+
+    color: var(--dip-navy);
+
+    font-size: 34px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.ir-line {
+    flex: 1;
+
+    height: 1px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #dbe3ee,
+            transparent
+        );
+}
+
+.ir-content {
+    display: block;
+}
+
+.ir-main-statement {
+    padding: 34px 36px;
+
+    border: 1px solid var(--dip-border);
+
+    border-radius: var(--dip-radius-lg);
+
+    background: #fff;
+}
+
+.ir-main-statement {
+    background:
+        linear-gradient(
+            135deg,
+            #ffffff,
+            #f7faff
+        );
+}
+
+.ir-main-statement h3 {
+    margin: 0 0 13px;
+
+    color: var(--dip-navy);
+
+    font-size: 23px;
+    font-weight: 800;
+}
+
+.ir-main-statement p {
+    margin: 0;
+
+    color: var(--dip-muted);
+
+    font-size: 14px;
+    line-height: 2;
+}
+
+.ir-followup {
+    margin-top: 18px !important;
+    padding-top: 18px;
+    border-top: 1px solid var(--dip-border);
+}
+
+
+/* ============================================================
+   FINAL CTA
+   ============================================================ */
+
+.landing-final {
+    position: relative;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 35px;
+
+    margin-top: 72px;
+    padding: 38px 42px;
+
+    overflow: hidden;
+
+    border-radius: var(--dip-radius-xl);
+
+    background:
+        radial-gradient(
+            circle at 100% 0%,
+            rgba(36, 95, 237, 0.15),
+            transparent 34%
+        ),
+        #edf3ff;
+}
+
+.landing-final-copy {
+    max-width: 680px;
+}
+
+.landing-final h2 {
+    margin: 7px 0 8px;
+
+    color: var(--dip-navy);
+
+    font-size: 25px;
+    font-weight: 800;
+}
+
+.landing-final p {
+    margin: 0;
+
+    color: var(--dip-muted);
+
+    font-size: 14px;
+    line-height: 1.9;
+}
+
+
+/* ============================================================
+   ACCESSIBILITY
+   ============================================================ */
+
+.landing-actions a:focus-visible,
+.landing-final a:focus-visible {
+    outline: 3px solid var(--dip-navy);
+    outline-offset: 4px;
+}
+
+
+/* ============================================================
+   TABLET
+   ============================================================ */
+
+@media (max-width: 1050px) {
+
+    .landing-hero {
+        padding: 48px;
+
+        text-align: center;
+    }
+
+    .landing-hero-copy {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .landing-hero-description {
+        max-width: 760px;
+    }
+
+    .landing-output-list {
+        grid-template-columns: 1fr;
+    }
+
+    .intelligence-journey {
+        grid-template-columns: 1fr 1fr;
+
+        gap: 14px;
+    }
+
+    .journey-arrow {
+        display: none;
+    }
+
+}
+
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+
+@media (max-width: 700px) {
+
+    .dip-public-nav {
+        width: min(100% - 24px, 1180px);
+        justify-content: center;
+        gap: 10px !important;
+        padding-inline: 0 !important;
+    }
+
+    .dip-public-nav .dip-public-brand {
+        width: 100%;
+        justify-content: center;
+        margin-inline-end: 0 !important;
+    }
+
+    .dip-public-nav .dip-public-brand img {
+        width: min(260px, 74vw) !important;
+    }
+
+    .dip-landing {
+        width: min(100% - 24px, 1180px);
+
+        padding-top: 12px;
+        padding-bottom: 40px;
+    }
+
+
+    /* HERO */
+
+    .landing-hero {
+        min-height: auto;
+
+        gap: 35px;
+
+        padding: 32px 22px;
+
+        border-radius: 22px;
+    }
+
+    .dip-eyebrow {
+        font-size: 10px;
+    }
+
+    .landing-hero-copy h1 {
+        margin-top: 17px;
+
+        font-size: 29px;
+        line-height: 1.65;
+    }
+
+    .landing-hero-description {
+        font-size: 14px;
+        line-height: 2;
+    }
+
+    .landing-actions {
+        width: 100%;
+
+        flex-direction: column;
+
+        margin-top: 25px;
+    }
+
+    .landing-actions a {
+        width: 100%;
+    }
+
+    /* SECTION HEADER */
+
+    .landing-section-heading {
+        align-items: start;
+    }
+
+    .landing-section-heading h2 {
+        font-size: 24px;
+    }
+
+    /* OUTPUT CARDS */
+
+    .dip-output-card {
+        grid-template-columns: minmax(0, 1fr);
+
+        min-height: auto;
+
+        padding: 19px;
+    }
+
+    .output-card-content {
+        padding-inline: 0;
+    }
+
+    .output-card-title h3 {
+        font-size: 16px;
+    }
+
+    .output-card-content p {
+        font-size: 12px;
+        line-height: 1.85;
+    }
+
+    .output-card-indicator {
+        display: none;
+    }
+
+
+    /* JOURNEY */
+
+    .landing-intelligence-section {
+        margin-top: 60px;
+
+        padding: 32px 22px;
+
+        border-radius: 22px;
+    }
+
+    .intelligence-heading h2 {
+        font-size: 27px;
+    }
+
+    .intelligence-heading p {
+        font-size: 13px;
+    }
+
+    .intelligence-journey {
+        grid-template-columns: 1fr;
+
+        gap: 10px;
+
+        margin-top: 25px;
+    }
+
+    .journey-card {
+        min-height: auto;
+    }
+
+
+    /* IR INTELLIGENCE */
+
+    .landing-ir-section {
+        margin-top: 60px;
+    }
+
+    .ir-section-top {
+        gap: 15px;
+    }
+
+    .ir-title-block h2 {
+        font-size: 27px;
+    }
+
+    .ir-content {
+        gap: 12px;
+    }
+
+    .ir-main-statement {
+        padding: 27px 22px;
+    }
+
+    .ir-main-statement h3 {
+        font-size: 20px;
+    }
+
+
+    /* FINAL CTA */
+
+    .landing-final {
+        flex-direction: column;
+
+        align-items: stretch;
+
+        margin-top: 55px;
+
+        padding: 30px 22px;
+
+        border-radius: 22px;
+    }
+
+    .landing-final h2 {
+        font-size: 21px;
+        line-height: 1.7;
+    }
+
+    .landing-final a {
+        width: 100%;
+    }
+
+}
+
+
+/* ============================================================
+   SMALL MOBILE
+   ============================================================ */
+
+@media (max-width: 420px) {
+
+    .landing-hero-copy h1 {
+        font-size: 26px;
+    }
+
+    .landing-section-heading h2 {
+        font-size: 22px;
+    }
+
+    .dip-output-card {
+        padding: 17px;
+    }
+
+    .output-card-title {
+        gap: 8px;
+    }
+
+    .output-icon {
+        width: 25px;
+        height: 25px;
+    }
+
+    .output-card-title h3 {
+        font-size: 15px;
+    }
+
+}

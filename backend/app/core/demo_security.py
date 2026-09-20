@@ -12,7 +12,7 @@ from app.core.demo_logging import trial_request
 from app.core.web_errors import error_response, wants_html
 
 
-PUBLIC = {"/", "/demo/sample", "/demo/trial", "/demo/login", "/demo/access", "/health"}
+PUBLIC = {"/", "/contact", "/demo/sample", "/demo/trial", "/demo/login", "/demo/access", "/health"}
 SAFE = {"GET", "HEAD"}
 
 

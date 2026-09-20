@@ -19,6 +19,11 @@ async def home(request: Request):
     )
 
 
+@router.get("/contact", response_class=HTMLResponse)
+async def contact(request: Request):
+    return templates.TemplateResponse(request, "contact.html", {"public_demo": True})
+
+
 @router.get("/demo/sample", response_class=HTMLResponse)
 def demo_sample(request: Request):
     if not settings.DEMO_SAMPLE_PROJECT_ID:

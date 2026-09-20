@@ -1,63 +1,409 @@
 {% extends "base.html" %}
 
-{% block title %}DIP | ارزیابی داده فروشگاه‌ها{% endblock %}
+{% block title %}DIP | Distribution Intelligence Platform{% endblock %}
 
-{% block head %}<link rel="stylesheet" href="/static/css/landing.css">{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="/static/css/landing.css">
+{% endblock %}
 
 {% block content %}
-<section class="landing-hero">
-    <div class="landing-hero-copy">
-        <span class="dip-eyebrow">DIP · هوشمندسازی داده برای شرکت‌های پخش</span>
-        <h1>داده خام شبکه پخش‌تان را به داده‌ای قابل اعتماد و آماده تصمیم‌گیری تبدیل کنید</h1>
-        <p>
-            اطلاعات فروشگاه‌ها، به‌عنوان نقاط هدف شبکه پخش شما اعتبارسنجی و با داده مرجع فروشگاه‌های ایران تطبیق داده می‌شود تا کیفیت داده، موارد نیازمند اصلاح، آمادگی عملیاتی و پراکندگی جغرافیایی آن‌ها را در یک گزارش روشن ببینید.
-        </p>
 
-        <div class="landing-actions">
-            <a href="/demo/sample" class="dip-btn dip-btn-primary dip-btn-lg">مشاهده نمونه تحلیل‌شده</a>
-            <a href="/demo/trial" class="dip-btn dip-btn-outline-secondary dip-btn-lg">ارزیابی داده‌های شبکه پخش خودم</a>
+<main class="dip-landing">
+
+    <!-- =========================================================
+         HERO
+         ========================================================= -->
+    <section class="landing-hero">
+
+        <div class="landing-hero-copy">
+
+            <span class="dip-eyebrow">
+                DIP · Distribution Intelligence Platform
+            </span>
+
+            <h1>
+                داده خام شبکه پخش‌تان را به
+                <strong>داده‌ای قابل اعتماد و آماده تصمیم‌گیری</strong>
+                تبدیل کنید
+            </h1>
+
+            <p class="landing-hero-description">
+                اطلاعات فروشگاه‌ها، به‌عنوان نقاط هدف شبکه پخش شما،
+                اعتبارسنجی و با داده مرجع فروشگاه‌های ایران تطبیق داده می‌شود
+                تا کیفیت داده، موارد نیازمند اصلاح، آمادگی عملیاتی و
+                پراکندگی جغرافیایی آن‌ها را در یک گزارش روشن ببینید.
+            </p>
+
+            <div class="landing-actions">
+
+                <a href="/demo/sample"
+                   class="dip-btn dip-btn-primary dip-btn-lg">
+                    مشاهده نمونه تحلیل‌شده
+                </a>
+
+                <a href="/demo/trial"
+                   class="dip-btn dip-btn-outline-secondary dip-btn-lg">
+                    ارزیابی داده‌های شبکه پخش خودم
+                </a>
+
+            </div>
+
         </div>
-    </div>
 
-    <div class="landing-hero-panel">
-        <div class="landing-panel-card">
-            <span class="dip-kicker">از فایل خام تا تصویر روشن از داده</span>
-            <ol class="landing-workflow">
-                <li>دریافت داده</li>
-                <li>اعتبارسنجی</li>
-                <li>تطبیق</li>
-                <li>سنجش آمادگی</li>
-                <li>نقشه و گزارش</li>
-            </ol>
+    </section>
+
+
+    <!-- =========================================================
+         OUTPUT SECTION HEADER
+         ========================================================= -->
+    <section class="landing-output-section">
+
+        <div class="landing-section-heading">
+
+            <div class="section-heading-main">
+                <div>
+                    <span class="section-kicker">
+                        خروجی ارزیابی
+                    </span>
+
+                    <h2>
+                        چه چیزی تحویل می‌گیرید؟
+                    </h2>
+                </div>
+            </div>
+
         </div>
-    </div>
-</section>
 
-<h2 class="landing-section-title">چه چیزی تحویل می‌گیرید؟</h2>
-<section class="landing-grid" aria-label="خروجی ارزیابی DIP">
-    <article class="dip-info-card">
-        <span class="dip-kicker">۰۱</span>
-        <h3>کیفیت و کامل‌بودن داده</h3>
-        <p>ببینید کدام اطلاعات قابل اتکا هستند و چه اطلاعاتی هنوز کم است.</p>
-    </article>
 
-    <article class="dip-info-card">
-        <span class="dip-kicker">۰۲</span>
-        <h3>رکوردهای مشکل‌دار</h3>
-        <p>فهرست موارد ناقص، نامعتبر و نیازمند بررسی، همراه با علت مشخص.</p>
-    </article>
+        <!-- =====================================================
+             OUTPUT CARDS
+             ===================================================== -->
+        <div class="landing-output-list">
 
-    <article class="dip-info-card">
-        <span class="dip-kicker">۰۳</span>
-        <h3>نتیجه Matching</h3>
-        <p>وضعیت تطبیق فروشگاه‌ها با داده مرجع و موارد نیازمند بازبینی.</p>
-    </article>
-    <article class="dip-info-card"><span class="dip-kicker">۰۴</span><h3>Readiness Score</h3><p>سهم فروشگاه‌های آماده و تعداد رکوردهایی که هنوز نیازمند اقدام‌اند.</p></article>
-    <article class="dip-info-card"><span class="dip-kicker">۰۵</span><h3>نقشه پراکندگی فروشگاه‌ها</h3><p>مشاهده موقعیت فروشگاه‌های دارای مختصات و فهرست جداگانه موارد فاقد مختصات.</p></article>
-    <article class="dip-info-card"><span class="dip-kicker">۰۶</span><h3>خلاصه نتیجه قابل استفاده</h3><p>تصویری روشن از وضعیت داده برای ارائه مدیریتی و برنامه‌ریزی اصلاحات.</p></article>
-</section>
-<section class="landing-final">
-    <h2>می‌خواهید فایل فروشگاه‌های خودتان را ارزیابی کنید؟</h2>
-    <a href="/demo/trial" class="dip-btn dip-btn-primary dip-btn-lg">برای ارزیابی اولیه رایگان اقدام کنید</a>
-</section>
+            <article class="dip-output-card">
+
+                <div class="output-card-content">
+
+                    <div class="output-card-title">
+                        <span class="output-icon">01</span>
+                        <h3>کیفیت داده</h3>
+                    </div>
+
+                    <p>
+                        ببینید کدام اطلاعات قابل اتکا هستند و
+                        چه اطلاعاتی هنوز کم است.
+                    </p>
+
+                </div>
+
+                <div class="output-card-indicator">
+                    DATA
+                </div>
+
+            </article>
+
+
+            <article class="dip-output-card">
+
+                <div class="output-card-content">
+
+                    <div class="output-card-title">
+                        <span class="output-icon">02</span>
+                        <h3>رکوردهای مشکل‌دار</h3>
+                    </div>
+
+                    <p>
+                        فهرست موارد ناقص، نامعتبر و نیازمند بررسی،
+                        همراه با علت مشخص.
+                    </p>
+
+                </div>
+
+                <div class="output-card-indicator">
+                    QUALITY
+                </div>
+
+            </article>
+
+
+            <article class="dip-output-card">
+
+                <div class="output-card-content">
+
+                    <div class="output-card-title">
+                        <span class="output-icon">03</span>
+                        <h3>نتیجه انطباق</h3>
+                    </div>
+
+                    <p>
+                        وضعیت تطبیق فروشگاه‌ها با داده مرجع
+                        و موارد نیازمند بازبینی.
+                    </p>
+
+                </div>
+
+                <div class="output-card-indicator">
+                    MATCHING
+                </div>
+
+            </article>
+
+
+            <article class="dip-output-card">
+
+                <div class="output-card-content">
+
+                    <div class="output-card-title">
+                        <span class="output-icon">04</span>
+                        <h3>نمره آمادگی</h3>
+                    </div>
+
+                    <p>
+                        سهم فروشگاه‌های آماده و تعداد رکوردهایی
+                        که هنوز نیازمند اقدام‌اند.
+                    </p>
+
+                </div>
+
+                <div class="output-card-indicator">
+                    READINESS
+                </div>
+
+            </article>
+
+
+            <article class="dip-output-card">
+
+                <div class="output-card-content">
+
+                    <div class="output-card-title">
+                        <span class="output-icon">05</span>
+                        <h3>نقشه پراکندگی فروشگاه‌ها</h3>
+                    </div>
+
+                    <p>
+                        مشاهده موقعیت فروشگاه‌های دارای مختصات
+                        و فهرست جداگانه موارد فاقد مختصات.
+                    </p>
+
+                </div>
+
+                <div class="output-card-indicator">
+                    GEO
+                </div>
+
+            </article>
+
+
+            <article class="dip-output-card">
+
+                <div class="output-card-content">
+
+                    <div class="output-card-title">
+                        <span class="output-icon">06</span>
+                        <h3>خلاصه نتیجه قابل استفاده</h3>
+                    </div>
+
+                    <p>
+                        تصویری روشن از وضعیت داده برای ارائه مدیریتی
+                        و برنامه‌ریزی اصلاحات.
+                    </p>
+
+                </div>
+
+                <div class="output-card-indicator">
+                    INSIGHT
+                </div>
+
+            </article>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         INTELLIGENCE JOURNEY
+         ========================================================= -->
+    <section class="landing-intelligence-section">
+
+        <div class="intelligence-heading">
+
+            <span class="section-kicker">
+                از داده تا تصمیم
+            </span>
+
+            <h2>
+                Distribution Intelligence
+            </h2>
+
+            <p>
+                نقطه شروع هوشمندسازی توزیع، شناخت درست داده‌های واقعی
+                و تبدیل آن‌ها به شناخت قابل استفاده برای تصمیم‌گیری است.
+                ما در ادامه راه با شما هستیم. هوشمندسازی توزیع بخش مهمی
+                از هزینه‌های شما را کاهش خواهد داد.
+            </p>
+
+        </div>
+
+
+        <div class="intelligence-journey">
+
+            <article class="journey-card">
+
+                <span class="journey-number">۰۱</span>
+
+                <div>
+                    <h3>داده</h3>
+                    <p>
+                        داده واقعی شبکه
+                    </p>
+                </div>
+
+            </article>
+
+
+            <span class="journey-arrow" aria-hidden="true">
+                ←
+            </span>
+
+
+            <article class="journey-card">
+
+                <span class="journey-number">۰۲</span>
+
+                <div>
+                    <h3>شناخت</h3>
+                    <p>
+                        درک وضعیت داده
+                    </p>
+                </div>
+
+            </article>
+
+
+            <span class="journey-arrow" aria-hidden="true">
+                ←
+            </span>
+
+
+            <article class="journey-card">
+
+                <span class="journey-number">۰۳</span>
+
+                <div>
+                    <h3>تحلیل</h3>
+                    <p>
+                        تحلیل و استخراج بینش
+                    </p>
+                </div>
+
+            </article>
+
+
+            <span class="journey-arrow" aria-hidden="true">
+                ←
+            </span>
+
+
+            <article class="journey-card journey-card-final">
+
+                <span class="journey-number">۰۴</span>
+
+                <div>
+                    <h3>تصمیم</h3>
+                    <p>
+                        بهترین تصمیم‌گیری و هوشمندسازی فرآیند
+                    </p>
+                </div>
+
+            </article>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         IR INTELLIGENCE
+         ========================================================= -->
+    <section class="landing-ir-section">
+
+        <div class="ir-section-top">
+
+            <div class="ir-title-block">
+
+                <span class="section-kicker">
+                    فراتر از یک محصول
+                </span>
+
+                <h2>
+                    IR Intelligence
+                </h2>
+
+            </div>
+
+            <div class="ir-line"></div>
+
+        </div>
+
+
+        <div class="ir-content">
+
+            <div class="ir-main-statement">
+
+                <h3>
+                    یک مسیر برای شروع هوشمندسازی واقعی
+                </h3>
+
+                <p>
+                    Distribution Intelligence یکی از نمونه‌های محصولات این مسیر است؛
+                    محصولاتی که همگی هوشمندسازی را از یک مسئله واقعی کسب‌وکار
+                    و داده‌های واقعی آن آغاز می‌کنند.
+                </p>
+
+                <p class="ir-followup">
+                    هر کسب‌وکار می‌تواند با انتخاب نقطه شروع مناسب،
+                    مسیر هوشمندسازی خود را از یک مسئله واقعی آغاز کرده
+                    و مرحله‌به‌مرحله آن را توسعه دهد.
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         FINAL CTA
+         ========================================================= -->
+    <section class="landing-final">
+
+        <div class="landing-final-copy">
+
+            <span class="section-kicker">
+                قدم اول
+            </span>
+
+            <h2>
+                می‌خواهید فایل فروشگاه‌های خودتان را ارزیابی کنید؟
+            </h2>
+
+            <p>
+                وضعیت واقعی داده‌های شبکه پخش خود را ببینید
+                و نقطه شروع مسیر هوشمندسازی را مشخص کنید.
+            </p>
+
+        </div>
+
+        <a href="/demo/trial"
+           class="dip-btn dip-btn-primary dip-btn-lg">
+            برای ارزیابی اولیه رایگان اقدام کنید
+        </a>
+
+    </section>
+
+</main>
+
 {% endblock %}

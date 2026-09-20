@@ -1189,6 +1189,44 @@ select:focus {
     padding: 18px 20px;
 }
 
+/* Public header */
+.dip-body .dip-public-nav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px 24px;
+    padding: 20px;
+    text-align: right;
+}
+
+.dip-public-brand { flex: 0 1 237px; max-width: 100%; }
+.dip-public-brand img { display: block; width: 100%; height: auto; }
+.dip-body .dip-public-nav .dip-public-brand img { max-width: 237px; }
+.dip-public-links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 12px;
+    min-width: 0;
+    max-width: 100%;
+}
+.dip-public-links a {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 44px;
+    white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+    .dip-public-nav { padding: 12px; gap: 8px 16px; }
+    .dip-public-brand { flex-basis: 170px; }
+    .dip-body .dip-public-nav .dip-public-brand img { max-width: 170px; }
+    .dip-public-links { font-size: 14px; gap: 4px 8px; }
+    .dip-public-links a { gap: 8px; }
+}
+
 /* Compact application shell; desktop layout stays unchanged. */
 .dip-sidebar-close,
 .dip-sidebar-backdrop { display: none; }

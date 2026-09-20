@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}تماس با ما | DIP{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="/static/css/contact.css">
+{% endblock %}
+
+{% block content %}
+<div class="contact-page">
+    <section class="contact-card" aria-labelledby="contact-title">
+        <header class="contact-header">
+            <p class="contact-eyebrow">Distribution Intelligence Platform</p>
+            <h1 class="contact-title" id="contact-title">همراهی را با یک ارزیابی کوتاه شروع کنیم.</h1>
+            <p class="contact-description">
+                داده‌های توزیع اخیر خود را در اختیار ما قرار دهید.
+                فرصت‌های بهینه‌سازی را به شما نشان می‌دهیم.
+            </p>
+        </header>
+        <div class="contact-action">
+            <h2 class="contact-action-title">شروع گفت‌وگو</h2>
+            <p class="contact-action-description">
+                برای شروع ارزیابی و آشنایی با ظرفیت داده‌های توزیع شما،
+                با ما در ارتباط باشید.
+            </p>
+        </div>
+        <div class="contact-info">
+            <div class="contact-item">
+                <span class="contact-label">موقعیت</span>
+                <span class="contact-value">تهران — شهران</span>
+            </div>
+            <div class="contact-item">
+                <span class="contact-label">تلفن</span>
+                <a class="contact-value" href="tel:02144362327" dir="ltr">۰۲۱-۴۴۳۶۲۳۲۷</a>
+            </div>
+            <div class="contact-item">
+                <span class="contact-label">همراه</span>
+                <a class="contact-value" href="tel:09909323183" dir="ltr">۰۹۹۰۹۳۲۳۱۸۳</a>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

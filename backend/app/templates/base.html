@@ -18,7 +18,17 @@
     <div class="dip-app-shell"{% if demo_sample or public_demo %} style="display:block"{% endif %}>
         {% if demo_sample or public_demo %}
         <p style="margin:0;padding:5px 12px 0;text-align:center;font-size:10px;line-height:1.5;color:#94a3b8">به تأیید پروردگار، آن را بنا نهاده‌ و توسعه دهنده ایم.</p>
-        <nav aria-label="منوی عمومی DIP" style="padding:20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">{% include "partials/brand.html" %}<a href="/">معرفی DIP</a> · <a href="/demo/sample">نمونه تهران</a> · <a href="/demo/trial">ارزیابی آزمایشی</a></nav>
+        <nav class="dip-public-nav" aria-label="منوی عمومی DIP">
+            <a class="dip-public-brand" href="/" aria-label="صفحه اصلی DIP">
+                <img src="/static/logo/DIPLogo.webp" alt="لوگوی DIP">
+            </a>
+            <div class="dip-public-links">
+                <a href="/">معرفی DIP</a>
+                <a href="/demo/sample"><span aria-hidden="true">·</span> نمونه تهران</a>
+                <a href="/demo/trial"><span aria-hidden="true">·</span> ارزیابی آزمایشی</a>
+                <a href="/contact"><span aria-hidden="true">·</span> تماس با ما</a>
+            </div>
+        </nav>
         {% else %}
         {% include "partials/sidebar.html" %}
         <button type="button" class="dip-sidebar-backdrop" hidden tabindex="-1" aria-label="بستن منو"></button>
