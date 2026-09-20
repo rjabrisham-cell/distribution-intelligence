@@ -55,6 +55,18 @@
     border-radius: 10px;
   }
 
+  .demo-field-error {
+    display: none;
+    margin-top: 6px;
+    color: #b42318;
+    font-size: 13px;
+    line-height: 1.8;
+  }
+
+  .demo-field-error.is-visible {
+    display: block;
+  }
+
   @media (max-width: 560px) {
     .demo-login-card {
       margin: 24px 12px !important;
@@ -89,13 +101,64 @@
   </p>
   <p class="demo-access-guide__message"><strong>متن پیام:</strong> درخواست کد دسترسی نسخه آزمایشی DIP</p>
 </div>
-<form method="post" action="/demo/access" style="display:grid;gap:16px">
-<label>شماره موبایل <input name="mobile" type="tel" dir="ltr" maxlength="20" autocomplete="tel" value="{{ mobile|default('') }}" required></label>
-<label>کد دسترسی Demo <input name="code" type="text" dir="ltr" maxlength="32" autocomplete="off" required></label>
+<form id="demo-access-form" method="post" action="/demo/access" style="display:grid;gap:16px" novalidate>
+<label>
+  شماره موبایل
+  <input id="demo-mobile" name="mobile" type="tel" dir="ltr" inputmode="numeric" minlength="11" maxlength="11" pattern="09[0-9]{9}" autocomplete="tel" value="{{ mobile|default('') }}" required aria-describedby="demo-mobile-error">
+  <span id="demo-mobile-error" class="demo-field-error" role="alert">شماره موبایل معتبر نیست؛ شماره باید ۱۱ رقم و با ۰۹ شروع شود.</span>
+</label>
+<label>
+  کد دسترسی Demo
+  <input id="demo-access-code" name="code" type="text" dir="ltr" minlength="8" maxlength="8" pattern="[A-Za-z0-9]{8}" autocomplete="off" autocapitalize="characters" spellcheck="false" required aria-describedby="demo-code-error">
+  <span id="demo-code-error" class="demo-field-error" role="alert">کد دسترسی باید ۸ کاراکتر باشد.</span>
+</label>
 {% endif %}
 <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 <button class="dip-btn dip-btn-primary" type="submit">ادامه</button>
 </form>
 <p><a href="/demo/sample">مشاهده نمونه عمومی</a></p>
 </section>
+{% if not challenge %}
+<script>
+  (() => {
+    const form = document.getElementById("demo-access-form");
+    const mobile = document.getElementById("demo-mobile");
+    const code = document.getElementById("demo-access-code");
+    const mobileError = document.getElementById("demo-mobile-error");
+    const codeError = document.getElementById("demo-code-error");
+
+    if (!form || !mobile || !code || !mobileError || !codeError) return;
+
+    const setError = (field, error, invalid) => {
+      field.setAttribute("aria-invalid", invalid ? "true" : "false");
+      error.classList.toggle("is-visible", invalid);
+    };
+
+    const validateMobile = () => {
+      const valid = /^09\d{9}$/.test(mobile.value.trim());
+      setError(mobile, mobileError, !valid);
+      return valid;
+    };
+
+    const validateCode = () => {
+      const normalized = code.value.trim().toUpperCase();
+      code.value = normalized;
+      const valid = /^[A-Z0-9]{8}$/.test(normalized);
+      setError(code, codeError, !valid);
+      return valid;
+    };
+
+    mobile.addEventListener("input", validateMobile);
+    code.addEventListener("input", validateCode);
+    form.addEventListener("submit", (event) => {
+      const mobileValid = validateMobile();
+      const codeValid = validateCode();
+      if (!mobileValid || !codeValid) {
+        event.preventDefault();
+        (mobileValid ? code : mobile).focus();
+      }
+    });
+  })();
+</script>
+{% endif %}
 {% endblock %}

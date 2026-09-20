@@ -10,6 +10,8 @@ from app.services.demo_auth_service import normalize_mobile
 from app.core.demo_code_format import ALPHABET, access_hash, normalize_access_code
 
 ERROR = "اطلاعات ورود معتبر نیست یا امکان استفاده از این کد وجود ندارد."
+MOBILE_ERROR = "شماره موبایل معتبر نیست؛ شماره باید ۱۱ رقم و با ۰۹ شروع شود."
+CODE_FORMAT_ERROR = "کد دسترسی باید ۸ کاراکتر باشد."
 
 
 class DemoCodeService:
@@ -18,17 +20,17 @@ class DemoCodeService:
 
     def login(self, mobile, code, peer):
         try:
-            normalized = normalize_mobile(mobile)
+            normalized = normalize_mobile(mobile or "")
         except HTTPException:
-            normalized = None
+            raise HTTPException(400, MOBILE_ERROR)
+        value = normalize_access_code(code or "")
+        if not re.fullmatch("[" + ALPHABET + "]{8}", value):
+            raise HTTPException(400, CODE_FORMAT_ERROR)
         # Both counters persist on rejected requests in the HTTP transaction.
         ip_ok = self.repo.rate("access-ip:" + peer, policy.access_ip_attempts, policy.access_cooldown_seconds)
-        mobile_ok = self.repo.rate("access-mobile:" + (normalized or mobile[:64]), policy.access_mobile_attempts, policy.access_cooldown_seconds)
+        mobile_ok = self.repo.rate("access-mobile:" + normalized, policy.access_mobile_attempts, policy.access_cooldown_seconds)
         if not ip_ok or not mobile_ok:
-            raise HTTPException(429, "تلاش‌های ورود زیاد است؛ ۱۵ دقیقه بعد دوباره تلاش کنید.")
-        value = normalize_access_code(code)
-        if not normalized or not re.fullmatch("[" + ALPHABET + "]{8}", value):
-            raise HTTPException(400, ERROR)
+            raise HTTPException(429, "تلاش‌های ورود زیاد است؛ ۵ دقیقه بعد دوباره تلاش کنید.")
         if not self.repo.lock("otp:" + normalized):
             raise HTTPException(429, "کمی بعد دوباره تلاش کنید.")
         record = self.repo.access_code(access_hash(value))

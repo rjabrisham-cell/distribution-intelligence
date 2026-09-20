@@ -17,13 +17,14 @@ from sqlalchemy import create_engine, text, select
 from sqlalchemy.engine import make_url
 from sqlalchemy.orm import Session
 from app.models import Base, Account, Company, Project, File, ImportBatch
-from app.models.demo_access import DemoChallenge, DemoSession
+from app.models.demo_access import DemoChallenge, DemoRateEvent, DemoSession
 from app.core.database import get_db
 from app.core.config import settings
 from app.core.demo_security import DemoSecurityMiddleware, target
 from app.core.trial_policy import policy
 from app.repositories.demo_access_repository import DemoAccessRepository, digest, now
 from app.services.demo_auth_service import DemoAuthService, LocalOtpProvider, normalize_mobile, code_hash
+from app.services.demo_code_service import CODE_FORMAT_ERROR, MOBILE_ERROR, DemoCodeService
 from app.services.trial_file_service import validate_trial_xlsx
 from app.services.trial_service import TrialService
 from app.services.demo_sample_service import public_sample_context
@@ -420,3 +421,26 @@ def test_rate_limit_and_redacted_logs(db, caplog):
         trial_request.reset(token)
     assert 'synthetic-private-mobile' not in caplog.text
     assert 'synthetic-otp-secret' not in caplog.text
+
+
+def test_malformed_demo_access_does_not_consume_rate_limit(db):
+    service = DemoCodeService(db)
+    before = db.query(DemoRateEvent).count()
+
+    with pytest.raises(HTTPException) as invalid_mobile:
+        service.login('0990932187', '2DXHJ662', '198.51.100.20')
+    assert invalid_mobile.value.status_code == 400
+    assert invalid_mobile.value.detail == MOBILE_ERROR
+    assert db.query(DemoRateEvent).count() == before
+
+    with pytest.raises(HTTPException) as invalid_code:
+        service.login('09123456789', '', '198.51.100.20')
+    assert invalid_code.value.status_code == 400
+    assert invalid_code.value.detail == CODE_FORMAT_ERROR
+    assert db.query(DemoRateEvent).count() == before
+
+
+def test_public_demo_access_limits_are_user_friendly():
+    assert policy.access_mobile_attempts == 10
+    assert policy.access_ip_attempts == 60
+    assert policy.access_cooldown_seconds == 300
