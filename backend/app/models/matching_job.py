@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, Text, text
+from sqlalchemy import DateTime, ForeignKey, Index, Integer, JSON, String, Text, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import BaseModel
@@ -27,6 +27,7 @@ class MatchingJob(BaseModel):
         Integer, nullable=False, server_default="0"
     )
     error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+    audit_result: Mapped[dict | None] = mapped_column(JSON, nullable=True, deferred=True)
     queued_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=text("CURRENT_TIMESTAMP")
     )

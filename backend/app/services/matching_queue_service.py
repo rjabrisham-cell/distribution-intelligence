@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-import math
 import threading
 
 from sqlalchemy import select, text
@@ -22,15 +21,7 @@ GLOBAL_MATCHING_LOCK_ID = 849204820194821
 
 def queue_status(db, job: MatchingJob) -> dict:
     repo = MatchingJobRepository(db)
-    jobs_ahead = repo.jobs_ahead(job) if job.status in ("QUEUED", "PROCESSING") else 0
-    typical = repo.typical_duration_seconds()
-    eta_minutes = None
-    if typical:
-        if job.status == "QUEUED":
-            eta_minutes = max(1, math.ceil((jobs_ahead + 1) * typical / 60))
-        elif job.status == "PROCESSING":
-            elapsed = max(0, int((now() - job.started_at).total_seconds())) if job.started_at else 0
-            eta_minutes = max(1, math.ceil(max(0, typical - elapsed) / 60))
+    jobs_ahead = repo.jobs_ahead(job) if job.status == "QUEUED" else 0
     if job.status == "QUEUED":
         position = jobs_ahead + 1
         message = f"درخواست شما در صف قرار گرفت. جایگاه فعلی: {position}."
@@ -43,11 +34,19 @@ def queue_status(db, job: MatchingJob) -> dict:
     return {
         "status": job.status,
         "jobs_ahead": jobs_ahead,
-        "eta_minutes": eta_minutes,
+        "queue_position": jobs_ahead + 1 if job.status == "QUEUED" else None,
+        "eta_minutes": None,
+        "eta_overdue": False,
         "message": message,
         "error_message": job.error_message,
         "redirect_url": f"/projects/{job.project_id}/readiness",
     }
+
+
+def saved_readiness(db, account_id, project_id, batch_id):
+    if not isinstance(account_id, int):
+        return None
+    return MatchingJobRepository(db).readiness_result(account_id, project_id, batch_id)
 
 
 class MatchingQueueWorker:
@@ -97,19 +96,23 @@ class MatchingQueueWorker:
                         db.rollback()
                         return
                     job = repo.claim_next()
+                    audit_only = False
+                    if not job:
+                        job = repo.claim_missing_result()
+                        audit_only = bool(job)
                     if not job:
                         db.rollback()
                         return
                     job_id = job.id
                     db.commit()
-                self._process(job_id)
+                self._process(job_id, audit_only=audit_only)
             finally:
                 lock_connection.execute(
                     text("SELECT pg_advisory_unlock(:key)"),
                     {"key": GLOBAL_MATCHING_LOCK_ID},
                 )
 
-    def _process(self, job_id: int):
+    def _process(self, job_id: int, *, audit_only: bool = False):
         heartbeat_stop = threading.Event()
         heartbeat = threading.Thread(
             target=self._heartbeat,
@@ -123,18 +126,30 @@ class MatchingQueueWorker:
                 job = db.get(MatchingJob, job_id)
                 if not job or job.status != "PROCESSING":
                     return
-                StoreMatchingService(db).run_for_batch(
-                    batch_id=job.batch_id,
-                    project_id=job.project_id,
-                    persist=True,
-                )
+                project = db.get(Project, job.project_id)
+                if (not project or project.trial_owner_id != job.account_id
+                        or project.active_store_batch_id != job.batch_id):
+                    raise RuntimeError("Matching job no longer owns the active dataset")
+                if not audit_only:
+                    StoreMatchingService(db).run_for_batch(
+                        batch_id=job.batch_id,
+                        project_id=job.project_id,
+                        persist=True,
+                    )
                 audit = AuditRunner(
                     project_id=job.project_id, batch_id=job.batch_id, db=db
                 ).run()
                 readiness = audit.get("results", {}).get("distribution_readiness")
                 if not readiness:
                     raise RuntimeError("Readiness result was not generated")
-                project = db.get(Project, job.project_id)
+                if audit.get("project_id") != job.project_id or audit.get("batch_id") != job.batch_id:
+                    raise RuntimeError("Readiness result belongs to another dataset")
+                db.refresh(project, attribute_names=["trial_owner_id", "active_store_batch_id"],
+                           with_for_update=True)
+                if (project.trial_owner_id != job.account_id
+                        or project.active_store_batch_id != job.batch_id):
+                    raise RuntimeError("Active dataset changed during matching")
+                job.audit_result = audit
                 if project and project.active_store_batch_id == job.batch_id:
                     project.trial_state = "COMPLETED"
                     project.trial_result_batch_id = job.batch_id
@@ -152,7 +167,8 @@ class MatchingQueueWorker:
                     job.finished_at = now()
                     job.error_message = "پردازش کامل نشد. لطفاً دوباره تلاش کنید."
                     project = db.get(Project, job.project_id)
-                    if project and project.active_store_batch_id == job.batch_id:
+                    if (project and project.trial_owner_id == job.account_id
+                            and project.active_store_batch_id == job.batch_id):
                         project.trial_state = "FAILED"
                     db.commit()
         finally:

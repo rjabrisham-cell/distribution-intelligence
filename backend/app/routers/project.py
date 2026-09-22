@@ -26,7 +26,7 @@ from app.services.audit.report_builder import ReportBuilder
 from app.services.store_matching_service import StoreMatchingService
 from app.services.trial_service import TrialService
 from app.repositories.matching_job_repository import MatchingJobRepository
-from app.services.matching_queue_service import queue_status
+from app.services.matching_queue_service import queue_status, saved_readiness
 
 
 router = APIRouter(
@@ -1226,10 +1226,7 @@ def readiness_step(
     project_id: int,
     db: Session = Depends(get_db),
 ):
-    """Render a fresh, read-only audit of persisted project data.
-
-    Matching is performed only by the explicit POST endpoint.
-    """
+    """Render the worker's persisted result; viewing never runs heavy services."""
 
     project = _get_project_or_404(
         db,
@@ -1339,17 +1336,16 @@ def readiness_step(
 
     if not matching_error:
         try:
-            audit_run = AuditRunner(
-                project_id=project_id,
-                batch_id=batch.id,
-                db=db,
-            ).run()
-            audit_report = ReportBuilder().build(audit_run)
-            readiness_summary = (
-                audit_run.get("results", {})
-                .get("distribution_readiness")
-            )
-            map_geojson = audit_run.get("map_geojson") or map_geojson
+            audit_run = saved_readiness(db, trial_account, project_id, batch.id)
+            if audit_run:
+                audit_report = ReportBuilder().build(audit_run)
+                readiness_summary = (
+                    audit_run.get("results", {})
+                    .get("distribution_readiness")
+                )
+                map_geojson = audit_run.get("map_geojson") or map_geojson
+            else:
+                audit_error = "نتیجه ذخیره‌شده این داده هنوز آماده نیست؛ وضعیت پردازش را بررسی کنید."
         except Exception as exc:
             db.rollback()
             audit_error = "ارزیابی موقتاً در دسترس نیست؛ دوباره تلاش کنید."
@@ -1432,7 +1428,7 @@ async def refresh_readiness(
     project_id: int,
     db: Session = Depends(get_db),
 ):
-    """Recalculate using the same read-only audit; never rerun matching."""
+    """Reload the saved result; never rerun matching or audit."""
     return readiness_step(request, project_id, db)
 
 

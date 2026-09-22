@@ -4,8 +4,10 @@ from datetime import timedelta
 
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import aliased
 
 from app.models.matching_job import MatchingJob
+from app.models.project import Project
 from app.repositories.demo_access_repository import now
 
 
@@ -37,6 +39,17 @@ class MatchingJobRepository:
             .order_by(MatchingJob.id.desc())
             .limit(1)
         )
+
+    def readiness_result(self, account_id: int, project_id: int, batch_id: int):
+        job = self.latest(account_id, project_id, batch_id)
+        if not job or job.status != "COMPLETED":
+            return None
+        result = job.audit_result
+        if not isinstance(result, dict) or (
+            result.get("project_id") != project_id or result.get("batch_id") != batch_id
+        ):
+            return None
+        return result
 
     def active_for_account(self, account_id: int):
         return self.db.scalar(
@@ -135,6 +148,35 @@ class MatchingJobRepository:
                 .limit(1)
             )
         )
+
+    def claim_missing_result(self):
+        """Backfill only the latest legacy completion of a still-active dataset.
+
+        Called under the global worker lock, after queued work is exhausted.
+        """
+        newer = aliased(MatchingJob)
+        job = self.db.scalar(
+            select(MatchingJob).join(Project, Project.id == MatchingJob.project_id)
+            .where(
+                MatchingJob.status == "COMPLETED",
+                MatchingJob.audit_result.is_(None),
+                Project.active_store_batch_id == MatchingJob.batch_id,
+                Project.trial_owner_id == MatchingJob.account_id,
+                ~select(newer.id).where(
+                    newer.project_id == MatchingJob.project_id,
+                    newer.batch_id == MatchingJob.batch_id,
+                    newer.id > MatchingJob.id,
+                ).exists(),
+            )
+            .order_by(MatchingJob.id.asc())
+            .with_for_update(skip_locked=True, of=MatchingJob).limit(1)
+        )
+        if job:
+            job.status = "PROCESSING"
+            job.heartbeat_at = now()
+            job.error_message = None
+            self.db.flush()
+        return job
 
     def fail_stale(self, seconds: int) -> int:
         cutoff = now() - timedelta(seconds=seconds)
