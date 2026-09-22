@@ -6,13 +6,10 @@
 <div class="dip-container">
     <section class="dip-new-project-hero">
         <div>
-            <span class="dip-badge dip-badge-running">New Distribution Project</span>
-
-            <h1>تعریف و ثبت پروژه توزیع جدید</h1>
+            <h1>ایجاد پروژه</h1>
 
             <p>
-                اطلاعات پایه پروژه را ثبت کنید تا فضای کاری آن ایجاد شود و مراحل Intake، Validation،
-                Profiling، Readiness و Decision روی آن فعال گردد.
+                نام پروژه را وارد کنید؛ در مرحله بعد فایل فروشگاه‌ها را بارگذاری خواهید کرد.
             </p>
         </div>
 
@@ -22,19 +19,10 @@
     </section>
 
     <section class="dip-form-shell">
-        <div class="dip-form-shell__header">
-            <div>
-                <h2>فرم اطلاعات شناسنامه‌ای پروژه</h2>
-                <p>
-                    نام پروژه الزامی است. کد پروژه و شرح پروژه در صورت نیاز تکمیل شوند.
-                </p>
-            </div>
-        </div>
-
         <form action="/projects/new" method="post" class="dip-project-form">
             <div class="dip-form-grid">
                 <div class="dip-field dip-field--full">
-                    <label for="name">نام انحصاری پروژه</label>
+                    <label for="name">نام پروژه</label>
 
                     <input
                         id="name"
@@ -44,11 +32,11 @@
                         required
                     >
 
-                    <small>
-                        یک نام مشخص و قابل شناسایی برای Workspace پروژه وارد کنید.
-                    </small>
                 </div>
-
+            </div>
+            <details class="dip-project-optional">
+                <summary>اطلاعات تکمیلی (اختیاری)</summary>
+                <div class="dip-form-grid">
                 <div class="dip-field dip-field--full">
                     <label for="code">کد پروژه</label>
 
@@ -70,7 +58,7 @@
                     <textarea
                         id="description"
                         name="description"
-                        rows="6"
+                        rows="3"
                         placeholder="مثال: پروژه توزیع محصولات در محدوده تهران"
                     ></textarea>
 
@@ -78,20 +66,12 @@
                         هدف، دامنه یا توضیح کوتاه پروژه را در این بخش وارد کنید. این فیلد اختیاری است.
                     </small>
                 </div>
-            </div>
-
-            <div class="dip-form-note">
-                <div class="dip-form-note__title">نتیجه ثبت</div>
-
-                <p>
-                    بعد از ثبت، پروژه در فهرست پروژه‌ها ساخته می‌شود و صفحه Workspace آن
-                    برای ورود به مرحله Intake در دسترس خواهد بود.
-                </p>
-            </div>
+                </div>
+            </details>
 
             <div class="dip-form-actions">
                 <button type="submit" class="dip-btn dip-btn-primary">
-                    ثبت نهایی و ساخت Workspace
+                    ایجاد پروژه و دریافت داده
                 </button>
 
                 <a href="/projects" class="dip-btn dip-btn-secondary">
@@ -103,12 +83,15 @@
 </div>
 
 <style>
+.dip-project-optional { margin-bottom: 1rem; }
+.dip-project-optional summary { padding: 12px 0; min-height: 44px; cursor: pointer; font-weight: 700; }
+.dip-project-optional .dip-form-grid { margin-top: .75rem; }
 .dip-new-project-hero {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
     gap: 1rem;
-    padding: 1.5rem 1.75rem;
+    padding: 1rem 1.25rem;
     margin-bottom: var(--spacing-lg);
     border: 1px solid var(--border-color);
     border-radius: 18px;
@@ -117,8 +100,8 @@
 }
 
 .dip-new-project-hero h1 {
-    margin: .7rem 0 .7rem;
-    font-size: 2rem;
+    margin: 0 0 .5rem;
+    font-size: clamp(1.4rem, 4vw, 2rem);
     font-weight: 800;
     color: var(--color-neutral-dark);
 }
@@ -245,6 +228,7 @@
 }
 
 @media (max-width: 900px) {
+    .dip-project-form { padding: 1rem; }
     .dip-new-project-hero,
     .dip-form-grid {
         grid-template-columns: 1fr;

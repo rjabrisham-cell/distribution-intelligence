@@ -14,12 +14,48 @@
   rel="stylesheet"
   href="{{ url_for('static', path='css/intake.css') }}"
 >
+{% if request.query_params.get('created') == '1' %}
+<style>
+  .dip-created-banner { display:flex; align-items:center; gap:12px; margin-bottom:16px; padding:12px 16px; border:1px solid #bbf7d0; border-radius:12px; background:#f0fdf4; color:#166534; opacity:1; transition:opacity .4s ease; }
+  .dip-created-banner span { flex:1; min-width:0; overflow-wrap:anywhere; }
+  .dip-created-banner button { flex:0 0 44px; width:44px; min-height:44px; border:0; border-radius:8px; background:transparent; color:inherit; font:inherit; cursor:pointer; }
+  .dip-created-banner.is-closing { opacity:0; }
+  @media (prefers-reduced-motion:reduce) { .dip-created-banner { transition:none; } }
+</style>
+{% endif %}
 {% endblock %}
 
 
 {% block content %}
 
 <div class="dip-container dip-intake">
+  {% if request.query_params.get('created') == '1' %}
+  <div class="dip-created-banner" id="dip-created-banner" role="status">
+    <span>پروژه با موفقیت ایجاد شد. اکنون فایل فروشگاه‌ها را بارگذاری کنید.</span>
+    <button type="button" aria-label="بستن پیام موفقیت" hidden>×</button>
+  </div>
+  <script>
+  (() => {
+    const banner = document.getElementById('dip-created-banner');
+    const closeButton = banner.querySelector('button');
+    let closing = false;
+    function dismiss() {
+      if (closing) return;
+      closing = true;
+      banner.classList.add('is-closing');
+      window.setTimeout(() => banner.remove(), 400);
+    }
+    closeButton.hidden = false;
+    closeButton.addEventListener('click', dismiss);
+    window.setTimeout(dismiss, 7000);
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('created');
+      window.history.replaceState(window.history.state, '', url.pathname + url.search + url.hash);
+    } catch (_) { /* The upload flow does not depend on history access. */ }
+  })();
+  </script>
+  {% endif %}
 
   {% include "partials/shared/breadcrumb.html" %}
   {% include "partials/shared/project_header.html" %}

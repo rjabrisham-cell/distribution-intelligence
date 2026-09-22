@@ -923,7 +923,7 @@ def create_project_from_form(
     db: Session = Depends(get_db),
 ):
     db_project = TrialService(db).create(request.state.demo_account_id, name, description, code)
-    return RedirectResponse(url=f"/projects/{db_project.id}", status_code=303)
+    return RedirectResponse(url=f"/projects/{db_project.id}/intake?created=1", status_code=303)
 
 
 # =============================================================================
