@@ -5,6 +5,8 @@ from sqlalchemy.orm import Session
 from app.core.templates import templates
 from app.core.config import settings
 from app.core.database import get_db
+from pathlib import Path
+import json
 
 router = APIRouter()
 
@@ -22,6 +24,13 @@ async def home(request: Request):
 @router.get("/contact", response_class=HTMLResponse)
 async def contact(request: Request):
     return templates.TemplateResponse(request, "contact.html", {"public_demo": True})
+
+
+@router.get("/about", response_class=HTMLResponse)
+async def about(request: Request):
+    summary_path = Path(__file__).resolve().parents[1] / "static/data/history/kaleh/history-summary.json"
+    summary = json.loads(summary_path.read_text(encoding="utf-8"))
+    return templates.TemplateResponse(request, "about.html", {"public_demo": True, "history": summary})
 
 
 @router.get("/demo/sample", response_class=HTMLResponse)

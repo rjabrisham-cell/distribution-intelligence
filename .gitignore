@@ -45,3 +45,7 @@ postgres_data/
 
 # Node (future frontend)
 node_modules/
+
+# Confidential historical inputs and extraction intermediates
+data/history/kaleh/source/
+data/history/kaleh/generated/

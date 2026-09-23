@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}نمونه اجرایی | یک لایه هوشمند روی تهران — DIP{% endblock %}
+{% block head %}<link rel="stylesheet" href="/static/css/about.css">{% endblock %}
+{% block content %}
+<article class="history-page" data-chapter="{{ history.chapter }}">
+  <header class="history-hero">
+    <div class="history-intro">
+      <p class="history-eyebrow">نمونه اجرایی شماره ۱ — تهران</p>
+      <h1>یک لایه هوشمند روی تهران</h1>
+      <h2 class="history-subtitle">تبدیل جغرافیای ثابت شهر به محدوده‌های توزیع متناسب با بار هر روز</h2>
+      <p class="history-lead">تهران هر روز همان شهر است؛ اما سفارش‌ها، حجم بار و مقصدها ثابت نمی‌مانند. DIP داده‌های همان روز را به یک لایه عملیاتی روی نقشه تبدیل می‌کند تا محدوده‌های خدمت، سفرها و مسیرهای ناوگان متناسب با نیاز واقعی آن روز شکل بگیرند.</p>
+    </div>
+    <aside class="history-stats" aria-label="ابعاد داده نمونه">
+      <div><strong><span id="history-orders">۹۷۰</span> <small>سفارش روز</small></strong><p id="history-orders-note">فروشگاه‌های دارای سفارش در روز نمونه</p></div>
+      <div><strong><span id="history-assigned">۷۹۸</span> <small>سوپرمارکت با انتساب</small></strong><p id="history-assigned-note">فروشگاه‌های تثبیت‌شده روز نمونه؛ ۱۰۲ مورد نیازمند بازبینی</p></div>
+      <div><strong><span id="history-neighborhoods">۱۶</span> <small>محله هوشمند توزیع</small></strong><p id="history-vehicles-note">متناسب با عملیات روز نمونه</p></div>
+    </aside>
+  </header>
+
+  <section class="history-story" id="history-story" aria-label="روایت تعاملی توزیع تهران">
+    <div class="history-story-head">
+      <div id="history-calendar-days" class="history-calendar-days" aria-label="انتخاب روز عملیات">
+        <button type="button" id="history-sample" aria-pressed="true">روز نمونه — ۱۶ خودرو</button>
+      </div>
+    </div>
+    <div class="history-steps" aria-label="مرحله روایت">
+      <button type="button" data-stage="0" aria-pressed="true">تهران ایستا</button>
+      <button type="button" data-stage="1" aria-pressed="false">تهران هوشمند</button>
+      <button type="button" data-stage="2" aria-pressed="false">تهران داینامیک</button>
+    </div>
+    <div class="history-stage-layout">
+      <div class="history-map-wrap">
+        <div id="history-map" aria-label="نقشه تاریخی توزیع تهران"></div>
+        <div class="history-map-caption"><span class="history-dot"></span> تهران / نمونه اجرایی</div>
+        <p class="history-legacy" id="history-legacy"><span class="history-key history-key--municipal"></span> خاکستری کم‌رنگ: مناطق ۲۲گانه شهرداری تهران<br><span class="history-key history-key--service"></span> رنگی: محدوده‌های ثابت توزیع</p>
+        <p class="history-legacy" id="history-smart-note" hidden>۱۶ محله هوشمند توزیع؛ ۷۹۸ سوپرمارکت با انتساب</p>
+        <p id="history-map-message" class="history-map-message" role="status">در حال آماده‌سازی نقشه؛ متن روایت مستقل از نقشه در دسترس است.</p>
+      </div>
+      <aside class="history-narrative">
+        <section data-narrative="0"><h3>تهران ایستا</h3><p>تهران در نقشه رسمی به ۲۲ منطقه تقسیم شده است. این مرزها برای مدیریت شهر تعریف شده‌اند و با تغییر روزانه سفارش فروشگاه‌ها، حجم بار و ظرفیت ناوگان تغییر نمی‌کنند.</p><strong>یک شهر ثابت، با نیازی که هر روز تغییر می‌کند.</strong></section>
+        <section data-narrative="1"><h3>تهران هوشمند</h3><p>DIP سفارش‌های همان روز را روی جغرافیای تهران می‌نشاند و محدوده‌های توزیع متناسب با عملیات آن روز را می‌سازد. آمار و فهرست کنار نقشه مربوط به روز انتخاب‌شده‌اند.</p><strong>مرزهای شهر ثابت‌اند؛ مرزهای توزیع با بار هر روز ساخته می‌شوند.</strong></section>
+        <section data-narrative="2"><h3>تهران داینامیک</h3><p>تهران داینامیک، حرکت ناوگان روز انتخاب‌شده را از انبار مرکزی تا محله‌ها نشان می‌دهد: مسیر دسترسی محاسبه‌شده روی شبکه معابر و سپس تمام قطعات GPS موجود.</p><strong>یک لایه هوشمند روی شهر؛ از سفارش روز تا حرکت ناوگان.</strong><p class="history-small">روزهای تقویم با ساعت محلی ثبت‌شده بازپخش می‌شوند. سرعت ۱× تقویم معادل پنج دقیقه ثبت در هر ثانیه نمایش است.</p></section>
+        <section id="history-local-panel" class="history-local-panel" aria-label="محله‌های روز انتخاب‌شده" hidden>
+          <p id="history-day-overview" class="history-day-overview"></p>
+          <details id="history-local-details" open>
+            <summary>فهرست محله‌ها</summary>
+            <div id="history-assignment-grid" class="history-local-list" aria-label="محله‌ها و کامیون‌ها"></div>
+          </details>
+        </section>
+        <p id="history-calendar-status" class="history-list-status" role="status"></p>
+      </aside>
+    </div>
+    <div class="history-playback" id="history-playback">
+      <button type="button" id="history-play" disabled>پخش</button>
+      <button type="button" id="history-restart" disabled>شروع مجدد</button>
+      <label for="history-timeline">پیشرفت سفرها</label>
+      <input type="range" id="history-timeline" min="0" max="1000" value="0" disabled>
+      <output id="history-time" for="history-timeline">۰٪</output>
+      <label for="history-speed">سرعت بازپخش</label><select id="history-speed"><option value="1">۱×</option><option value="2">۲×</option><option value="4">۴×</option></select>
+    </div>
+    <p class="history-footnote">خط اصلی: مسیر عملیات؛ خط‌چین: مسیر دسترسی تا شروع عملیات.</p>
+    <noscript><p class="history-footnote">برای جابه‌جایی میان قاب‌ها و پخش حرکت خودروها، JavaScript لازم است. متن کامل روایت در همین صفحه قابل خواندن است.</p></noscript>
+    <details class="history-provenance"><summary>داده و حدود نمایش</summary><p>۹٬۷۵۰، تعداد فروشگاه‌های دارای مختصات بانک تاریخی است، نه سفارش روزانه. مجموع ۷۹۸ و ساختار ۱۶ محله مبنای این نمایش‌اند. سهم هر کارت با ترکیب سهم برابر، طول و گستره GPS و گردکردن با بزرگ‌ترین باقیمانده محاسبه شده است. لکه‌های تب اول داخل مرز واقعی مناطق و محدوده‌های تب دوم تصویرسازی از گستره مسیرها هستند. تب سوم ردهای GPS موجود را بازپخش می‌کند. اطلاعات هویتی مشتریان منتشر نمی‌شود.</p></details>
+  </section>
+  <footer class="history-ending"><h2>هر روز، بار تازه‌ای روی شهر می‌نشیند؛ پس محدوده‌های توزیع هم باید دوباره ساخته شوند.</h2><p>تهران ثابت می‌ماند؛ DIP لایه عملیاتی هر روز را متناسب با سفارش‌ها، بار و مقصدهای همان روز می‌سازد.</p><a href="/demo/trial" class="dip-btn dip-btn-primary">آینده توزیع من را نشان بده</a></footer>
+</article>
+{% endblock %}
+{% block scripts %}
+{{ super() }}
+<script type="application/json" id="history-config">{{ {'map':map_config(),'summary':history,'data_base':'/static/data/history/kaleh/'}|tojson }}</script>
+<script src="/static/js/about.js" defer></script>
+{% endblock %}

@@ -12,7 +12,39 @@ from app.core.demo_logging import trial_request
 from app.core.web_errors import error_response, wants_html
 
 
-PUBLIC = {"/", "/contact", "/demo/sample", "/demo/trial", "/demo/login", "/demo/access", "/health"}
+PUBLIC = {"/", "/contact", "/about", "/demo/sample", "/demo/trial", "/demo/login", "/demo/access", "/health"}
+HISTORY_ASSETS = {
+    "/static/data/history/kaleh/history-summary.json",
+    "/static/data/history/kaleh/legacy-regions.geojson",
+    "/static/data/history/kaleh/planned-routes.geojson",
+    "/static/data/history/kaleh/gps-tracks.geojson",
+    "/static/data/history/kaleh/smart-regions.geojson",
+    "/static/data/history/kaleh/smart-summary.json",
+    "/static/data/history/kaleh/municipal-regions.geojson",
+    "/static/data/history/kaleh/operation-tracks.geojson",
+    "/static/data/history/kaleh/transit-tracks.geojson",
+    "/static/data/history/kaleh/access-routes.geojson",
+    "/static/data/history/kaleh/gps-continuity.geojson",
+    "/static/data/history/kaleh/calendar/index.json",
+    "/static/data/history/kaleh/calendar/2010-04-21-regions.geojson",
+    "/static/data/history/kaleh/calendar/2010-04-22-regions.geojson",
+    "/static/data/history/kaleh/calendar/2010-04-24-regions.geojson",
+    "/static/data/history/kaleh/calendar/2010-04-25-regions.geojson",
+    "/static/data/history/kaleh/calendar/2010-04-21-operations.geojson",
+    "/static/data/history/kaleh/calendar/2010-04-22-operations.geojson",
+    "/static/data/history/kaleh/calendar/2010-04-24-operations.geojson",
+    "/static/data/history/kaleh/calendar/2010-04-25-operations.geojson",
+}
+HISTORY_ASSETS.update(
+    f"/static/data/history/kaleh/calendar/{day}{suffix}"
+    for day in (
+        "2010-04-20", "2010-04-21", "2010-04-22", "2010-04-24",
+        "2010-04-25", "2010-04-26", "2010-04-28", "2010-04-29",
+        "2010-05-02", "2010-05-03", "2010-05-04", "2010-05-05",
+        "2010-05-06", "2010-05-08", "2010-05-09", "2010-05-10",
+    )
+    for suffix in (".geojson", "-access.geojson")
+)
 SAFE = {"GET", "HEAD"}
 
 
@@ -61,7 +93,7 @@ class DemoSecurityMiddleware:
 
         # Only code assets are public. Raw uploads and arbitrary static files are not.
         static = re.fullmatch(r"/static/(?:css|js|images|fonts)/[\w/.-]+\.(?:css|js|png|svg|jpg|jpeg|ico|woff2?|ttf)", path)
-        if (static and ".." not in path or path == "/static/logo/DIPLogo.webp") and method in SAFE:
+        if (static and ".." not in path or path == "/static/logo/DIPLogo.webp" or path in HISTORY_ASSETS) and method in SAFE:
             return await self.app(scope, receive, secured_send)
         public = path in PUBLIC or (path in {"/demo/otp/request", "/demo/otp/verify"} and settings.APP_ENV == "development" and os.getenv("DEMO_ACCESS_MODE") == "otp")
         if public and method in SAFE:
